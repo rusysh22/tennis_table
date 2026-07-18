@@ -105,6 +105,12 @@ def inject_globals():
     }
 
 
+@app.teardown_appcontext
+def _close_db_connection(exception=None):
+    if utils.USE_DB:
+        utils.close_request_connection()
+
+
 # ---------- public routes ----------
 
 @app.route("/")

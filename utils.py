@@ -17,11 +17,39 @@ if USE_DB:
     import psycopg2
     import psycopg2.extras
 
-    def _db_conn():
+    def _new_conn():
         return psycopg2.connect(DATABASE_URL)
 
+    def _db_conn():
+        """Satu koneksi dipakai ulang untuk seluruh request Flask yang sama
+        (disimpan di flask.g), supaya load_json/save_json yang dipanggil
+        berkali-kali dalam 1 request (mis. data_context() + context processor)
+        tidak buka koneksi baru tiap kali -- connect ke Supabase pooler makan
+        ~500-600ms sekali connect, jadi kalau diulang 3-4x per halaman itu
+        beberapa detik sendiri. Di luar konteks request Flask (mis. skrip
+        migrate_db.py), balik ke koneksi baru biasa."""
+        from flask import g, has_app_context
+        if has_app_context():
+            conn = getattr(g, "_pg_conn", None)
+            if conn is None or conn.closed:
+                conn = _new_conn()
+                g._pg_conn = conn
+            return conn
+        return _new_conn()
+
+    def close_request_connection():
+        """Panggil di teardown_appcontext Flask supaya koneksi per-request ditutup rapi."""
+        from flask import g
+        conn = g.pop("_pg_conn", None)
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
     def _ensure_schema():
-        with _db_conn() as conn, conn.cursor() as cur:
+        conn = _new_conn()
+        with conn, conn.cursor() as cur:
             cur.execute("CREATE SCHEMA IF NOT EXISTS tennis")
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS tennis.app_data (
@@ -39,6 +67,7 @@ if USE_DB:
                 )
             """)
             conn.commit()
+        conn.close()
 
     _ensure_schema()
 

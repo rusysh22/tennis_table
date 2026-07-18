@@ -306,6 +306,10 @@ button{ font-family:inherit; }
   display:inline-flex; align-items:center; justify-content:center; gap:.4rem; font-weight:700; font-size:.88rem;
   padding:.6rem 1.1rem; border-radius:999px; border:none; cursor:pointer; transition:transform .18s ease, box-shadow .18s ease;
 }
+/* .btn{display:inline-flex} punya spesifisitas sama dengan aturan bawaan browser
+   [hidden]{display:none}, dan CSS penulis menang atas UA stylesheet -- jadi atribut
+   hidden diam-diam diabaikan tanpa baris ini (dipakai utk tombol Bagikan progressive-enhancement). */
+.btn[hidden]{ display:none; }
 .btn-primary{ background:var(--grad-accent); color:#fff; box-shadow:var(--shadow-sm); }
 .btn-primary:hover{ transform:translateY(-2px); box-shadow:var(--shadow-md); }
 .btn-outline{ background:transparent; color:var(--red-600); border:2px solid var(--red-500); }
@@ -460,6 +464,14 @@ table.standings.standings-campuran .rank-pill.gold{ background:var(--grad-campur
   .detail-vs{ grid-template-columns:1fr; gap:.7rem; }
 }
 .sets-table{ margin-top:1.4rem; }
+
+/* Tombol Kembali/Bagikan/Kelola di halaman detail pertandingan: baris rapi
+   dengan gap di desktop, ditumpuk full-width (target tap lebih besar) di mobile. */
+.detail-actions{ display:flex; flex-wrap:wrap; gap:.7rem; margin-top:1.6rem; }
+@media (max-width:600px){
+  .detail-actions{ flex-direction:column; }
+  .detail-actions .btn{ width:100%; }
+}
 
 /* ====================== ADMIN ====================== */
 .admin-shell{ background:var(--white); border-radius:var(--radius); padding:1.4rem; box-shadow:var(--shadow-sm); }

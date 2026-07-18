@@ -84,11 +84,29 @@
 </div>
 {% endif %}
 
-<div style="margin-top:1.6rem;">
+<div class="detail-actions">
   <a class="btn btn-outline" href="{{ url_for('jadwal') }}">&larr; Kembali ke Jadwal</a>
+  <button class="btn btn-outline" id="shareBtn" type="button" hidden>📤 Bagikan</button>
   {% if is_admin %}
   <a class="btn btn-primary" href="{{ url_for('admin_edit_match', match_id=m.id) }}">✏️ Kelola Pertandingan Ini</a>
   {% endif %}
 </div>
 
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+  var btn = document.getElementById('shareBtn');
+  if (!btn || !navigator.share) return;
+  btn.hidden = false;
+  btn.addEventListener('click', function(){
+    var desc = document.querySelector('meta[property="og:description"]');
+    navigator.share({
+      title: document.title,
+      text: desc ? desc.content : document.title,
+      url: window.location.href,
+    }).catch(function(){});
+  });
+})();
+</script>
 {% endblock %}
