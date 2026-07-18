@@ -79,35 +79,38 @@ def build_matches():
     TABLE = "Meja 1"
     TIME_SLOTS = ["18:00", "18:30", "19:00", "19:30"]
 
-    # Jadwal 20-24 Juli 2026: campur kategori, satu meja, 4 laga/hari berurutan
+    # Jadwal 20-24 Juli 2026: campur kategori, satu meja, 4 laga/hari berurutan.
+    # Ganda campuran disebar 1-2 laga/hari di setiap hari (tidak pernah kosong)
+    # supaya satu hari tidak diisi ganda putra semua; sisa slot per hari baru
+    # diisi ganda putra, mengikuti urutan babak masing-masing grup.
     plan = [
         ("2026-07-20", [
+            ("ganda_campuran", "A", 1, gc_a[0][0]),
             ("ganda_putra", "A", 1, gp_a[0][0]),
+            ("ganda_campuran", "A", 1, gc_a[0][1]),
             ("ganda_putra", "A", 1, gp_a[0][1]),
-            ("ganda_putra", "B", 1, gp_b[0][0]),
-            ("ganda_putra", "B", 1, gp_b[0][1]),
         ]),
         ("2026-07-21", [
-            ("ganda_campuran", "A", 1, gc_a[0][0]),
-            ("ganda_campuran", "A", 1, gc_a[0][1]),
+            ("ganda_campuran", "A", 2, gc_a[1][0]),
+            ("ganda_putra", "B", 1, gp_b[0][0]),
+            ("ganda_putra", "B", 1, gp_b[0][1]),
             ("ganda_putra", "A", 2, gp_a[1][0]),
-            ("ganda_putra", "A", 2, gp_a[1][1]),
         ]),
         ("2026-07-22", [
+            ("ganda_campuran", "A", 2, gc_a[1][1]),
+            ("ganda_putra", "A", 2, gp_a[1][1]),
             ("ganda_putra", "B", 2, gp_b[1][0]),
             ("ganda_putra", "B", 2, gp_b[1][1]),
-            ("ganda_campuran", "A", 2, gc_a[1][0]),
-            ("ganda_campuran", "A", 2, gc_a[1][1]),
         ]),
         ("2026-07-23", [
+            ("ganda_campuran", "A", 3, gc_a[2][0]),
             ("ganda_putra", "A", 3, gp_a[2][0]),
             ("ganda_putra", "A", 3, gp_a[2][1]),
             ("ganda_putra", "B", 3, gp_b[2][0]),
-            ("ganda_putra", "B", 3, gp_b[2][1]),
         ]),
         ("2026-07-24", [
-            ("ganda_campuran", "A", 3, gc_a[2][0]),
             ("ganda_campuran", "A", 3, gc_a[2][1]),
+            ("ganda_putra", "B", 3, gp_b[2][1]),
         ]),
     ]
 

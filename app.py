@@ -63,6 +63,14 @@ def enrich_match(m, teams):
     return m
 
 
+@app.template_filter("truncate_words")
+def truncate_words(text, max_words=2):
+    words = (text or "").split()
+    if len(words) <= max_words:
+        return text
+    return " ".join(words[:max_words]) + "…"
+
+
 def login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
@@ -188,6 +196,11 @@ def kalender():
         cur += timedelta(days=1)
 
     return render_template("kalender.html", days=days, month_label=f"{utils.MONTH_NAMES[start.month]} {start.year}")
+
+
+@app.route("/aturan")
+def aturan():
+    return render_template("aturan.html")
 
 
 @app.route("/klasemen")

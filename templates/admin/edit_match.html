@@ -94,6 +94,7 @@
           <select name="status">
             <option value="scheduled" {{ 'selected' if raw.status == 'scheduled' }}>Terjadwal</option>
             <option value="live" {{ 'selected' if raw.status == 'live' }}>🔴 Live sekarang</option>
+            <option value="completed" {{ 'selected' if raw.status == 'completed' }} disabled>✅ Selesai (otomatis dari skor)</option>
             <option value="postponed" {{ 'selected' if raw.status == 'postponed' }}>Ditunda</option>
           </select>
         </label>

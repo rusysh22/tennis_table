@@ -39,6 +39,7 @@
         Live <span class="live-dot" aria-hidden="true"></span>
       </a>
       <a href="{{ url_for('klasemen') }}" class="{{ 'active' if request.endpoint in ('klasemen','bracket') }}">Klasemen</a>
+      <a href="{{ url_for('aturan') }}" class="{{ 'active' if request.endpoint == 'aturan' }}">Aturan</a>
       {% if is_admin %}
       <a href="{{ url_for('admin_dashboard') }}" class="nav-admin">Admin</a>
       <a href="{{ url_for('admin_logout') }}" class="nav-admin">Keluar</a>

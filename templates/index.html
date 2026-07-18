@@ -3,10 +3,7 @@
 {% block content %}
 
 <section class="hero">
-  <span class="hero-tag">🏓 Round Robin · {{ config.venue }}</span>
   <h1>{{ config.tournament_name }}</h1>
-  <p class="lead">Turnamen tenis meja internal — Ganda Putra (2 grup) &amp; Ganda Campuran, format round robin,
-    {{ config.final_note|lower }}. Ikuti jadwal, live score, dan klasemen secara real-time di sini.</p>
 
   <div class="hero-meta">
     <div class="hero-chip"><div class="k">Tanggal</div><div class="v">{{ config.start_date[8:10] }}&ndash;{{ config.end_date[8:10] }} Juli {{ config.start_date[:4] }}</div></div>
@@ -23,10 +20,19 @@
     <div class="unit"><div class="num" id="cd-secs">--</div><div class="lbl">Detik</div></div>
   </div>
 
-  <div style="margin-top:1.6rem; display:flex; gap:.7rem; flex-wrap:wrap; position:relative; z-index:1;">
+  <div class="hero-actions">
     <a class="btn btn-primary" href="{{ url_for('jadwal') }}">📅 Lihat Jadwal</a>
-    <a class="btn btn-outline" style="background:rgba(255,255,255,.08); color:#fff; border-color:rgba(255,255,255,.6);" href="{{ url_for('live') }}">🔴 Live Score</a>
-    <a class="btn btn-outline" style="background:rgba(255,255,255,.08); color:#fff; border-color:rgba(255,255,255,.6);" href="{{ url_for('bracket') }}">🏆 Bracket Final</a>
+    <a class="btn btn-outline hero-btn-outline" href="{{ url_for('live') }}">🔴 Live Score</a>
+    <a class="btn btn-outline hero-btn-outline" href="{{ url_for('bracket') }}">🏆 Bracket Final</a>
+  </div>
+
+  <div class="hero-quicknav">
+    <a href="{{ url_for('jadwal') }}"><span class="qn-ic">📅</span><span class="qn-lbl">Jadwal</span></a>
+    <a href="{{ url_for('live') }}"><span class="qn-ic">🔴</span><span class="qn-lbl">Live</span></a>
+    <a href="{{ url_for('klasemen') }}"><span class="qn-ic">🏅</span><span class="qn-lbl">Klasemen</span></a>
+    <a href="{{ url_for('bracket') }}"><span class="qn-ic">🏆</span><span class="qn-lbl">Bracket</span></a>
+    <a href="{{ url_for('rekap') }}"><span class="qn-ic">📋</span><span class="qn-lbl">Rekap</span></a>
+    <a href="{{ url_for('kalender') }}"><span class="qn-ic">🗓️</span><span class="qn-lbl">Kalender</span></a>
   </div>
 </section>
 

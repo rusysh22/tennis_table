@@ -109,7 +109,9 @@ def sync_winner(match):
 
 
 def compute_standings(matches, teams, category, group):
-    """Round robin standings for a category+group. Points: win=3, loss=0."""
+    """Round robin standings for a category+group.
+    Poin sesuai Pedoman Aturan Mini Round Interport 2026 bagian 10:
+    menang=2, kalah setelah bertanding=1, kalah W.O.=0."""
     codes = [c for c, t in teams.items() if t["category"] == category and t["group"] == group]
     table = {
         c: {
@@ -145,12 +147,14 @@ def compute_standings(matches, teams, category, group):
         table[b]["point_loss"] += pa
         if m["winner"] == a:
             table[a]["win"] += 1
-            table[a]["points"] += 3
+            table[a]["points"] += 2
             table[b]["loss"] += 1
+            table[b]["points"] += 0 if m.get("walkover") else 1
         elif m["winner"] == b:
             table[b]["win"] += 1
-            table[b]["points"] += 3
+            table[b]["points"] += 2
             table[a]["loss"] += 1
+            table[a]["points"] += 0 if m.get("walkover") else 1
 
     rows = list(table.values())
     for r in rows:

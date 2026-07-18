@@ -188,14 +188,11 @@ button{ font-family:inherit; }
   content:""; position:absolute; inset:0;
   background:radial-gradient(circle at 85% 15%, rgba(255,255,255,.18), transparent 45%);
 }
-.hero-tag{
-  display:inline-flex; align-items:center; gap:.4rem; background:rgba(255,255,255,.16);
-  padding:.35rem .8rem; border-radius:999px; font-size:.78rem; font-weight:700; letter-spacing:.06em;
-  text-transform:uppercase; margin-bottom:1rem; animation:fadeInUp .6s ease;
-}
 .hero h1{ font-size:clamp(1.9rem, 4.5vw, 3.2rem); position:relative; z-index:1; animation:fadeInUp .7s ease; }
-.hero p.lead{ max-width:640px; font-size:1.05rem; opacity:.92; position:relative; z-index:1; animation:fadeInUp .8s ease; }
 @keyframes fadeInUp{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+
+.hero-actions{ margin-top:1.6rem; display:flex; gap:.7rem; flex-wrap:wrap; position:relative; z-index:1; }
+.hero-actions .hero-btn-outline{ background:rgba(255,255,255,.08); color:#fff; border-color:rgba(255,255,255,.6); }
 
 .hero-meta{ display:flex; flex-wrap:wrap; gap:.9rem; margin-top:1.4rem; position:relative; z-index:1; }
 .hero-chip{
@@ -204,6 +201,21 @@ button{ font-family:inherit; }
 }
 .hero-chip .k{ font-size:.72rem; opacity:.8; text-transform:uppercase; letter-spacing:.05em; }
 .hero-chip .v{ font-family:var(--font-display); font-size:1.15rem; font-weight:700; }
+
+/* Grid navigasi cepat di hero — hanya tampil di mobile (lihat RESPONSIVE), menggantikan
+   deretan tombol hero-actions supaya akses ke Klasemen/Rekap/Kalender tidak terkubur di menu hamburger. */
+.hero-quicknav{
+  display:none; grid-template-columns:repeat(3,1fr); gap:.7rem; margin-top:1.6rem; position:relative; z-index:1;
+}
+.hero-quicknav a{
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.35rem;
+  background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); border-radius:16px;
+  padding:.9rem .5rem; text-align:center; backdrop-filter:blur(4px); color:#fff;
+  transition:transform .18s ease, background .18s ease;
+}
+.hero-quicknav a:hover, .hero-quicknav a:active{ background:rgba(255,255,255,.24); transform:translateY(-2px); }
+.hero-quicknav .qn-ic{ font-size:1.4rem; line-height:1; }
+.hero-quicknav .qn-lbl{ font-size:.72rem; font-weight:700; letter-spacing:.02em; }
 
 .countdown{ display:flex; gap:.6rem; margin-top:1.5rem; position:relative; z-index:1; flex-wrap:wrap; }
 .countdown .unit{
@@ -434,6 +446,7 @@ table.standings.standings-campuran .rank-pill.gold{ background:var(--grad-campur
 .detail-team{ min-width:0; text-align:center; }
 .detail-team small{ opacity:.9; font-size:.78rem; margin-top:.35rem; }
 .detail-team small.player-names{ align-items:center; }
+.detail-team .player-line{ text-align:center; }
 .detail-vs .x{ font-family:var(--font-display); font-size:1.6rem; opacity:.8; text-align:center; }
 .detail-vs .score-row{ justify-self:center; }
 @media (max-width:600px){
@@ -491,6 +504,29 @@ fieldset form > label textarea{ resize:vertical; min-height:2.6em; }
 .admin-table{ width:100%; border-collapse:collapse; font-size:.83rem; }
 .admin-table th, .admin-table td{ padding:.5rem .6rem; border-bottom:1px solid var(--pink-100); text-align:left; }
 .admin-table th{ color:var(--maroon-700); font-family:var(--font-display); }
+
+/* Header grup per-tanggal di tabel admin */
+.admin-table tr.date-group-row td{
+  background:var(--grad-hero); color:#fff; font-family:var(--font-display); font-weight:700;
+  font-size:.82rem; letter-spacing:.02em; padding:.5rem .7rem; border-bottom:none;
+}
+
+/* Warna baris penuh mengikuti status (bukan cuma badge) supaya sekilas pandang jelas */
+.admin-table tr.row-status td{ transition:background .15s ease; }
+.admin-table tr.row-scheduled td{ background:#eef0ff; }
+.admin-table tr.row-live td{ background:#ffd9df; }
+.admin-table tr.row-completed td{ background:#dff5e1; }
+.admin-table tr.row-postponed td{ background:#f1e2c8; }
+.admin-table tr.row-status:hover td{ filter:brightness(.97); }
+
+/* Nama anggota tim di bawah kode tim: sangat kecil, dipotong maks. 2 kata (lihat
+   filter truncate_words) + "…" kalau masih kepanjangan, supaya tidak turun/wrap
+   dan tabel tidak melebar di layar sempit (title= untuk lihat nama penuh) */
+.admin-player-names{ margin-top:.25rem; }
+.admin-player-names .player-line{
+  display:block; max-width:100px; font-size:.62rem; color:#8a5760; font-weight:500;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
 .admin-counts{ display:flex; gap:.6rem; flex-wrap:wrap; margin-bottom:1rem; }
 .admin-counts span{ background:var(--pink-100); color:var(--maroon-700); padding:.4rem .8rem; border-radius:999px; font-weight:700; font-size:.78rem; }
 fieldset{ border:none; border-radius:var(--radius-sm); padding:1.1rem; margin:1rem 0; box-shadow:var(--shadow-sm); background:var(--white); }
@@ -508,7 +544,21 @@ legend{ font-family:var(--font-display); font-weight:700; color:var(--red-600); 
   .main-nav.open{ max-height:520px; padding:.6rem .6rem 1rem; }
   .main-nav a{ padding:.8rem 1rem; border-radius:10px; }
   .hero{ padding:2rem 1.2rem; }
+  .hero-actions{ display:none; }
+  .hero-quicknav{ display:grid; }
   .bracket-wrap{ gap:1.2rem; }
+}
+/* Hero versi ponsel: disederhanakan supaya tidak terlalu besar/ramai —
+   judul & teks diperkecil, chip tanggal/waktu/sesi/lokasi jadi teks polos
+   2 kolom tanpa kartu/border. */
+@media (max-width: 600px){
+  .hero{ padding:1.6rem 1.1rem; border-radius:18px; }
+  .hero h1{ font-size:1.5rem; line-height:1.28; margin-bottom:0; }
+  .hero-meta{ display:grid; grid-template-columns:1fr 1fr; gap:.9rem 1rem; margin-top:1.1rem; }
+  .hero-chip{ background:none; border:none; padding:0; min-width:0; backdrop-filter:none; }
+  .hero-chip .k{ font-size:.64rem; opacity:.75; }
+  .hero-chip .v{ font-size:.88rem; }
+  .countdown{ margin-top:1.1rem; }
 }
 @media (max-width: 480px){
   .stat-card .num{ font-size:1.5rem; }
@@ -517,4 +567,5 @@ legend{ font-family:var(--font-display); font-weight:700; color:var(--red-600); 
   table.standings th, table.standings td{ padding:.55rem .5rem; font-size:.8rem; }
   .team-cell{ min-width:130px; }
   .player-line{ max-width:120px; }
+  .admin-player-names .player-line{ max-width:78px; }
 }

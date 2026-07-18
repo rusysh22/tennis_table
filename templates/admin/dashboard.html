@@ -11,9 +11,14 @@
   <span>Ditunda: {{ counts.postponed }}</span>
 </div>
 
+<div class="search-bar">
+  <span class="search-icon">🔍</span>
+  <input type="search" id="adminSearch" placeholder="Cari ID, tim, kategori, grup, tanggal, status...">
+</div>
+
 <div class="admin-shell">
   <div class="table-wrap" style="box-shadow:none;">
-    <table class="admin-table">
+    <table class="admin-table" id="adminTable">
       <thead>
         <tr>
           <th>ID</th><th>Kategori</th><th>Grup</th><th>Babak</th><th>Tim A</th><th>Tim B</th>
@@ -21,14 +26,35 @@
         </tr>
       </thead>
       <tbody>
+        {% set ns = namespace(last_date=None) %}
         {% for m in matches %}
-        <tr>
+        {% if m.date != ns.last_date %}
+        <tr class="date-group-row"><td colspan="12">📅 {{ m.date_label }}</td></tr>
+        {% set ns.last_date = m.date %}
+        {% endif %}
+        <tr class="row-status row-{{ m.status }}">
           <td>{{ m.id }}</td>
           <td>{{ m.category_label }}</td>
           <td>{{ m.group }}</td>
           <td>{{ m.round_label }}</td>
-          <td><span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span></td>
-          <td><span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span></td>
+          <td>
+            <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+            {% if m.team_a %}
+            <small class="player-names admin-player-names">
+              <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1|truncate_words }}</span>
+              <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2|truncate_words }}</span>
+            </small>
+            {% endif %}
+          </td>
+          <td>
+            <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+            {% if m.team_b %}
+            <small class="player-names admin-player-names">
+              <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1|truncate_words }}</span>
+              <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2|truncate_words }}</span>
+            </small>
+            {% endif %}
+          </td>
           <td>{{ m.date }}</td>
           <td>{{ m.time }}</td>
           <td>{{ m.court }}</td>
@@ -42,4 +68,30 @@
   </div>
 </div>
 
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+  const input = document.getElementById('adminSearch');
+  const rows = Array.from(document.querySelectorAll('#adminTable tbody tr'));
+  if(!input || !rows.length) return;
+  input.addEventListener('input', function(){
+    const q = input.value.trim().toLowerCase();
+    let lastGroup = null;
+    let groupHasVisible = false;
+    rows.forEach(function(row){
+      if(row.classList.contains('date-group-row')){
+        if(lastGroup) lastGroup.style.display = groupHasVisible ? '' : 'none';
+        lastGroup = row;
+        groupHasVisible = false;
+        return;
+      }
+      const match = !q || row.textContent.toLowerCase().includes(q);
+      row.style.display = match ? '' : 'none';
+      if(match) groupHasVisible = true;
+    });
+    if(lastGroup) lastGroup.style.display = groupHasVisible ? '' : 'none';
+  });
+})();
+</script>
 {% endblock %}
