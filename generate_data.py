@@ -5,6 +5,7 @@ Setelah itu, data match akan diupdate langsung lewat aplikasi (admin panel), buk
 """
 import json
 import os
+import random
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
@@ -41,6 +42,44 @@ def circle_rounds(codes):
         [(t1, t3), (t4, t2)],
         [(t1, t2), (t3, t4)],
     ]
+
+
+def shuffle_putra_groups(matches, teams):
+    """Undi ulang keanggotaan Grup A & Grup B Ganda Putra dari 8 tim yang ada,
+    supaya lawan tanding tiap tim benar-benar berubah -- bukan cuma urutan babak
+    (di round robin 4 tim, semua pasangan tetap ketemu apa pun urutannya, jadi
+    yang perlu diacak adalah SIAPA masuk grup mana, bukan urutan dalam grup yang
+    sama). Tanggal/jam/meja tiap slot serta laga Ganda Campuran/Final tidak disentuh.
+    Skor & status laga Ganda Putra yang terdampak direset karena pasangannya berubah."""
+    all_putra = [c for c, t in teams.items() if t["category"] == "ganda_putra"]
+    random.shuffle(all_putra)
+    new_a, new_b = all_putra[:4], all_putra[4:]
+
+    for code in new_a:
+        teams[code]["group"] = "A"
+    for code in new_b:
+        teams[code]["group"] = "B"
+
+    queue_a = [pair for rnd in circle_rounds(new_a) for pair in rnd]
+    queue_b = [pair for rnd in circle_rounds(new_b) for pair in rnd]
+
+    idx_a = idx_b = 0
+    for m in matches:
+        if m["category"] != "ganda_putra" or m["group"] not in ("A", "B"):
+            continue
+        if m["group"] == "A":
+            a, b = queue_a[idx_a]
+            idx_a += 1
+        else:
+            a, b = queue_b[idx_b]
+            idx_b += 1
+        m["team_a"], m["team_b"] = a, b
+        m["status"] = "scheduled"
+        m["sets"] = []
+        m["winner"] = None
+        m["walkover"] = False
+        m["notes"] = ""
+    return matches, teams
 
 
 def build_matches():

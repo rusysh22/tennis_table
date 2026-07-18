@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import threading
 from datetime import datetime
 
@@ -45,6 +46,19 @@ def save_matches(matches):
 
 def load_config():
     return load_json("config.json")
+
+
+def backup_data_files(*names):
+    """Salin file data ke data/backups/<nama>_<timestamp>.json sebelum operasi merusak (mis. reset)."""
+    with _LOCK:
+        backup_dir = os.path.join(DATA_DIR, "backups")
+        os.makedirs(backup_dir, exist_ok=True)
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        for name in names:
+            src = _path(name)
+            if os.path.exists(src):
+                stem, ext = os.path.splitext(name)
+                shutil.copy(src, os.path.join(backup_dir, f"{stem}_{ts}{ext}"))
 
 
 def get_match(matches, match_id):

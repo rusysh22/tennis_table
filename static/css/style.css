@@ -290,6 +290,9 @@ button{ font-family:inherit; }
   font-weight:500; font-size:.72rem; color:#8a5760; margin-top:.3rem;
 }
 .vs-team small.player-names{ display:flex; }
+/* Tim kanan dicerminkan (rata kanan) supaya simetris terhadap tim kiri di kedua sisi VS/skor */
+.vs-team-right{ text-align:right; }
+.vs-team-right .player-line{ text-align:right; }
 .vs-mid{ font-family:var(--font-display); font-weight:700; color:var(--red-600); font-size:.85rem; padding:.2rem .5rem; background:var(--pink-100); border-radius:8px; }
 .score-row{ display:flex; align-items:center; justify-content:center; gap:.8rem; margin:.5rem 0; }
 .score-num{ font-family:var(--font-display); font-size:2.1rem; font-weight:700; color:var(--maroon-700); }
@@ -532,6 +535,14 @@ fieldset form > label textarea{ resize:vertical; min-height:2.6em; }
 fieldset{ border:none; border-radius:var(--radius-sm); padding:1.1rem; margin:1rem 0; box-shadow:var(--shadow-sm); background:var(--white); }
 legend{ font-family:var(--font-display); font-weight:700; color:var(--red-600); padding:0 .5rem; }
 .history-item{ font-size:.78rem; color:#8a5760; padding:.4rem 0; border-bottom:1px dashed var(--pink-100); }
+
+/* Aksi khusus tapi bukan "berbahaya total" (mis. acak ulang grup) — beda dari danger-zone */
+.notice-zone{ border:1.5px dashed #ffd6e0; background:var(--paper); margin-top:2rem; }
+.notice-zone legend{ color:var(--maroon-700); }
+
+/* Zona berbahaya (mis. reset data): ditandai beda supaya tidak tersenggol tak sengaja */
+.danger-zone{ border:1.5px dashed var(--red-500); background:#fff5f5; margin-top:2rem; }
+.danger-zone legend{ color:var(--black); }
 
 /* ====================== RESPONSIVE ====================== */
 @media (max-width: 860px){

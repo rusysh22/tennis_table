@@ -68,6 +68,34 @@
   </div>
 </div>
 
+<fieldset class="notice-zone">
+  <legend>🔀 Acak Ulang Grup Ganda Putra</legend>
+  <p style="font-size:.85rem; color:#a0677a; margin-bottom:.8rem;">
+    Mengundi ulang keanggotaan 8 tim Ganda Putra ke Grup A dan Grup B dari awal, jadi lawan tanding tiap
+    tim benar-benar berubah (bukan cuma urutan babak). Tanggal, jam, dan meja tiap slot tidak berubah.
+    Hanya memengaruhi laga Ganda Putra fase grup — laga Ganda Campuran dan Final tidak disentuh. Skor/status
+    laga Ganda Putra yang sudah diinput akan ikut ter-reset karena pasangannya berubah. Data saat ini
+    dicadangkan otomatis ke <code>data/backups/</code> sebelum diacak.
+  </p>
+  <form method="post" action="{{ url_for('admin_shuffle_putra') }}"
+        onsubmit="return confirm('Undi ulang Grup A dan Grup B Ganda Putra dari awal? Lawan tanding tiap tim akan berubah, dan skor/status laga Ganda Putra yang sudah diinput akan ter-reset. Data saat ini dicadangkan otomatis.');">
+    <button class="btn btn-primary" type="submit">🔀 Undi Ulang Grup A &amp; B</button>
+  </form>
+</fieldset>
+
+<fieldset class="danger-zone">
+  <legend>⚠️ Reset Data</legend>
+  <p style="font-size:.85rem; color:#a0677a; margin-bottom:.8rem;">
+    Mengembalikan seluruh jadwal, skor, status, dan riwayat reschedule ke kondisi awal (sama seperti saat
+    turnamen belum dimulai). Data saat ini akan otomatis dicadangkan ke <code>data/backups/</code> sebelum
+    ditimpa, tapi tindakan ini tetap <strong>tidak bisa dibatalkan lewat aplikasi</strong> — pastikan yakin.
+  </p>
+  <form method="post" action="{{ url_for('admin_reset') }}"
+        onsubmit="return confirm('Reset SEMUA data pertandingan (skor, status, jadwal) ke kondisi awal? Data saat ini akan dicadangkan otomatis, tapi tindakan ini tidak bisa dibatalkan lewat aplikasi.');">
+    <button class="btn btn-dark" type="submit">♻️ Reset Semua Data ke Kondisi Awal</button>
+  </form>
+</fieldset>
+
 {% endblock %}
 {% block scripts %}
 <script>

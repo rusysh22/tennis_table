@@ -5,3 +5,4 @@ venv/
 .secret_key
 *.log
 screenshot_*.png
+data/backups/

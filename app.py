@@ -340,6 +340,30 @@ def admin_dashboard():
     return render_template("admin/dashboard.html", matches=enriched, counts=counts)
 
 
+@app.route("/admin/reset", methods=["POST"])
+@login_required
+def admin_reset():
+    import generate_data
+    utils.backup_data_files("teams.json", "matches.json")
+    utils.save_json("teams.json", generate_data.TEAMS)
+    utils.save_matches(generate_data.build_matches())
+    flash("Semua data pertandingan telah direset ke kondisi awal. Data sebelumnya tersimpan otomatis di data/backups/.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/shuffle-putra", methods=["POST"])
+@login_required
+def admin_shuffle_putra():
+    import generate_data
+    utils.backup_data_files("teams.json", "matches.json")
+    teams, matches, config = data_context()
+    matches, teams = generate_data.shuffle_putra_groups(matches, teams)
+    utils.save_json("teams.json", teams)
+    utils.save_matches(matches)
+    flash("Grup A dan Grup B Ganda Putra berhasil diundi ulang — lawan tanding tiap tim berubah. Skor laga Ganda Putra yang sudah diinput ikut ter-reset karena pasangannya berubah.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+
 @app.route("/admin/pertandingan/<match_id>", methods=["GET", "POST"])
 @login_required
 def admin_edit_match(match_id):
