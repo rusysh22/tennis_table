@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Live Score — {{ config.tournament_short_name }}{% endblock %}
+{% block content %}
+
+<div class="live-banner">
+  <span class="pulse-ring"></span>
+  <div>
+    <strong style="font-family:var(--font-display); font-size:1.1rem;">LIVE SCORE</strong>
+    <div style="font-size:.82rem; opacity:.9;" id="liveUpdated">Memuat data...</div>
+  </div>
+</div>
+
+{% if live_now %}
+<div class="section-head"><h2>🔴 Sedang Bertanding</h2></div>
+<div class="match-grid" data-live-poll>
+  {% for m in live_now %}
+  {% include "_match_card.html" %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><div class="emoji">🏓</div>Belum ada pertandingan yang sedang live saat ini.</div>
+{% endif %}
+
+<div class="section-head"><h2>📋 Jadwal Hari Ini</h2></div>
+{% if today_matches %}
+<div class="match-grid" data-live-poll>
+  {% for m in today_matches %}
+  {% include "_match_card.html" %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><div class="emoji">📅</div>Tidak ada pertandingan terjadwal hari ini.</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.secret_key
+*.log
+screenshot_*.png

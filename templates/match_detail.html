@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}{{ m.team_a_code }} vs {{ m.team_b_code }} — {{ config.tournament_short_name }}{% endblock %}
+{% block content %}
+
+<div class="detail-hero">
+  <span class="badge {{ 'badge-putra' if m.category == 'ganda_putra' else 'badge-campuran' }}">{{ m.category_label }}</span>
+  <span class="badge badge-status badge-{{ m.status }}">{{ m.status_label }}</span>
+  {% if m.is_walkover %}<span class="badge badge-wo">WO</span>{% endif %}
+  <h1 style="margin-top:.6rem;">{% if m.group != 'FINAL' %}Group {{ m.group }} · {% endif %}{{ m.round_label }}</h1>
+
+  <div class="detail-vs">
+    <div class="detail-team">
+      <span class="team-chip lg" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+      <small class="player-names" style="width:100%;">
+        <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
+        <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>
+      </small>
+    </div>
+    {% if m.status in ('completed','live') %}
+    <div class="score-row" style="margin:0;">
+      <span class="score-num" style="color:#fff;">{{ m.sets_a }}</span>
+      <span class="score-sep" style="color:#ffd6e0;">:</span>
+      <span class="score-num" style="color:#fff;">{{ m.sets_b }}</span>
+    </div>
+    {% else %}
+    <div class="x">VS</div>
+    {% endif %}
+    <div class="detail-team">
+      <span class="team-chip lg" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+      <small class="player-names" style="width:100%;">
+        <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
+        <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>
+      </small>
+    </div>
+  </div>
+
+  <p style="margin-top:1.2rem; opacity:.9;">📅 {{ m.date_label }} · ⏰ {{ m.time }} WIB · 🏓 {{ m.court }}</p>
+</div>
+
+{% if m.sets %}
+<div class="sets-table">
+  <div class="section-head"><h2>Detail Skor per Set</h2></div>
+  <div class="table-wrap">
+    <table class="standings">
+      <thead>
+        <tr>
+          <th>Set</th>
+          {% for s in m.sets %}<th>Set {{ loop.index }}</th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ m.team_a_code }}</td>
+          {% for s in m.sets %}<td>{{ s[0] }}</td>{% endfor %}
+        </tr>
+        <tr>
+          <td>{{ m.team_b_code }}</td>
+          {% for s in m.sets %}<td>{{ s[1] }}</td>{% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if m.notes %}
+<div class="section-head"><h2>Catatan</h2></div>
+<p>{{ m.notes }}</p>
+{% endif %}
+
+{% if m.reschedule_history %}
+<div class="section-head"><h2>Riwayat Reschedule</h2></div>
+<div class="admin-shell">
+  {% for h in m.reschedule_history %}
+  <div class="history-item">
+    {{ h.from_date }} {{ h.from_time }} ({{ h.from_court }}) &rarr; <strong>{{ h.to_date }} {{ h.to_time }} ({{ h.to_court }})</strong>
+    {% if h.reason %} — {{ h.reason }}{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div style="margin-top:1.6rem;">
+  <a class="btn btn-outline" href="{{ url_for('jadwal') }}">&larr; Kembali ke Jadwal</a>
+  {% if is_admin %}
+  <a class="btn btn-primary" href="{{ url_for('admin_edit_match', match_id=m.id) }}">✏️ Kelola Pertandingan Ini</a>
+  {% endif %}
+</div>
+
+{% endblock %}

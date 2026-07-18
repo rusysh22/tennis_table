@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Klasemen — {{ config.tournament_short_name }}{% endblock %}
+{% block content %}
+
+{% include "_subnav_klasemen.html" %}
+
+<div class="section-head"><h2>📊 Klasemen per Grup</h2></div>
+
+{% for g in groups %}
+{% set cat_class = 'standings-putra' if g.category == 'ganda_putra' else 'standings-campuran' %}
+{% set tag_class = 'tag-putra' if g.category == 'ganda_putra' else 'tag-campuran' %}
+<div class="group-block">
+  <h3>
+    <span class="badge {{ 'badge-putra' if g.category == 'ganda_putra' else 'badge-campuran' }}">{{ g.category_label }}</span>
+    Group {{ g.group }}
+    {% if g.champion %}<span class="champion-tag {{ tag_class }}">🏆 Juara Grup</span>{% endif %}
+  </h3>
+  <div class="table-wrap">
+    <table class="standings {{ cat_class }}">
+      <thead>
+        <tr>
+          <th>Tim</th>
+          <th>Main</th>
+          <th>Menang</th>
+          <th>Kalah</th>
+          <th>Set (M-K)</th>
+          <th>Selisih Set</th>
+          <th>Poin</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in g.rows %}
+        <tr class="{{ 'rank-1' if r.rank == 1 }}">
+          <td>
+            <div class="team-cell">
+              <div class="team-cell-head">
+                <span class="rank-pill {{ 'gold' if r.rank == 1 }}">{{ r.rank }}</span>
+                <span class="team-chip sm" style="background:{{ r.color }}; color:{{ r.text }};">{{ r.code }}</span>
+              </div>
+              <small class="player-names">
+                <span class="player-line" title="{{ r.player1 }}">{{ r.player1 }}</span>
+                <span class="player-line" title="{{ r.player2 }}">{{ r.player2 }}</span>
+              </small>
+            </div>
+          </td>
+          <td>{{ r.played }}</td>
+          <td>{{ r.win }}</td>
+          <td>{{ r.loss }}</td>
+          <td>{{ r.set_win }}-{{ r.set_loss }}</td>
+          <td>{{ '+' if r.set_diff > 0 }}{{ r.set_diff }}</td>
+          <td><strong>{{ r.points }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endfor %}
+
+<p style="color:#a0677a; font-size:.85rem;">Sistem poin: Menang = 3 poin, Kalah = 0 poin. Urutan klasemen: Poin &rarr; Selisih Set &rarr; Selisih Angka.</p>
+
+{% endblock %}

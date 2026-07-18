@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Bracket Final — {{ config.tournament_short_name }}{% endblock %}
+{% block content %}
+
+{% include "_subnav_klasemen.html" %}
+
+<div class="section-head"><h2>🏆 Bracket — Ganda Putra</h2></div>
+<p style="color:#a0677a;">{{ config.final_note }}. Tim final otomatis terisi setelah seluruh laga fase grup selesai.</p>
+
+<div class="bracket-wrap">
+  <div class="bracket-col">
+    <div style="font-size:.72rem; font-weight:700; text-transform:uppercase; color:var(--red-600); margin-bottom:-1rem;">Group A</div>
+    {% for r in standings_a %}
+    <div class="bracket-node {{ 'champion' if r.code == champ_a }}">
+      <div class="team" style="display:flex; align-items:center; gap:.4rem;">
+        #{{ r.rank }} <span class="team-chip sm" style="background:{{ r.color }}; color:{{ r.text }};">{{ r.code }}</span>
+      </div>
+      <small class="player-names" style="margin-top:.3rem;">
+        <span class="player-line" title="{{ r.player1 }}">{{ r.player1 }}</span>
+        <span class="player-line" title="{{ r.player2 }}">{{ r.player2 }}</span>
+      </small>
+      <div style="font-size:.7rem; color:#a0677a; margin-top:.3rem;">{{ r.win }}M-{{ r.loss }}K · {{ r.points }} poin</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="bracket-col final-col">
+    <div class="bracket-trophy">🏆</div>
+    <div class="bracket-node final-node">
+      <div style="font-size:.68rem; font-weight:700; color:var(--red-600); text-transform:uppercase; text-align:center;">Grand Final · {{ final_match.date if final_match else '28 Juli 2026' }}</div>
+      <div class="team" style="margin-top:.5rem; text-align:center;">
+        {% if champ_a %}
+        <span class="team-chip" style="background:{{ champ_a_color }}; color:{{ champ_a_text }};">{{ champ_a }}</span>
+        <small class="player-names" style="margin-top:.3rem; width:100%;">
+          <span class="player-line" title="{{ champ_a_player1 }}">{{ champ_a_player1 }}</span>
+          <span class="player-line" title="{{ champ_a_player2 }}">{{ champ_a_player2 }}</span>
+        </small>
+        {% else %}
+        <small>Menunggu Juara Group A</small>
+        {% endif %}
+      </div>
+      <div style="text-align:center; font-family:var(--font-display); color:var(--red-600); font-weight:700; margin:.4rem 0;">VS</div>
+      <div class="team" style="text-align:center;">
+        {% if champ_b %}
+        <span class="team-chip" style="background:{{ champ_b_color }}; color:{{ champ_b_text }};">{{ champ_b }}</span>
+        <small class="player-names" style="margin-top:.3rem; width:100%;">
+          <span class="player-line" title="{{ champ_b_player1 }}">{{ champ_b_player1 }}</span>
+          <span class="player-line" title="{{ champ_b_player2 }}">{{ champ_b_player2 }}</span>
+        </small>
+        {% else %}
+        <small>Menunggu Juara Group B</small>
+        {% endif %}
+      </div>
+      {% if final_match and final_match.status == 'completed' %}
+      <div style="text-align:center; margin-top:.6rem; font-family:var(--font-display); font-size:1.6rem; color:var(--maroon-700);">
+        {{ final_match.sets_a }} : {{ final_match.sets_b }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="bracket-col">
+    <div style="font-size:.72rem; font-weight:700; text-transform:uppercase; color:var(--red-600); margin-bottom:-1rem;">Group B</div>
+    {% for r in standings_b %}
+    <div class="bracket-node {{ 'champion' if r.code == champ_b }}">
+      <div class="team" style="display:flex; align-items:center; gap:.4rem;">
+        #{{ r.rank }} <span class="team-chip sm" style="background:{{ r.color }}; color:{{ r.text }};">{{ r.code }}</span>
+      </div>
+      <small class="player-names" style="margin-top:.3rem;">
+        <span class="player-line" title="{{ r.player1 }}">{{ r.player1 }}</span>
+        <span class="player-line" title="{{ r.player2 }}">{{ r.player2 }}</span>
+      </small>
+      <div style="font-size:.7rem; color:#a0677a; margin-top:.3rem;">{{ r.win }}M-{{ r.loss }}K · {{ r.points }} poin</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="section-head"><h2>🥇 Ganda Campuran — Group A</h2></div>
+<p style="color:#a0677a;">Kategori Ganda Campuran hanya terdiri dari satu grup, sehingga juara ditentukan langsung dari klasemen (tanpa final antar-grup).</p>
+<div class="table-wrap">
+  <table class="standings standings-campuran">
+    <thead><tr><th>Tim</th><th>Main</th><th>Menang</th><th>Kalah</th><th>Set (M-K)</th><th>Poin</th></tr></thead>
+    <tbody>
+      {% for r in gc_standings %}
+      <tr class="{{ 'rank-1' if r.rank == 1 }}">
+        <td>
+          <div class="team-cell">
+            <div class="team-cell-head">
+              <span class="rank-pill {{ 'gold' if r.rank == 1 }}">{{ r.rank }}</span>
+              <span class="team-chip sm" style="background:{{ r.color }}; color:{{ r.text }};">{{ r.code }}</span>
+              {% if r.code == gc_champion %}<span class="champion-tag tag-campuran">🏆 Juara</span>{% endif %}
+            </div>
+            <small class="player-names">
+              <span class="player-line" title="{{ r.player1 }}">{{ r.player1 }}</span>
+              <span class="player-line" title="{{ r.player2 }}">{{ r.player2 }}</span>
+            </small>
+          </div>
+        </td>
+        <td>{{ r.played }}</td><td>{{ r.win }}</td><td>{{ r.loss }}</td><td>{{ r.set_win }}-{{ r.set_loss }}</td><td><strong>{{ r.points }}</strong></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

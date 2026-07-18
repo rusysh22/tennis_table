@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Kelola {{ m.id }} — Admin{% endblock %}
+{% block content %}
+
+<div class="section-head">
+  <h2>✏️ Kelola Pertandingan {{ m.id }}</h2>
+  <a class="link-more" href="{{ url_for('admin_dashboard') }}">&larr; Dashboard</a>
+</div>
+
+<div class="admin-match-summary">
+  <div class="cat-row">
+    <span class="badge {{ 'badge-putra' if m.category == 'ganda_putra' else 'badge-campuran' }}">{{ m.category_label }}</span>
+    <span class="badge badge-status badge-{{ m.status }}">{{ m.status_label }}</span>
+  </div>
+  <div style="font-size:.72rem; color:#a0677a; font-weight:700; text-transform:uppercase; letter-spacing:.03em; margin-top:.5rem;">
+    {% if m.group != 'FINAL' %}Group {{ m.group }} · {% endif %}{{ m.round_label }}
+  </div>
+  <div class="vs-row" style="margin-top:.6rem;">
+    <div class="vs-team">
+      <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+      <small class="player-names">
+        <span class="player-line">{{ m.team_a_player1 }}</span>
+        <span class="player-line">{{ m.team_a_player2 }}</span>
+      </small>
+    </div>
+    <div class="vs-mid">VS</div>
+    <div class="vs-team">
+      <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+      <small class="player-names">
+        <span class="player-line">{{ m.team_b_player1 }}</span>
+        <span class="player-line">{{ m.team_b_player2 }}</span>
+      </small>
+    </div>
+  </div>
+  <div class="match-meta">
+    <span>📅 {{ m.date }}</span>
+    <span>⏰ {{ m.time }} WIB</span>
+    <span>🏓 {{ m.court }}</span>
+  </div>
+</div>
+
+<div class="admin-shell">
+  {% if m.group == 'FINAL' %}
+  <fieldset>
+    <legend>Tim Final (otomatis dari juara grup)</legend>
+    <p style="font-size:.85rem; color:#a0677a;">Juara Group A: <strong>{{ champ_a or '-' }}</strong> · Juara Group B: <strong>{{ champ_b or '-' }}</strong></p>
+    <form method="post">
+      <input type="hidden" name="action" value="set_teams">
+      <div class="form-grid">
+        <label>Tim A
+          <select name="team_a">
+            <option value="">- Pilih -</option>
+            {% for code in teams %}<option value="{{ code }}" {{ 'selected' if raw.team_a == code }}>{{ code }} — {{ teams[code].player1 }}/{{ teams[code].player2 }}</option>{% endfor %}
+          </select>
+        </label>
+        <label>Tim B
+          <select name="team_b">
+            <option value="">- Pilih -</option>
+            {% for code in teams %}<option value="{{ code }}" {{ 'selected' if raw.team_b == code }}>{{ code }} — {{ teams[code].player1 }}/{{ teams[code].player2 }}</option>{% endfor %}
+          </select>
+        </label>
+      </div>
+      <button class="btn btn-primary btn-sm" type="submit">Simpan Tim Final</button>
+      {% if champ_a and champ_b and not raw.team_a %}
+      <span style="font-size:.78rem; color:#a0677a;">Tips: isi otomatis dengan juara grup di atas.</span>
+      {% endif %}
+    </form>
+  </fieldset>
+  {% endif %}
+
+  <fieldset>
+    <legend>🔴 Live Score / Input Skor per Set</legend>
+    <form method="post">
+      <input type="hidden" name="action" value="save_score">
+
+      <div class="score-input-head">
+        <span></span>
+        <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+        <span></span>
+        <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+      </div>
+      {% for i in range(1,6) %}
+      <div class="score-input-row">
+        <span class="set-label">Set {{ i }}</span>
+        <input type="number" min="0" max="30" name="set{{ i }}_a" value="{{ raw.sets[i-1][0] if raw.sets|length >= i else '' }}" inputmode="numeric">
+        <span class="score-input-sep">:</span>
+        <input type="number" min="0" max="30" name="set{{ i }}_b" value="{{ raw.sets[i-1][1] if raw.sets|length >= i else '' }}" inputmode="numeric">
+      </div>
+      {% endfor %}
+
+      <div class="form-grid" style="margin-top:1rem;">
+        <label>Status pertandingan
+          <select name="status">
+            <option value="scheduled" {{ 'selected' if raw.status == 'scheduled' }}>Terjadwal</option>
+            <option value="live" {{ 'selected' if raw.status == 'live' }}>🔴 Live sekarang</option>
+            <option value="postponed" {{ 'selected' if raw.status == 'postponed' }}>Ditunda</option>
+          </select>
+        </label>
+      </div>
+      <label>Catatan (opsional)
+        <textarea name="notes" rows="2" style="width:100%;">{{ raw.notes }}</textarea>
+      </label>
+      <button class="btn btn-primary btn-block" type="submit" style="margin-top:.8rem;">💾 Simpan Skor</button>
+      <p style="font-size:.78rem; color:#a0677a; margin-top:.6rem;">Status otomatis menjadi <strong>Selesai</strong> begitu salah satu tim mencapai 3 kemenangan set. Set kosong akan diabaikan.</p>
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>🚩 Walkover (WO) / Mengundurkan Diri</legend>
+    <p style="font-size:.82rem; color:#a0677a; margin-top:-.3rem;">
+      Pakai ini kalau salah satu tim tidak hadir / mundur sebelum atau di tengah laga, sehingga pertandingan
+      langsung ditandai <strong>Selesai</strong> tanpa perlu skor lengkap 3 set.
+      {% if m.is_walkover %}<br><span class="badge badge-wo" style="margin-top:.4rem; display:inline-block;">Laga ini sudah ditandai WO</span>{% endif %}
+    </p>
+    <form method="post">
+      <input type="hidden" name="action" value="walkover">
+      <div class="form-grid">
+        <label>Pemenang WO
+          <select name="wo_winner" required>
+            <option value="">- Pilih tim yang menang -</option>
+            <option value="{{ m.team_a_code }}" {{ 'selected' if raw.winner == m.team_a_code }}>{{ m.team_a_code }} — {{ m.team_a_label }}</option>
+            <option value="{{ m.team_b_code }}" {{ 'selected' if raw.winner == m.team_b_code }}>{{ m.team_b_code }} — {{ m.team_b_label }}</option>
+          </select>
+        </label>
+      </div>
+      <label>Alasan (opsional, tampil di halaman publik)
+        <input type="text" name="wo_reason" placeholder="mis. AD tidak hadir, GS mundur karena cedera, dsb." value="{{ raw.notes if raw.walkover else '' }}">
+      </label>
+      <button class="btn btn-dark btn-block" type="submit" style="margin-top:.8rem;" onclick="return confirm('Tandai pertandingan ini selesai via WO?');">🚩 Tandai Selesai via WO</button>
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>🔁 Reschedule Pertandingan</legend>
+    <form method="post">
+      <input type="hidden" name="action" value="reschedule">
+      <div class="form-grid">
+        <label>Tanggal Baru
+          <input type="date" name="new_date" value="{{ raw.date }}" min="{{ config.start_date }}" max="{{ config.end_date }}" required>
+        </label>
+        <label>Jam Baru
+          <input type="time" name="new_time" value="{{ raw.time }}" required>
+        </label>
+        <label>Meja
+          <input type="text" value="Meja 1" disabled style="opacity:.7;">
+          <input type="hidden" name="new_court" value="Meja 1">
+        </label>
+      </div>
+      <p style="font-size:.78rem; color:#a0677a; margin-top:-.4rem;">Hanya tersedia 1 meja, jadi seluruh laga berjalan berurutan di Meja 1.</p>
+      <label>Alasan reschedule (opsional)
+        <input type="text" name="reason" placeholder="mis. Meja rusak, salah satu pemain berhalangan, dsb.">
+      </label>
+      <button class="btn btn-dark btn-block" type="submit" style="margin-top:.8rem;">🔁 Simpan Reschedule</button>
+    </form>
+  </fieldset>
+
+  {% if raw.reschedule_history %}
+  <fieldset>
+    <legend>Riwayat Reschedule</legend>
+    {% for h in raw.reschedule_history %}
+    <div class="history-item">{{ h.at }}: {{ h.from_date }} {{ h.from_time }} ({{ h.from_court }}) &rarr; {{ h.to_date }} {{ h.to_time }} ({{ h.to_court }}){% if h.reason %} — {{ h.reason }}{% endif %}</div>
+    {% endfor %}
+  </fieldset>
+  {% endif %}
+</div>
+
+{% endblock %}

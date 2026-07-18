@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ config.tournament_short_name }} — Beranda{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <span class="hero-tag">🏓 Round Robin · {{ config.venue }}</span>
+  <h1>{{ config.tournament_name }}</h1>
+  <p class="lead">Turnamen tenis meja internal — Ganda Putra (2 grup) &amp; Ganda Campuran, format round robin,
+    {{ config.final_note|lower }}. Ikuti jadwal, live score, dan klasemen secara real-time di sini.</p>
+
+  <div class="hero-meta">
+    <div class="hero-chip"><div class="k">Tanggal</div><div class="v">{{ config.start_date[8:10] }}&ndash;{{ config.end_date[8:10] }} Juli {{ config.start_date[:4] }}</div></div>
+    <div class="hero-chip"><div class="k">Waktu</div><div class="v">{{ config.time_window }}</div></div>
+    <div class="hero-chip"><div class="k">Sesi</div><div class="v">{{ config.time_window_note }}</div></div>
+    <div class="hero-chip"><div class="k">Lokasi</div><div class="v">{{ config.venue }}</div></div>
+  </div>
+
+  <div class="countdown" id="countdown" data-target="{{ config.start_date }}T18:00:00+07:00">
+    <div id="cd-label" class="v" style="width:100%;font-size:.8rem;opacity:.85;margin-bottom:.2rem;">Menuju hari pertama pertandingan</div>
+    <div class="unit"><div class="num" id="cd-days">--</div><div class="lbl">Hari</div></div>
+    <div class="unit"><div class="num" id="cd-hours">--</div><div class="lbl">Jam</div></div>
+    <div class="unit"><div class="num" id="cd-mins">--</div><div class="lbl">Menit</div></div>
+    <div class="unit"><div class="num" id="cd-secs">--</div><div class="lbl">Detik</div></div>
+  </div>
+
+  <div style="margin-top:1.6rem; display:flex; gap:.7rem; flex-wrap:wrap; position:relative; z-index:1;">
+    <a class="btn btn-primary" href="{{ url_for('jadwal') }}">📅 Lihat Jadwal</a>
+    <a class="btn btn-outline" style="background:rgba(255,255,255,.08); color:#fff; border-color:rgba(255,255,255,.6);" href="{{ url_for('live') }}">🔴 Live Score</a>
+    <a class="btn btn-outline" style="background:rgba(255,255,255,.08); color:#fff; border-color:rgba(255,255,255,.6);" href="{{ url_for('bracket') }}">🏆 Bracket Final</a>
+  </div>
+</section>
+
+<div class="stats-row">
+  <div class="stat-card"><div class="num">{{ team_count }}</div><div class="lbl">Tim Terdaftar</div></div>
+  <div class="stat-card"><div class="num">{{ total_matches }}</div><div class="lbl">Total Pertandingan</div></div>
+  <div class="stat-card"><div class="num">{{ completed_count }}</div><div class="lbl">Sudah Selesai</div></div>
+  <div class="stat-card"><div class="num">2</div><div class="lbl">Kategori (Putra &amp; Campuran)</div></div>
+</div>
+
+{% if live_now %}
+<div class="section-head"><h2>🔴 Sedang Berlangsung</h2><a class="link-more" href="{{ url_for('live') }}">Lihat semua &rarr;</a></div>
+<div class="match-grid" data-live-poll>
+  {% for m in live_now %}
+  {% include "_match_card.html" %}
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="section-head"><h2>📅 Pertandingan Mendatang</h2><a class="link-more" href="{{ url_for('jadwal') }}">Jadwal lengkap &rarr;</a></div>
+{% if upcoming %}
+<div class="match-grid">
+  {% for m in upcoming %}
+  {% include "_match_card.html" %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><div class="emoji">🏓</div>Belum ada jadwal mendatang.</div>
+{% endif %}
+
+{% if recent %}
+<div class="section-head"><h2>📋 Hasil Terbaru</h2><a class="link-more" href="{{ url_for('rekap') }}">Rekap lengkap &rarr;</a></div>
+<div class="match-grid">
+  {% for m in recent %}
+  {% include "_match_card.html" %}
+  {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

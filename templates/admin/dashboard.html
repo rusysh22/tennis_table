@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — {{ config.tournament_short_name }}{% endblock %}
+{% block content %}
+
+<div class="section-head"><h2>⚙️ Admin Dashboard</h2></div>
+
+<div class="admin-counts">
+  <span>Terjadwal: {{ counts.scheduled }}</span>
+  <span>Live: {{ counts.live }}</span>
+  <span>Selesai: {{ counts.completed }}</span>
+  <span>Ditunda: {{ counts.postponed }}</span>
+</div>
+
+<div class="admin-shell">
+  <div class="table-wrap" style="box-shadow:none;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Kategori</th><th>Grup</th><th>Babak</th><th>Tim A</th><th>Tim B</th>
+          <th>Tanggal</th><th>Jam</th><th>Meja</th><th>Skor</th><th>Status</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in matches %}
+        <tr>
+          <td>{{ m.id }}</td>
+          <td>{{ m.category_label }}</td>
+          <td>{{ m.group }}</td>
+          <td>{{ m.round_label }}</td>
+          <td><span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span></td>
+          <td><span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span></td>
+          <td>{{ m.date }}</td>
+          <td>{{ m.time }}</td>
+          <td>{{ m.court }}</td>
+          <td>{{ m.sets_a }} - {{ m.sets_b }}</td>
+          <td><span class="badge badge-status badge-{{ m.status }}">{{ m.status_label }}</span></td>
+          <td><a class="btn btn-sm btn-outline" href="{{ url_for('admin_edit_match', match_id=m.id) }}">Kelola</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

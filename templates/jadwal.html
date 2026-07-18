@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Jadwal Pertandingan — {{ config.tournament_short_name }}{% endblock %}
+{% block content %}
+
+{% include "_subnav_jadwal.html" %}
+
+<div class="section-head"><h2>📅 Jadwal Pertandingan</h2></div>
+
+<form class="search-bar" method="get" role="search">
+  <input type="hidden" name="kategori" value="{{ kategori }}">
+  <input type="hidden" name="grup" value="{{ grup }}">
+  <input type="hidden" name="tanggal" value="{{ tanggal }}">
+  <input type="hidden" name="status" value="{{ status }}">
+  <span class="search-icon">🔍</span>
+  <input type="search" name="q" value="{{ q }}" placeholder="Cari nama tim atau nama peserta (mis. GS, Rafli, Mia)...">
+  <button class="btn btn-primary btn-sm" type="submit">Cari</button>
+  {% if q %}<a class="btn btn-outline btn-sm" href="{{ url_for('jadwal', kategori=kategori, grup=grup, tanggal=tanggal, status=status) }}">Hapus</a>{% endif %}
+</form>
+
+<form class="filter-bar" method="get">
+  <input type="hidden" name="q" value="{{ q }}">
+  <div class="filter-field">
+    <label for="kategori">Kategori</label>
+    <select name="kategori" id="kategori" onchange="this.form.submit()">
+      <option value="">Semua Kategori</option>
+      <option value="ganda_putra" {{ 'selected' if kategori == 'ganda_putra' }}>Ganda Putra</option>
+      <option value="ganda_campuran" {{ 'selected' if kategori == 'ganda_campuran' }}>Ganda Campuran</option>
+    </select>
+  </div>
+  <div class="filter-field">
+    <label for="grup">Grup</label>
+    <select name="grup" id="grup" onchange="this.form.submit()">
+      <option value="">Semua Grup</option>
+      <option value="A" {{ 'selected' if grup == 'A' }}>Group A</option>
+      <option value="B" {{ 'selected' if grup == 'B' }}>Group B</option>
+      <option value="FINAL" {{ 'selected' if grup == 'FINAL' }}>Final</option>
+    </select>
+  </div>
+  <div class="filter-field">
+    <label for="tanggal">Tanggal</label>
+    <select name="tanggal" id="tanggal" onchange="this.form.submit()">
+      <option value="">Semua Tanggal</option>
+      {% for d in dates %}
+      <option value="{{ d }}" {{ 'selected' if tanggal == d }}>{{ d }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label for="status">Status</label>
+    <select name="status" id="status" onchange="this.form.submit()">
+      <option value="">Semua Status</option>
+      <option value="scheduled" {{ 'selected' if status == 'scheduled' }}>Terjadwal</option>
+      <option value="live" {{ 'selected' if status == 'live' }}>Live</option>
+      <option value="completed" {{ 'selected' if status == 'completed' }}>Selesai</option>
+      <option value="postponed" {{ 'selected' if status == 'postponed' }}>Ditunda</option>
+    </select>
+  </div>
+  {% if kategori or grup or tanggal or status %}
+  <a class="btn btn-outline btn-sm" href="{{ url_for('jadwal', q=q) }}">Reset Filter</a>
+  {% endif %}
+</form>
+
+<p class="muted" style="color:#a0677a; margin-bottom:1rem;">{{ matches|length }} pertandingan ditemukan.</p>
+
+{% if matches %}
+<div class="match-grid">
+  {% for m in matches %}
+  {% include "_match_card.html" %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><div class="emoji">🔍</div>
+  {% if q %}Tidak ada tim atau peserta dengan kata kunci "{{ q }}".{% else %}Tidak ada pertandingan yang cocok dengan filter ini.{% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

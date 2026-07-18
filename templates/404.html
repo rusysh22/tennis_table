@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}404 — Tidak Ditemukan{% endblock %}
+{% block content %}
+<div class="empty-state">
+  <div class="emoji">🏓</div>
+  <h2 style="color:var(--maroon-700);">404 — Halaman tidak ditemukan</h2>
+  <p>Sepertinya bola melenceng dari meja. <a class="link-more" href="{{ url_for('index') }}">Kembali ke beranda</a></p>
+</div>
+{% endblock %}

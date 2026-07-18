@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Admin Login — {{ config.tournament_short_name }}{% endblock %}
+{% block content %}
+
+<div class="login-card">
+  <div style="font-size:2rem;">🏓🔒</div>
+  <h2 style="color:var(--maroon-700);">Admin Login</h2>
+  <p style="color:#a0677a; font-size:.88rem;">Masuk untuk mengelola skor, status, dan jadwal pertandingan.</p>
+  <form method="post">
+    <input type="password" name="password" placeholder="Password admin" required autofocus>
+    <button class="btn btn-primary btn-block" type="submit">Masuk</button>
+  </form>
+</div>
+
+{% endblock %}

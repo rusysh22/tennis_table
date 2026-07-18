@@ -1,0 +1,4 @@
+<nav class="sub-nav" aria-label="Sub navigasi klasemen">
+  <a href="{{ url_for('klasemen') }}" class="{{ 'active' if request.endpoint == 'klasemen' }}">📊 Klasemen Grup</a>
+  <a href="{{ url_for('bracket') }}" class="{{ 'active' if request.endpoint == 'bracket' }}">🏆 Bracket Final</a>
+</nav>

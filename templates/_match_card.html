@@ -1,0 +1,60 @@
+<a class="match-card" href="{{ url_for('match_detail', match_id=m.id) }}" data-match-id="{{ m.id }}">
+  <div class="cat-row">
+    <span class="badge {{ 'badge-putra' if m.category == 'ganda_putra' else 'badge-campuran' }}">{{ m.category_label }}</span>
+    <span style="display:flex; gap:.35rem;">
+      <span class="badge badge-status badge-{{ m.status }}" data-field="status">{{ m.status_label }}</span>
+      {% if m.is_walkover %}<span class="badge badge-wo">WO</span>{% endif %}
+    </span>
+  </div>
+  <div style="font-size:.72rem; color:#a0677a; font-weight:700; text-transform:uppercase; letter-spacing:.03em;">
+    {% if m.group != 'FINAL' %}Group {{ m.group }} · {% endif %}{{ m.round_label }}
+  </div>
+
+  {% if m.status == 'completed' or m.status == 'live' %}
+  <div class="vs-row" style="margin-top:.5rem;">
+    <div class="vs-team">
+      <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+      <small class="player-names">
+        <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
+        <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>
+      </small>
+    </div>
+    <div class="score-row" style="margin:0;">
+      <span class="score-num" data-field="sets_a">{{ m.sets_a }}</span>
+      <span class="score-sep">:</span>
+      <span class="score-num" data-field="sets_b">{{ m.sets_b }}</span>
+    </div>
+    <div class="vs-team">
+      <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+      <small class="player-names">
+        <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
+        <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>
+      </small>
+    </div>
+  </div>
+  {% else %}
+  <div class="vs-row">
+    <div class="vs-team">
+      <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+      <small class="player-names">
+        <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
+        <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>
+      </small>
+    </div>
+    <div class="vs-mid">VS</div>
+    <div class="vs-team">
+      <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+      <small class="player-names">
+        <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
+        <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>
+      </small>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="match-meta">
+    <span>📅 {{ m.date }}</span>
+    <span>⏰ {{ m.time }} WIB</span>
+    <span>🏓 {{ m.court }}</span>
+  </div>
+</a>

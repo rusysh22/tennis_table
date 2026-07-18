@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Kalender Pertandingan — {{ config.tournament_short_name }}{% endblock %}
+{% block content %}
+
+{% include "_subnav_jadwal.html" %}
+
+<div class="section-head"><h2>🗓️ Kalender Pertandingan — {{ month_label }}</h2></div>
+<p style="color:#a0677a;">Setiap sesi berlangsung pukul {{ config.time_window }}. Klik tanggal untuk lihat jadwal hari itu di daftar. Hari berwarna ungu adalah hari cadangan (reschedule buffer), hari merah adalah Final.</p>
+
+{% set today_str = now.strftime('%Y-%m-%d') %}
+<div class="calendar-grid">
+  {% for d in days %}
+  <div class="cal-day {{ 'buffer' if d.is_buffer }} {{ 'final-day' if d.is_final }} {{ 'closing-day' if d.is_closing }} {{ 'is-today' if d.date == today_str }}"
+       style="animation-delay:{{ (loop.index0 * 0.05)|round(2) }}s;">
+    <div class="d-head">
+      <a class="d-link" href="{{ url_for('jadwal', tanggal=d.date) }}" title="Lihat jadwal {{ d.date }} di daftar">
+        <div class="d-num">{{ d.day_num }}</div>
+        <div class="d-name">{{ d.day_name }}</div>
+      </a>
+      {% if d.date == today_str %}<span class="today-pill">Hari Ini</span>{% endif %}
+    </div>
+    {% if d.is_final %}<div class="d-tag">🏆 Grand Final</div>{% endif %}
+    {% if d.is_closing %}<div class="d-tag">🎉 Penutupan</div>{% endif %}
+    {% if d.is_buffer %}<div class="d-tag">🔁 Cadangan</div>{% endif %}
+    <ul>
+      {% for m in d.matches %}
+      <li><a href="{{ url_for('match_detail', match_id=m.id) }}" style="display:flex; align-items:center; gap:.3rem; flex-wrap:wrap;">
+        <b>{{ m.time }}</b>
+        <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+        vs
+        <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+        <span style="opacity:.6;">({{ m.court }})</span>
+      </a></li>
+      {% else %}
+      <li class="cal-empty">Tidak ada laga</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

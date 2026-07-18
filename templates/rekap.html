@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Rekap Pertandingan — {{ config.tournament_short_name }}{% endblock %}
+{% block content %}
+
+{% include "_subnav_jadwal.html" %}
+
+<div class="section-head"><h2>📋 Rekap Pertandingan</h2></div>
+
+<div class="filter-bar">
+  <div class="filter-field">
+    <label for="kategori">Kategori</label>
+    <select name="kategori" id="kategori" onchange="location.href='{{ url_for('rekap') }}?kategori='+this.value">
+      <option value="" {{ 'selected' if not kategori }}>Semua Kategori</option>
+      <option value="ganda_putra" {{ 'selected' if kategori == 'ganda_putra' }}>Ganda Putra</option>
+      <option value="ganda_campuran" {{ 'selected' if kategori == 'ganda_campuran' }}>Ganda Campuran</option>
+    </select>
+  </div>
+</div>
+
+{% if matches %}
+<div class="match-grid">
+  {% for m in matches %}
+  {% include "_match_card.html" %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><div class="emoji">🏓</div>Belum ada pertandingan yang selesai.</div>
+{% endif %}
+
+{% endblock %}
