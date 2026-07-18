@@ -341,6 +341,10 @@ button{ font-family:inherit; }
 /* ====================== TABLE / STANDINGS ====================== */
 .table-wrap{ overflow-x:auto; background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow-md); }
 table.standings{ width:100%; border-collapse:collapse; min-width:560px; }
+/* Tabel referensi di halaman Aturan: 2-3 kolom teks pendek, tidak butuh lebar
+   minimum tabel klasemen (560px) -- itu yang bikin 1 kolom saja sudah melebihi
+   layar mobile. Biarkan menyesuaikan lebar kontainer & teks boleh wrap. */
+table.standings.rules-table{ min-width:0; }
 table.standings th, table.standings td{ padding:.7rem .8rem; text-align:center; font-size:.86rem; }
 table.standings th{ background:var(--grad-hero); color:#fff; font-family:var(--font-display); font-weight:600; letter-spacing:.03em; position:sticky; top:0; }
 table.standings td:first-child, table.standings th:first-child{ text-align:left; }
@@ -532,7 +536,10 @@ fieldset form > label textarea{ resize:vertical; min-height:2.6em; }
 }
 .admin-counts{ display:flex; gap:.6rem; flex-wrap:wrap; margin-bottom:1rem; }
 .admin-counts span{ background:var(--pink-100); color:var(--maroon-700); padding:.4rem .8rem; border-radius:999px; font-weight:700; font-size:.78rem; }
-fieldset{ border:none; border-radius:var(--radius-sm); padding:1.1rem; margin:1rem 0; box-shadow:var(--shadow-sm); background:var(--white); }
+/* min-width:0 mengatasi kuirk browser: <fieldset> defaultnya min-width:min-content,
+   yang mengabaikan overflow-x:auto pada .table-wrap di dalamnya dan malah memaksa
+   seluruh halaman melebar horizontal mengikuti tabel lebar (mis. di halaman Aturan). */
+fieldset{ border:none; border-radius:var(--radius-sm); padding:1.1rem; margin:1rem 0; box-shadow:var(--shadow-sm); background:var(--white); min-width:0; }
 legend{ font-family:var(--font-display); font-weight:700; color:var(--red-600); padding:0 .5rem; }
 .history-item{ font-size:.78rem; color:#8a5760; padding:.4rem 0; border-bottom:1px dashed var(--pink-100); }
 
