@@ -7,6 +7,7 @@
   <span class="badge badge-status badge-{{ m.status }}">{{ m.status_label }}</span>
   {% if m.is_walkover %}<span class="badge badge-wo">WO</span>{% endif %}
   <h1 style="margin-top:.6rem;">{% if m.group != 'FINAL' %}Group {{ m.group }} · {% endif %}{{ m.round_label }}</h1>
+  <p style="opacity:.8; font-size:.82rem; margin-top:.2rem;">{{ m.best_of_label }}</p>
 
   <div class="detail-vs">
     <div class="detail-team">

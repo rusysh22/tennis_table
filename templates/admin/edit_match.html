@@ -68,8 +68,9 @@
   </fieldset>
   {% endif %}
 
+  {% set max_sets = m.sets_needed * 2 - 1 %}
   <fieldset>
-    <legend>🔴 Live Score / Input Skor per Set</legend>
+    <legend>🔴 Live Score / Input Skor per Set <span style="font-size:.7rem; font-weight:700; color:#a0677a; text-transform:none;">({{ m.best_of_label }})</span></legend>
     <form method="post">
       <input type="hidden" name="action" value="save_score">
 
@@ -79,7 +80,7 @@
         <span></span>
         <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
       </div>
-      {% for i in range(1,6) %}
+      {% for i in range(1, max_sets + 1) %}
       <div class="score-input-row">
         <span class="set-label">Set {{ i }}</span>
         <input type="number" min="0" max="30" name="set{{ i }}_a" value="{{ raw.sets[i-1][0] if raw.sets|length >= i else '' }}" inputmode="numeric">
@@ -101,7 +102,10 @@
         <textarea name="notes" rows="2" style="width:100%;">{{ raw.notes }}</textarea>
       </label>
       <button class="btn btn-primary btn-block" type="submit" style="margin-top:.8rem;">💾 Simpan Skor</button>
-      <p style="font-size:.78rem; color:#a0677a; margin-top:.6rem;">Status otomatis menjadi <strong>Selesai</strong> begitu salah satu tim mencapai 3 kemenangan set. Set kosong akan diabaikan.</p>
+      <p style="font-size:.78rem; color:#a0677a; margin-top:.6rem;">
+        {{ m.best_of_label }} — status otomatis menjadi <strong>Selesai</strong> begitu salah satu tim mencapai
+        {{ m.sets_needed }} kemenangan set. Set kosong akan diabaikan.
+      </p>
     </form>
   </fieldset>
 

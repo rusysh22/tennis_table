@@ -58,6 +58,8 @@ def enrich_match(m, teams):
     sa, sb = utils.compute_sets_won(m["sets"]) if m["sets"] else (0, 0)
     m["sets_a"] = sa
     m["sets_b"] = sb
+    m["sets_needed"] = utils.sets_needed_to_win(m)
+    m["best_of_label"] = "Best of 5" if m["sets_needed"] == 3 else "Best of 3"
     return m
 
 

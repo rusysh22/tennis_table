@@ -81,12 +81,18 @@ def compute_sets_won(sets):
     return a, b
 
 
+def sets_needed_to_win(match):
+    """Final Ganda Putra = Best of 5 (menang 3 set). Semua laga fase grup = Best of 3 (menang 2 set)."""
+    return 3 if match.get("group") == "FINAL" else 2
+
+
 def compute_winner(match):
     sets = match.get("sets") or []
     if not sets:
         return None
+    needed = sets_needed_to_win(match)
     a, b = compute_sets_won(sets)
-    if a >= 3 or b >= 3:
+    if a >= needed or b >= needed:
         return match["team_a"] if a > b else match["team_b"]
     return None
 
