@@ -6,3 +6,5 @@ venv/
 *.log
 screenshot_*.png
 data/backups/
+.env
+.env.*

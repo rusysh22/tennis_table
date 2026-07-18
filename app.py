@@ -11,13 +11,23 @@ import utils
 app = Flask(__name__)
 
 SECRET_PATH = os.path.join(os.path.dirname(__file__), ".secret_key")
-if os.path.exists(SECRET_PATH):
-    with open(SECRET_PATH, "r") as f:
-        app.secret_key = f.read().strip()
-else:
+app.secret_key = os.environ.get("SECRET_KEY")
+if not app.secret_key:
+    try:
+        if os.path.exists(SECRET_PATH):
+            with open(SECRET_PATH, "r") as f:
+                app.secret_key = f.read().strip()
+    except OSError:
+        pass  # filesystem tidak bisa dibaca (mis. serverless) - lanjut ke fallback di bawah
+if not app.secret_key:
     app.secret_key = os.urandom(24).hex()
-    with open(SECRET_PATH, "w") as f:
-        f.write(app.secret_key)
+    try:
+        with open(SECRET_PATH, "w") as f:
+            f.write(app.secret_key)
+    except OSError:
+        pass  # filesystem read-only (mis. Vercel) - key tetap dipakai, cuma tidak tersimpan
+               # ke disk sehingga bisa beda tiap cold start (sesi admin akan ter-logout).
+               # Set env var SECRET_KEY di hosting supaya key konsisten antar-instance.
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "pingpong2026")
 

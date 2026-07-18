@@ -7,6 +7,41 @@ from datetime import datetime
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 _LOCK = threading.Lock()
 
+# Penyimpanan data: default file lokal data/*.json (untuk dev). Vercel serverless
+# filesystem-nya read-only, jadi kalau env var DATABASE_URL tersedia, otomatis
+# pindah pakai Postgres (skema khusus "tennis", terisolasi dari tabel lain).
+DATABASE_URL = os.environ.get("DATABASE_URL")
+USE_DB = bool(DATABASE_URL)
+
+if USE_DB:
+    import psycopg2
+    import psycopg2.extras
+
+    def _db_conn():
+        return psycopg2.connect(DATABASE_URL)
+
+    def _ensure_schema():
+        with _db_conn() as conn, conn.cursor() as cur:
+            cur.execute("CREATE SCHEMA IF NOT EXISTS tennis")
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS tennis.app_data (
+                    name TEXT PRIMARY KEY,
+                    data JSONB NOT NULL,
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS tennis.app_data_backups (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    data JSONB NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                )
+            """)
+            conn.commit()
+
+    _ensure_schema()
+
 DAY_NAMES = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
 MONTH_NAMES = [
     "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -19,12 +54,34 @@ def _path(name):
 
 
 def load_json(name):
+    if USE_DB:
+        key = name.replace(".json", "")
+        with _db_conn() as conn, conn.cursor() as cur:
+            cur.execute("SELECT data FROM tennis.app_data WHERE name = %s", (key,))
+            row = cur.fetchone()
+        if row is None:
+            # Belum ada di DB (mis. pertama kali deploy) -> seed dari file
+            # bawaan yang ikut ter-deploy, supaya tidak perlu migrasi manual.
+            with open(_path(name), "r", encoding="utf-8") as f:
+                data = json.load(f)
+            save_json(name, data)
+            return data
+        return row[0]
     with _LOCK:
         with open(_path(name), "r", encoding="utf-8") as f:
             return json.load(f)
 
 
 def save_json(name, data):
+    if USE_DB:
+        key = name.replace(".json", "")
+        with _db_conn() as conn, conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO tennis.app_data (name, data, updated_at) VALUES (%s, %s, now())
+                ON CONFLICT (name) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
+            """, (key, psycopg2.extras.Json(data)))
+            conn.commit()
+        return
     with _LOCK:
         tmp = _path(name) + ".tmp"
         with open(tmp, "w", encoding="utf-8") as f:
@@ -49,11 +106,25 @@ def load_config():
 
 
 def backup_data_files(*names):
-    """Salin file data ke data/backups/<nama>_<timestamp>.json sebelum operasi merusak (mis. reset)."""
+    """Cadangkan data sebelum operasi merusak (mis. reset/acak ulang).
+    Di DB: disalin ke tennis.app_data_backups. Di lokal: disalin ke data/backups/."""
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    if USE_DB:
+        with _db_conn() as conn, conn.cursor() as cur:
+            for name in names:
+                key = name.replace(".json", "")
+                cur.execute("SELECT data FROM tennis.app_data WHERE name = %s", (key,))
+                row = cur.fetchone()
+                if row is not None:
+                    cur.execute(
+                        "INSERT INTO tennis.app_data_backups (name, data) VALUES (%s, %s)",
+                        (key, psycopg2.extras.Json(row[0])),
+                    )
+            conn.commit()
+        return
     with _LOCK:
         backup_dir = os.path.join(DATA_DIR, "backups")
         os.makedirs(backup_dir, exist_ok=True)
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         for name in names:
             src = _path(name)
             if os.path.exists(src):
