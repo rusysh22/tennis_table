@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Live Score — {{ config.tournament_short_name }}{% endblock %}
+{% block og_title %}🔴 Live Score — {{ config.tournament_short_name }}{% endblock %}
+{% block og_image %}{{ url_for('og_default_image', title='Live Score', subtitle='Pantau skor pertandingan secara real-time', tag='LIVE', _external=True) }}{% endblock %}
 {% block content %}
 
 <div class="live-banner">

@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Pedoman Aturan — {{ config.tournament_short_name }}{% endblock %}
+{% block og_title %}📖 Pedoman Aturan — {{ config.tournament_short_name }}{% endblock %}
+{% block og_image %}{{ url_for('og_default_image', title='Pedoman Aturan', subtitle='Aturan resmi Mini Round Ping Pong', tag='PEDOMAN', _external=True) }}{% endblock %}
 {% block content %}
 
 <div class="section-head"><h2>📖 Pedoman Aturan Mini Round</h2></div>

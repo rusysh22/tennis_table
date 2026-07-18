@@ -6,6 +6,23 @@
 <title>{% block title %}{{ config.tournament_short_name }}{% endblock %}</title>
 <meta name="description" content="{{ config.tournament_name }} — jadwal, live score, klasemen, dan bracket turnamen tenis meja round robin.">
 <meta name="theme-color" content="#5c0011">
+
+<!-- Open Graph / Twitter Card -- share card dinamis (og:image) supaya link yang
+     di-share ke WhatsApp/Facebook/Teams menampilkan preview berisi info pertandingan,
+     bukan cuma judul polos. Tiap halaman bisa override blok og_title/og_description/og_image. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ config.tournament_short_name }}">
+<meta property="og:locale" content="id_ID">
+<meta property="og:url" content="{{ request.url }}">
+<meta property="og:title" content="{% block og_title %}{{ config.tournament_name }}{% endblock %}">
+<meta property="og:description" content="{% block og_description %}Jadwal, live score, klasemen, dan bracket turnamen tenis meja round robin.{% endblock %}">
+<meta property="og:image" content="{% block og_image %}{{ url_for('og_default_image', _external=True) }}{% endblock %}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ self.og_title() }}">
+<meta name="twitter:description" content="{{ self.og_description() }}">
+<meta name="twitter:image" content="{{ self.og_image() }}">
 <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32.png') }}">
 <link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='img/favicon-48.png') }}">
 <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/favicon-180.png') }}">

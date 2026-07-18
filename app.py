@@ -3,9 +3,10 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 from flask import (
-    Flask, render_template, request, redirect, url_for, session, jsonify, abort, flash
+    Flask, render_template, request, redirect, url_for, session, jsonify, abort, flash, send_file
 )
 
+import og_image
 import utils
 
 app = Flask(__name__)
@@ -75,10 +76,7 @@ def enrich_match(m, teams):
 
 @app.template_filter("truncate_words")
 def truncate_words(text, max_words=2):
-    words = (text or "").split()
-    if len(words) <= max_words:
-        return text
-    return " ".join(words[:max_words]) + "…"
+    return utils.truncate_words(text, max_words)
 
 
 def login_required(view):
@@ -296,6 +294,34 @@ def match_detail(match_id):
     if not m:
         abort(404)
     return render_template("match_detail.html", m=enrich_match(m, teams))
+
+
+# ---------- Share card (Open Graph) ----------
+
+@app.route("/og/match/<match_id>.png")
+def og_match_image(match_id):
+    teams, matches, config = data_context()
+    m = utils.get_match(matches, match_id)
+    if not m:
+        abort(404)
+    buf = og_image.generate_match_card(enrich_match(m, teams), config["tournament_short_name"])
+    resp = send_file(buf, mimetype="image/png")
+    resp.headers["Cache-Control"] = "public, max-age=300"
+    return resp
+
+
+@app.route("/og/default.png")
+def og_default_image():
+    config = utils.load_config()
+    title = request.args.get("title", config["tournament_short_name"])
+    subtitle = request.args.get(
+        "subtitle", f'{config["start_date"]} – {config["end_date"]} · {config["venue"]}'
+    )
+    tag = request.args.get("tag", "ROUND ROBIN")
+    buf = og_image.generate_default_card(title, subtitle, tag=tag)
+    resp = send_file(buf, mimetype="image/png")
+    resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
 
 
 # ---------- JSON API (buat live polling) ----------

@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Klasemen — {{ config.tournament_short_name }}{% endblock %}
+{% block og_title %}📊 Klasemen — {{ config.tournament_short_name }}{% endblock %}
+{% block og_image %}{{ url_for('og_default_image', title='Klasemen', subtitle='Papan peringkat Ganda Putra & Ganda Campuran', tag='KLASEMEN', _external=True) }}{% endblock %}
 {% block content %}
 
 {% include "_subnav_klasemen.html" %}

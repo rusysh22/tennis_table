@@ -154,6 +154,13 @@ def team_short(teams, code):
     return code
 
 
+def truncate_words(text, max_words=2):
+    words = (text or "").split()
+    if len(words) <= max_words:
+        return text
+    return " ".join(words[:max_words]) + "…"
+
+
 def format_date_id(date_str):
     d = datetime.strptime(date_str, "%Y-%m-%d")
     return f"{DAY_NAMES[d.weekday()]}, {d.day} {MONTH_NAMES[d.month]} {d.year}"
