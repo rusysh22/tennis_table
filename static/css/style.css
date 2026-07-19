@@ -300,6 +300,7 @@ button{ font-family:inherit; }
 
 .match-meta{ display:flex; flex-wrap:wrap; gap:.5rem; font-size:.78rem; color:#8a5760; margin-top:.6rem; }
 .match-meta span{ display:inline-flex; align-items:center; gap:.3rem; background:var(--paper); padding:.25rem .55rem; border-radius:8px; }
+.match-meta span.comment-count{ background:var(--pink-200); color:var(--maroon-900); font-weight:700; }
 
 /* ====================== BUTTONS ====================== */
 .btn{
@@ -554,6 +555,26 @@ fieldset form > label textarea{ resize:vertical; min-height:2.6em; }
 fieldset{ border:none; border-radius:var(--radius-sm); padding:1.1rem; margin:1rem 0; box-shadow:var(--shadow-sm); background:var(--white); min-width:0; }
 legend{ font-family:var(--font-display); font-weight:700; color:var(--red-600); padding:0 .5rem; }
 .history-item{ font-size:.78rem; color:#8a5760; padding:.4rem 0; border-bottom:1px dashed var(--pink-100); }
+
+/* ====================== KOMENTAR / REQUEST RESCHEDULE ====================== */
+.comment-list{ display:flex; flex-direction:column; gap:.7rem; margin-bottom:1.2rem; }
+.comment-item{ background:var(--paper); border-radius:var(--radius-sm); padding:.8rem .9rem; }
+.comment-head{ display:flex; align-items:baseline; justify-content:space-between; gap:.6rem; flex-wrap:wrap; color:var(--maroon-700); font-size:.85rem; }
+.comment-time{ font-size:.72rem; color:#a0677a; font-weight:500; flex:none; }
+.comment-text{ font-size:.85rem; color:var(--ink); margin:.3rem 0 0; line-height:1.5; white-space:pre-wrap; }
+.comment-form{ border-top:1px solid var(--pink-100); padding-top:1rem; }
+.comment-form label{
+  display:flex; flex-direction:column; gap:.35rem; font-size:.75rem; font-weight:700;
+  color:var(--maroon-700); margin-bottom:.8rem;
+}
+.comment-form input, .comment-form textarea{
+  width:100%; box-sizing:border-box; padding:.6rem .7rem; border-radius:8px;
+  border:1.5px solid #ffd6e0; font-size:.88rem; background:var(--paper); font-family:var(--font-body);
+  color:var(--ink); font-weight:500; resize:vertical;
+}
+.comment-form input:focus, .comment-form textarea:focus{ border-color:var(--red-500); outline:none; }
+.comment-form .req{ color:var(--red-600); }
+.muted{ color:#a0677a; }
 
 /* Aksi khusus tapi bukan "berbahaya total" (mis. acak ulang grup) — beda dari danger-zone */
 .notice-zone{ border:1.5px dashed #ffd6e0; background:var(--paper); margin-top:2rem; }

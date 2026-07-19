@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ m.team_a_code }} vs {{ m.team_b_code }} — {{ config.tournament_short_name }}{% endblock %}
 {% block og_title %}{{ m.team_a_code }} vs {{ m.team_b_code }}{% if m.status in ('completed', 'live') %} ({{ m.sets_a }}-{{ m.sets_b }}){% endif %} — {{ m.category_label }}{% endblock %}
-{% block og_description %}{% if m.status in ('completed', 'live') %}Skor {{ m.sets_a }}-{{ m.sets_b }} · {% endif %}{{ m.category_label }}, {% if m.group != 'FINAL' %}Group {{ m.group }} · {% endif %}{{ m.round_label }} — {{ m.date_label }}, {{ m.time }} WIB di {{ m.court }}.{% endblock %}
+{% block og_description %}{{ m.team_a_player1 }}{% if m.team_a_player2 %}/{{ m.team_a_player2 }}{% endif %} vs {{ m.team_b_player1 }}{% if m.team_b_player2 %}/{{ m.team_b_player2 }}{% endif %} · {{ m.date_label }}, {{ m.time }} WIB di {{ m.court }}{% if m.status in ('completed', 'live') %} · Skor {{ m.sets_a }}-{{ m.sets_b }}{% endif %}.{% endblock %}
 {% block og_image %}{{ url_for('og_match_image', match_id=m.id, _external=True) }}{% endblock %}
 {% block content %}
 
@@ -83,6 +83,37 @@
   {% endfor %}
 </div>
 {% endif %}
+
+<div class="section-head" id="komentar"><h2>💬 Komentar &amp; Request Reschedule</h2></div>
+<div class="admin-shell">
+  <p style="font-size:.82rem; color:#a0677a; margin-bottom:1rem;">
+    Mau minta reschedule laga ini atau ada catatan lain buat panitia? Tulis di sini —
+    sertakan nama dan alasannya supaya mudah ditindaklanjuti.
+  </p>
+
+  {% if m.comments %}
+  <div class="comment-list">
+    {% for c in m.comments|reverse %}
+    <div class="comment-item">
+      <div class="comment-head"><strong>{{ c.name }}</strong><span class="comment-time">{{ c.at | format_datetime_id }}</span></div>
+      <p class="comment-text">{{ c.comment }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted" style="font-size:.85rem;">Belum ada komentar untuk pertandingan ini.</p>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('add_comment', match_id=m.id) }}" class="comment-form">
+    <label>Nama <span class="req">*</span>
+      <input type="text" name="name" required maxlength="60" placeholder="Nama Anda">
+    </label>
+    <label>Komentar <span class="req">*</span>
+      <textarea name="comment" rows="3" required maxlength="500" placeholder="Mis. minta reschedule ke tanggal lain karena ada acara kantor..."></textarea>
+    </label>
+    <button class="btn btn-primary" type="submit">Kirim Komentar</button>
+  </form>
+</div>
 
 <div class="detail-actions">
   <a class="btn btn-outline" href="{{ url_for('jadwal') }}">&larr; Kembali ke Jadwal</a>

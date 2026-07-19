@@ -83,6 +83,21 @@
   </form>
 </fieldset>
 
+<fieldset class="notice-zone">
+  <legend>🔀 Acak Ulang Jadwal Ganda Campuran</legend>
+  <p style="font-size:.85rem; color:#a0677a; margin-bottom:.8rem;">
+    Mengundi ulang urutan pertemuan 4 tim Ganda Campuran (Grup A) — siapa ketemu siapa di tanggal mana
+    berubah, meski tetap setiap tim ketemu semua tim lain persis sekali (namanya juga round robin 1 grup).
+    Tanggal, jam, dan meja tiap slot tidak berubah. Hanya memengaruhi laga Ganda Campuran — laga Ganda Putra
+    dan Final tidak disentuh. Skor/status laga Ganda Campuran yang sudah diinput akan ikut ter-reset karena
+    pasangannya berubah. Data saat ini dicadangkan otomatis ke <code>data/backups/</code> sebelum diacak.
+  </p>
+  <form method="post" action="{{ url_for('admin_shuffle_campuran') }}"
+        onsubmit="return confirm('Undi ulang jadwal Ganda Campuran dari awal? Urutan lawan tiap tim per tanggal akan berubah, dan skor/status laga Ganda Campuran yang sudah diinput akan ter-reset. Data saat ini dicadangkan otomatis.');">
+    <button class="btn btn-primary" type="submit">🔀 Undi Ulang Jadwal Campuran</button>
+  </form>
+</fieldset>
+
 <fieldset class="danger-zone">
   <legend>⚠️ Reset Data</legend>
   <p style="font-size:.85rem; color:#a0677a; margin-bottom:.8rem;">

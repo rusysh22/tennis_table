@@ -71,12 +71,18 @@ def enrich_match(m, teams):
     m["sets_b"] = sb
     m["sets_needed"] = utils.sets_needed_to_win(m)
     m["best_of_label"] = "Best of 5" if m["sets_needed"] == 3 else "Best of 3"
+    m["comments"] = m.get("comments", [])
     return m
 
 
 @app.template_filter("truncate_words")
 def truncate_words(text, max_words=2):
     return utils.truncate_words(text, max_words)
+
+
+@app.template_filter("format_datetime_id")
+def format_datetime_id(value):
+    return utils.format_datetime_id(value)
 
 
 def login_required(view):
@@ -302,6 +308,29 @@ def match_detail(match_id):
     return render_template("match_detail.html", m=enrich_match(m, teams))
 
 
+@app.route("/pertandingan/<match_id>/komentar", methods=["POST"])
+def add_comment(match_id):
+    teams, matches, config = data_context()
+    m = utils.get_match(matches, match_id)
+    if not m:
+        abort(404)
+
+    name = request.form.get("name", "").strip()
+    comment = request.form.get("comment", "").strip()
+    if not name or not comment:
+        flash("Nama dan komentar wajib diisi.", "error")
+        return redirect(url_for("match_detail", match_id=match_id) + "#komentar")
+
+    m.setdefault("comments", []).append({
+        "name": name[:60],
+        "comment": comment[:500],
+        "at": datetime.now().isoformat(timespec="seconds"),
+    })
+    utils.save_matches(matches)
+    flash("Komentar terkirim. Panitia akan meninjau permintaan Anda.", "success")
+    return redirect(url_for("match_detail", match_id=match_id) + "#komentar")
+
+
 # ---------- Share card (Open Graph) ----------
 
 @app.route("/og/match/<match_id>.png")
@@ -403,6 +432,18 @@ def admin_shuffle_putra():
     utils.save_json("teams.json", teams)
     utils.save_matches(matches)
     flash("Grup A dan Grup B Ganda Putra berhasil diundi ulang — lawan tanding tiap tim berubah. Skor laga Ganda Putra yang sudah diinput ikut ter-reset karena pasangannya berubah.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/shuffle-campuran", methods=["POST"])
+@login_required
+def admin_shuffle_campuran():
+    import generate_data
+    utils.backup_data_files("matches.json")
+    _, matches, _ = data_context()
+    matches = generate_data.shuffle_campuran_group(matches)
+    utils.save_matches(matches)
+    flash("Jadwal Ganda Campuran berhasil diundi ulang — urutan lawan tiap tim di tiap tanggal berubah. Skor laga Ganda Campuran yang sudah diinput ikut ter-reset karena pasangannya berubah.", "success")
     return redirect(url_for("admin_dashboard"))
 
 

@@ -56,5 +56,6 @@
     <span>📅 {{ m.date }}</span>
     <span>⏰ {{ m.time }} WIB</span>
     <span>🏓 {{ m.court }}</span>
+    {% if m.comments %}<span class="comment-count">💬 {{ m.comments|length }}</span>{% endif %}
   </div>
 </a>

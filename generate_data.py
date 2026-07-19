@@ -82,6 +82,33 @@ def shuffle_putra_groups(matches, teams):
     return matches, teams
 
 
+def shuffle_campuran_group(matches):
+    """Undi ulang urutan babak Ganda Campuran (cuma 1 grup, 4 tim). Beda dari
+    Ganda Putra: di sini tidak ada keanggotaan grup yang bisa diacak (cuma ada
+    Grup A, isinya tetap 4 tim yang sama) -- yang berubah adalah SIAPA ketemu
+    SIAPA di tanggal mana (urutan babak 1/2/3), karena tiap tim tetap ketemu
+    semua tim lain persis 1x apa pun urutannya. Tanggal/jam/meja tiap slot serta
+    laga Ganda Putra/Final tidak disentuh. Skor & status laga Ganda Campuran
+    yang terdampak direset karena pasangannya berubah."""
+    codes = [c for c, t in TEAMS.items() if t["category"] == "ganda_campuran" and t["group"] == "A"]
+    random.shuffle(codes)
+    queue = [pair for rnd in circle_rounds(codes) for pair in rnd]
+
+    idx = 0
+    for m in matches:
+        if m["category"] != "ganda_campuran":
+            continue
+        a, b = queue[idx]
+        idx += 1
+        m["team_a"], m["team_b"] = a, b
+        m["status"] = "scheduled"
+        m["sets"] = []
+        m["winner"] = None
+        m["walkover"] = False
+        m["notes"] = ""
+    return matches
+
+
 def build_matches():
     matches = []
     mid = 1

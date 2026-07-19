@@ -195,6 +195,12 @@ def format_date_id(date_str):
     return f"{DAY_NAMES[d.weekday()]}, {d.day} {MONTH_NAMES[d.month]} {d.year}"
 
 
+def format_datetime_id(value):
+    """value: datetime object atau string ISO (mis. dari datetime.isoformat())."""
+    d = datetime.fromisoformat(value) if isinstance(value, str) else value
+    return f"{d.day} {MONTH_NAMES[d.month]} {d.year}, {d.strftime('%H:%M')}"
+
+
 def compute_sets_won(sets):
     """sets: list of [score_a, score_b]. Returns (sets_a, sets_b)."""
     a = sum(1 for s in sets if s[0] > s[1])
