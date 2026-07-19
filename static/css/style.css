@@ -218,7 +218,7 @@ button{ font-family:inherit; }
 .hero{
   position:relative; border-radius:24px; padding:3rem 2rem;
   background-color:var(--maroon-900);
-  background-image:linear-gradient(rgba(8,2,4,.6), rgba(8,2,4,.9)), url("../img/Logo MiniRound Pingpong - JKT 2026.jpg");
+  background-image:linear-gradient(rgba(8,2,4,.6), rgba(8,2,4,.9)), url("../img/logo_miniround.jpg");
   background-size:cover; background-position:center;
   color:var(--white); overflow:hidden; box-shadow:var(--shadow-lg);
   margin-bottom:2rem;
@@ -500,7 +500,7 @@ table.standings.standings-campuran .rank-pill.gold{ background:var(--grad-campur
 /* ====================== MATCH DETAIL ====================== */
 .detail-hero{
   background-color:var(--maroon-900);
-  background-image:linear-gradient(rgba(10,2,4,.8), rgba(10,2,4,.8)), url("../img/Logo MiniRound Pingpong - JKT 2026.jpg");
+  background-image:linear-gradient(rgba(10,2,4,.8), rgba(10,2,4,.8)), url("../img/logo_miniround.jpg");
   background-size:cover; background-position:center;
   border-radius:var(--radius); padding:2rem; color:#fff; text-align:center;
   box-shadow:var(--shadow-lg); margin-bottom:1.6rem;
