@@ -237,12 +237,37 @@
 </div>
 {% endif %}
 
+{% set copy_text = m.team_a_code ~ " vs " ~ m.team_b_code ~ " — " ~ m.category_label ~ "\n" ~ (("Group " ~ m.group ~ " · ") if m.group != 'FINAL' else "") ~ m.round_label ~ "\n\n" ~ m.team_a_player1 ~ "/" ~ m.team_a_player2 ~ "\nvs\n" ~ m.team_b_player1 ~ "/" ~ m.team_b_player2 ~ "\n\n📅 " ~ m.date_label ~ "\n⏰ " ~ m.time ~ " WIB\n📍 " ~ m.court ~ "\n" ~ url_for('match_detail', match_id=m.id, _external=True) %}
+
+{% if is_modal %}
+<div class="floating-actions">
+  <button class="floating-btn copyBtn" type="button" title="Copy Detail" data-copy-text="{{ copy_text }}">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+  </button>
+  <button class="floating-btn" id="shareBtn" type="button" title="Bagikan"
+    data-share-title="{{ m.team_a_code }} vs {{ m.team_b_code }}{% if m.status in ('completed', 'live') %} ({{ m.sets_a }}-{{ m.sets_b }}){% endif %} — {{ m.category_label }}"
+    data-share-text="{{ share_text }}"
+    data-share-url="{{ url_for('match_detail', match_id=m.id, _external=True) }}">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+  </button>
+</div>
+{% endif %}
+
 <div class="detail-actions">
-  {% if not is_modal %}<a class="btn btn-outline" href="{{ url_for('jadwal') }}">&larr; Kembali ke Jadwal</a>{% endif %}
+  {% if not is_modal %}
+  <a class="btn btn-outline" href="{{ url_for('jadwal') }}">&larr; Kembali ke Jadwal</a>
   <button class="btn btn-outline" id="shareBtn" type="button"
     data-share-title="{{ m.team_a_code }} vs {{ m.team_b_code }}{% if m.status in ('completed', 'live') %} ({{ m.sets_a }}-{{ m.sets_b }}){% endif %} — {{ m.category_label }}"
     data-share-text="{{ share_text }}"
-    data-share-url="{{ url_for('match_detail', match_id=m.id, _external=True) }}">📤 Bagikan</button>
+    data-share-url="{{ url_for('match_detail', match_id=m.id, _external=True) }}">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+    Bagikan
+  </button>
+  <button class="btn btn-outline copyBtn" type="button" data-copy-text="{{ copy_text }}">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+    Copy Link
+  </button>
+  {% endif %}
   {% if not is_modal and is_admin %}
   <a class="btn btn-primary" href="{{ url_for('admin_edit_match', match_id=m.id) }}">✏️ Kelola Lengkap (Halaman Penuh)</a>
   {% endif %}

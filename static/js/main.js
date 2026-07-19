@@ -110,6 +110,27 @@
     }).catch(function () {});
   });
 
+  // ---------- copy link button ----------
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".copyBtn");
+    if (!btn) return;
+    var text = btn.getAttribute("data-copy-text");
+    if (text) {
+      navigator.clipboard.writeText(text).then(function() {
+        var originalText = btn.innerHTML;
+        var isIcon = btn.classList.contains("floating-btn");
+        var checkSvg20 = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        var checkSvg16 = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        btn.innerHTML = isIcon ? checkSvg20 : (checkSvg16 + " Tersalin");
+        setTimeout(function() {
+          btn.innerHTML = originalText;
+        }, 2000);
+      }).catch(function() {
+        alert("Gagal menyalin text");
+      });
+    }
+  });
+
   // ---------- modal detail pertandingan (klik kartu jadwal/kalender -> popup,
   // termasuk form komentar & kelola admin di dalamnya lewat AJAX) ----------
   (function () {

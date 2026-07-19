@@ -169,8 +169,37 @@ button{ font-family:inherit; }
 
 /* ====================== LAYOUT ====================== */
 .site-main{ max-width:1180px; margin:0 auto; padding:1.6rem 1.2rem 3rem; min-height:60vh; }
-.site-footer{ background:var(--black); color:rgba(255,255,255,.75); padding:2rem 1.2rem; margin-top:2rem; }
-.footer-inner{ max-width:1180px; margin:0 auto; text-align:center; }
+.site-footer{
+  background-color: var(--black);
+  background-image: linear-gradient(rgba(20,6,9,0.5), rgba(20,6,9,0.3)), url("../img/Footer-Web.jpg");
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  color: rgba(255,255,255,.75);
+  padding: 3rem 1.2rem; /* increased padding for more space */
+  margin-top: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.footer-ball-wrap { position:absolute; inset:0; pointer-events:none; z-index:0; }
+.footer-ball-x { position:absolute; bottom:12%; left:0; animation:ballMoveX 4s linear infinite; }
+.footer-ball-y {
+  width:12px; height:12px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #fff 20%, #ffd6e0 80%);
+  box-shadow:0 3px 6px rgba(0,0,0,0.4);
+  transform-origin:bottom center;
+  animation:ballBounceY 0.22s cubic-bezier(0.5, 0.05, 1, 0.5) infinite alternate;
+}
+@keyframes ballMoveX {
+  0% { transform:translateX(-20px); }
+  100% { transform:translateX(100vw); }
+}
+@keyframes ballBounceY {
+  0% { transform:translateY(-80px); }
+  90% { transform:translateY(0) scaleY(1) scaleX(1); }
+  100% { transform:translateY(0) scaleY(0.65) scaleX(1.15); }
+}
+.footer-inner{ max-width:1180px; margin:0 auto; text-align:center; position:relative; z-index:1; }
 .footer-inner strong{ color:var(--pink-300); font-family:var(--font-display); font-size:1.1rem; }
 .footer-inner .muted{ font-size:.85rem; opacity:.7; }
 .footer-disclaimer{
@@ -183,9 +212,14 @@ button{ font-family:inherit; }
 }
 
 /* ====================== HERO ====================== */
+/* Artwork promosi jadi background hero itu sendiri (bukan panel terpisah),
+   digelapkan pakai lapisan hitam 70% supaya judul, chip, countdown, dan tombol
+   tetap kontras di atasnya. */
 .hero{
   position:relative; border-radius:24px; padding:3rem 2rem;
-  background:var(--grad-hero); background-size:220% 220%; animation:gradientShift 14s ease infinite;
+  background-color:var(--maroon-900);
+  background-image:linear-gradient(rgba(8,2,4,.6), rgba(8,2,4,.9)), url("../img/Logo MiniRound Pingpong - JKT 2026.jpg");
+  background-size:cover; background-position:center;
   color:var(--white); overflow:hidden; box-shadow:var(--shadow-lg);
   margin-bottom:2rem;
 }
@@ -465,7 +499,10 @@ table.standings.standings-campuran .rank-pill.gold{ background:var(--grad-campur
 
 /* ====================== MATCH DETAIL ====================== */
 .detail-hero{
-  background:var(--grad-hero); border-radius:var(--radius); padding:2rem; color:#fff; text-align:center;
+  background-color:var(--maroon-900);
+  background-image:linear-gradient(rgba(10,2,4,.8), rgba(10,2,4,.8)), url("../img/Logo MiniRound Pingpong - JKT 2026.jpg");
+  background-size:cover; background-position:center;
+  border-radius:var(--radius); padding:2rem; color:#fff; text-align:center;
   box-shadow:var(--shadow-lg); margin-bottom:1.6rem;
 }
 .detail-vs{
@@ -636,7 +673,7 @@ legend{ font-family:var(--font-display); font-weight:700; color:var(--red-600); 
 }
 .modal-close::before{ transform:translate(-50%,-50%) rotate(45deg); }
 .modal-close::after{ transform:translate(-50%,-50%) rotate(-45deg); }
-.modal-body{ flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; padding:0 1.1rem 1.1rem; }
+.modal-body{ flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; padding:1.1rem; }
 /* Scrollbar khusus modal: versi tipis & netral, bukan scrollbar merah tebal
    global situs yang terlalu mencolok di kotak sesempit ini. */
 .modal-body::-webkit-scrollbar{ width:6px; height:6px; }
@@ -663,6 +700,46 @@ body.modal-open{ overflow:hidden; }
   .modal-body .detail-team small{ font-size:.72rem; }
   .modal-body .detail-vs .x{ font-size:1.3rem; }
   .modal-body h2{ font-size:1.02rem; }
+}
+
+/* ====================== FLOATING ACTIONS (MODAL) ====================== */
+.floating-actions {
+  position: absolute;
+  bottom: 1.2rem;
+  right: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  z-index: 250;
+}
+.floating-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(20, 6, 9, 0.8);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  border: none;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background .15s ease;
+}
+.floating-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  background: var(--red-600);
+}
+.floating-btn[hidden] {
+  display: none !important;
+}
+/* Share button specifically */
+#shareBtn.floating-btn {
+  display: none;
+}
+html.share-supported #shareBtn.floating-btn {
+  display: flex;
 }
 
 /* ====================== RESPONSIVE ====================== */
