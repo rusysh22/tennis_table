@@ -68,6 +68,22 @@
   </div>
 </div>
 
+<fieldset class="notice-zone" style="margin-bottom: 2rem;">
+  <legend>📣 Pengumuman</legend>
+  <p style="font-size:.85rem; color:#a0677a; margin-bottom:.8rem;">
+    Pengumuman akan muncul otomatis sebagai pop-up selama 10 detik saat pengguna membuka aplikasi. Kosongkan isinya jika tidak ingin menampilkan pengumuman.
+  </p>
+  <form method="post" action="{{ url_for('admin_announcement') }}">
+    <label>Judul Pengumuman:
+      <input type="text" name="announcement_title" value="{{ config.announcement_title|default('Pengumuman Penting', true) }}">
+    </label>
+    <label style="margin-top: .8rem;">Isi Pengumuman:
+      <textarea name="announcement_text" rows="3">{{ config.announcement_text|default('Selamat datang di Mini-Round Table Tennis InterSport 2026! Mari junjung tinggi sportivitas dan cek jadwal pertandingan Anda secara berkala.', true) }}</textarea>
+    </label>
+    <button class="btn btn-primary" style="margin-top: 1rem;" type="submit">💾 Simpan Pengumuman</button>
+  </form>
+</fieldset>
+
 <fieldset class="notice-zone">
   <legend>🔀 Acak Ulang Grup Ganda Putra</legend>
   <p style="font-size:.85rem; color:#a0677a; margin-bottom:.8rem;">

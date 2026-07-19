@@ -471,6 +471,17 @@ def admin_shuffle_campuran():
     return redirect(url_for("admin_dashboard"))
 
 
+@app.route("/admin/announcement", methods=["POST"])
+@login_required
+def admin_announcement():
+    config = utils.load_config()
+    config["announcement_title"] = request.form.get("announcement_title", "").strip()
+    config["announcement_text"] = request.form.get("announcement_text", "").strip()
+    utils.save_json("config.json", config)
+    flash("Pengumuman berhasil diperbarui.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+
 @app.route("/admin/pertandingan/<match_id>", methods=["GET", "POST"])
 @login_required
 def admin_edit_match(match_id):

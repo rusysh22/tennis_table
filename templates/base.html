@@ -63,6 +63,10 @@
       {% else %}
       <a href="{{ url_for('admin_login') }}" class="nav-admin">Admin</a>
       {% endif %}
+      <button class="nav-bell bell-trigger" aria-label="Pengumuman" title="Lihat Pengumuman">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        <span class="bell-badge">1</span>
+      </button>
     </nav>
   </div>
 </header>
@@ -109,6 +113,24 @@
     </div>
   </div>
 </div>
+
+<div class="announcement-overlay" id="announcementModal" hidden>
+  <div class="announcement-box" role="dialog" aria-modal="true" aria-label="Pengumuman">
+    <button class="modal-close" id="announcementClose" type="button" aria-label="Tutup"></button>
+    <div class="announcement-body">
+      <h2>📣 <span id="annTitle">{{ config.announcement_title|default('Pengumuman Penting', true) }}</span></h2>
+      <p id="annText">{{ config.announcement_text|default('Selamat datang di Mini-Round Table Tennis InterSport 2026! Mari junjung tinggi sportivitas dan cek jadwal pertandingan Anda secara berkala.', true) }}</p>
+    </div>
+    <div class="announcement-progress"></div>
+  </div>
+</div>
+
+{% if request.endpoint and not request.endpoint.startswith('admin') %}
+<button class="mobile-floating-bell bell-trigger" aria-label="Pengumuman">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+  <span class="bell-badge">1</span>
+</button>
+{% endif %}
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% block scripts %}{% endblock %}

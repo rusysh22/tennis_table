@@ -110,6 +110,71 @@
     }).catch(function () {});
   });
 
+  // ---------- announcement modal ----------
+  (function() {
+    var annModal = document.getElementById("announcementModal");
+    var annClose = document.getElementById("announcementClose");
+    var bellBtns = document.querySelectorAll(".bell-trigger");
+    if (!annModal || !annClose) return;
+
+    var annTextEl = document.getElementById("annText");
+    var annText = annTextEl ? annTextEl.textContent.trim() : "";
+    var timeout;
+    var isUnread = annText && sessionStorage.getItem("announcementSeen") !== annText;
+
+    function updateBellState() {
+      bellBtns.forEach(function(btn) {
+        if (isUnread) btn.classList.add("unread");
+        else btn.classList.remove("unread");
+      });
+    }
+
+    function openAnnouncement() {
+      annModal.hidden = false;
+      document.body.classList.add("modal-open");
+      
+      // Reset animation for progress bar
+      var prog = annModal.querySelector(".announcement-progress");
+      if (prog) {
+        prog.style.animation = "none";
+        prog.offsetHeight; // trigger reflow
+        prog.style.animation = null;
+      }
+
+      clearTimeout(timeout);
+      timeout = setTimeout(closeAnnouncement, 10000);
+      
+      if (isUnread) {
+        isUnread = false;
+        updateBellState();
+        sessionStorage.setItem("announcementSeen", annText);
+      }
+    }
+
+    function closeAnnouncement() {
+      if (annModal.hidden) return;
+      annModal.hidden = true;
+      document.body.classList.remove("modal-open");
+      clearTimeout(timeout);
+    }
+
+    updateBellState();
+
+    bellBtns.forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        openAnnouncement();
+      });
+    });
+
+    annClose.addEventListener("click", closeAnnouncement);
+    annModal.addEventListener("click", function(e) {
+      if (e.target === annModal) closeAnnouncement();
+    });
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape" && !annModal.hidden) closeAnnouncement();
+    });
+  })();
+
   // ---------- copy link button ----------
   document.addEventListener("click", function (e) {
     var btn = e.target.closest(".copyBtn");
