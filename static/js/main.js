@@ -269,6 +269,37 @@
     });
   })();
 
+  // ---------- klik analytics (GA4) ----------
+  // Cuma kirim event kalau gtag ada (config.ga_measurement_id diisi di base.html);
+  // di dev lokal/tanpa ID, ini jadi no-op tanpa perlu cek tambahan di tiap tempat.
+  (function () {
+    if (typeof gtag !== "function") return;
+
+    function send(category, label) {
+      gtag("event", "click", { event_category: category, event_label: label });
+    }
+
+    document.addEventListener("click", function (e) {
+      var el;
+
+      if ((el = e.target.closest(".main-nav a"))) {
+        send("nav", el.textContent.trim());
+      } else if ((el = e.target.closest(".hero-actions a, .hero-quicknav a"))) {
+        send("hero_cta", el.textContent.trim());
+      } else if ((el = e.target.closest(".sub-nav a"))) {
+        send("sub_nav", el.textContent.trim());
+      } else if ((el = e.target.closest("#shareBtn"))) {
+        send("share", el.getAttribute("data-share-title") || "match");
+      } else if ((el = e.target.closest("[data-modal-match]"))) {
+        send("match_detail", el.getAttribute("data-modal-match"));
+      } else if ((el = e.target.closest(".bell-trigger"))) {
+        send("announcement", "bell");
+      } else if ((el = e.target.closest(".admin-shell button[type='submit'], .admin-shell .btn"))) {
+        send("admin_action", el.textContent.trim());
+      }
+    });
+  })();
+
   // ---------- reveal-on-scroll ----------
   var revealTargets = document.querySelectorAll(".match-card, .cal-day, .bracket-node, .stat-card");
   if ("IntersectionObserver" in window && revealTargets.length) {

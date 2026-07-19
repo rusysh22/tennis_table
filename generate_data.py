@@ -17,7 +17,7 @@ TEAMS = {
     # Ganda Putra - Group A
     "GS": {"category": "ganda_putra", "group": "A", "player1": "Gede Surya Atmaja", "player2": "Satwika Indramantanu", "color": "#2a78d6", "text": "#ffffff"},
     "RR": {"category": "ganda_putra", "group": "A", "player1": "Rafli Ananta Zikri", "player2": "Rizki Amrizal", "color": "#008300", "text": "#ffffff"},
-    "FH": {"category": "ganda_putra", "group": "A", "player1": "Febriliawan Dewanti Hariyanto", "player2": "Hendra Gunawan", "color": "#e87ba4", "text": "#000000"},
+    "NH": {"category": "ganda_putra", "group": "A", "player1": "Novandi Nasty Sandya", "player2": "Hendra Gunawan", "color": "#e87ba4", "text": "#000000"},
     "AD": {"category": "ganda_putra", "group": "A", "player1": "Adhitya Syafta", "player2": "Dea Aditya Trimukti", "color": "#eda100", "text": "#000000"},
     # Ganda Putra - Group B
     "AJ": {"category": "ganda_putra", "group": "B", "player1": "Aji Darmadi", "player2": "Julyzar Iskandar", "color": "#1baf7a", "text": "#000000"},
@@ -136,7 +136,7 @@ def build_matches():
         })
         mid += 1
 
-    gp_a = circle_rounds(["GS", "RR", "FH", "AD"])
+    gp_a = circle_rounds(["GS", "RR", "NH", "AD"])
     gp_b = circle_rounds(["AJ", "TP", "MW", "DJ"])
     gc_a = circle_rounds(["MM", "TL", "PA", "NG"])
 
