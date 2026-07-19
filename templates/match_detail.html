@@ -131,10 +131,9 @@
   if (!btn || !navigator.share) return;
   btn.hidden = false;
   btn.addEventListener('click', function(){
-    var desc = document.querySelector('meta[property="og:description"]');
     navigator.share({
       title: document.title,
-      text: desc ? desc.content : document.title,
+      text: {{ share_text | tojson }},
       url: window.location.href,
     }).catch(function(){});
   });

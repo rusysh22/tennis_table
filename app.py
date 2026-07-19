@@ -305,7 +305,8 @@ def match_detail(match_id):
     m = utils.get_match(matches, match_id)
     if not m:
         abort(404)
-    return render_template("match_detail.html", m=enrich_match(m, teams))
+    m = enrich_match(m, teams)
+    return render_template("match_detail.html", m=m, share_text=utils.build_share_text(m))
 
 
 @app.route("/pertandingan/<match_id>/komentar", methods=["POST"])

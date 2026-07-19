@@ -195,6 +195,31 @@ def format_date_id(date_str):
     return f"{DAY_NAMES[d.weekday()]}, {d.day} {MONTH_NAMES[d.month]} {d.year}"
 
 
+def _team_names(player1, player2):
+    return f"{player1}/{player2}" if player2 else player1
+
+
+def build_share_text(m):
+    """Teks multi-baris untuk tombol Bagikan (navigator.share) -- dipisah per
+    baris (bukan satu kalimat panjang seperti og:description) supaya enak
+    dibaca begitu masuk ke WhatsApp/Teams sebagai pesan teks biasa."""
+    lines = [
+        f"*{m['team_a_code']} vs {m['team_b_code']} — {m['category_label']}*",
+        (f"Group {m['group']} · " if m["group"] != "FINAL" else "") + m["round_label"],
+        "",
+        _team_names(m["team_a_player1"], m["team_a_player2"]),
+        "vs",
+        _team_names(m["team_b_player1"], m["team_b_player2"]),
+        "",
+        f"📅 {m['date_label']}",
+        f"⏰ {m['time']} WIB",
+        f"📍 {m['court']}",
+    ]
+    if m["status"] in ("completed", "live"):
+        lines.append(f"🏓 Skor: {m['sets_a']} - {m['sets_b']}")
+    return "\n".join(lines)
+
+
 def format_datetime_id(value):
     """value: datetime object atau string ISO (mis. dari datetime.isoformat())."""
     d = datetime.fromisoformat(value) if isinstance(value, str) else value
