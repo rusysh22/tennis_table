@@ -210,6 +210,7 @@ def kalender():
             "day_name": utils.DAY_NAMES[cur.weekday()],
             "matches": by_date.get(key, []),
             "is_buffer": key in config.get("buffer_dates", []),
+            "is_weekend": cur.weekday() >= 5,
             "is_final": key == config.get("final_date"),
             "is_closing": key == config.get("closing_date"),
         })
@@ -299,14 +300,33 @@ def rekap():
     return render_template("rekap.html", matches=completed, kategori=kategori)
 
 
-@app.route("/pertandingan/<match_id>")
-def match_detail(match_id):
+def _match_detail_context(match_id, is_modal):
     teams, matches, config = data_context()
     m = utils.get_match(matches, match_id)
     if not m:
         abort(404)
-    m = enrich_match(m, teams)
-    return render_template("match_detail.html", m=m, share_text=utils.build_share_text(m))
+    enriched = enrich_match(m, teams)
+    ctx = {
+        "m": enriched,
+        "share_text": utils.build_share_text(enriched),
+        "is_modal": is_modal,
+    }
+    if session.get("is_admin"):
+        ctx["raw"] = m
+        ctx["teams"] = teams
+        ctx["champ_a"] = utils.group_champion(matches, teams, "ganda_putra", "A")
+        ctx["champ_b"] = utils.group_champion(matches, teams, "ganda_putra", "B")
+    return ctx
+
+
+@app.route("/pertandingan/<match_id>")
+def match_detail(match_id):
+    return render_template("match_detail.html", **_match_detail_context(match_id, is_modal=False))
+
+
+@app.route("/pertandingan/<match_id>/fragment")
+def match_fragment(match_id):
+    return render_template("_match_detail_content.html", **_match_detail_context(match_id, is_modal=True))
 
 
 @app.route("/pertandingan/<match_id>/komentar", methods=["POST"])
@@ -316,11 +336,14 @@ def add_comment(match_id):
     if not m:
         abort(404)
 
+    target = url_for("match_fragment", match_id=match_id) if request.form.get("modal") \
+        else url_for("match_detail", match_id=match_id) + "#komentar"
+
     name = request.form.get("name", "").strip()
     comment = request.form.get("comment", "").strip()
     if not name or not comment:
         flash("Nama dan komentar wajib diisi.", "error")
-        return redirect(url_for("match_detail", match_id=match_id) + "#komentar")
+        return redirect(target)
 
     m.setdefault("comments", []).append({
         "name": name[:60],
@@ -329,7 +352,7 @@ def add_comment(match_id):
     })
     utils.save_matches(matches)
     flash("Komentar terkirim. Panitia akan meninjau permintaan Anda.", "success")
-    return redirect(url_for("match_detail", match_id=match_id) + "#komentar")
+    return redirect(target)
 
 
 # ---------- Share card (Open Graph) ----------
@@ -521,6 +544,8 @@ def admin_edit_match(match_id):
             utils.save_matches(matches)
             flash("Tim final diperbarui.", "success")
 
+        if request.form.get("modal"):
+            return redirect(url_for("match_fragment", match_id=match_id))
         return redirect(url_for("admin_edit_match", match_id=match_id))
 
     champ_a = utils.group_champion(matches, teams, "ganda_putra", "A")

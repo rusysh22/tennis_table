@@ -141,14 +141,19 @@ def build_matches():
     gc_a = circle_rounds(["MM", "TL", "PA", "NG"])
 
     # Hanya 1 meja tersedia -> laga berurutan (bukan paralel) dalam jendela
-    # 18.00-20.00 WIB, maksimal 3 slot per hari (per laga sekitar 30 menit).
+    # 18.00-20.00 WIB, maksimal 4 slot per hari (per laga sekitar 30 menit).
     TABLE = "Meja 1"
-    TIME_SLOTS = ["18:00", "18:30", "19:00"]
+    TIME_SLOTS = ["18:00", "18:30", "19:00", "19:30"]
 
-    # Jadwal 20-27 Juli 2026 (Final tetap 28, Penutupan tetap 29 -- tidak disentuh):
-    # - 24 Juli sengaja dikosongkan (hari cadangan reschedule).
+    # Jadwal fase grup: 20, 21, 22, 23, 27, 28 Juli 2026.
+    # - 24 (Jumat), 25 (Sabtu), 26 (Minggu) sengaja dikosongkan -- tidak ada
+    #   laga di akhir pekan, dan 24 jadi hari cadangan reschedule.
     # - 23 Juli cuma 1 laga.
-    # - Sisanya disebar rata di 20, 21, 22, 25, 26, 27 (maksimal 3 laga/hari).
+    # - Final digeser dari 28 ke 29 Juli (jadi satu hari dengan Penutupan)
+    #   supaya seluruh fase grup (termasuk yang di 28) sudah selesai duluan
+    #   sebelum Final dimainkan -- Final baru bisa ditentukan (Juara Grup A vs
+    #   Juara Grup B) setelah semua laga grup rampung, jadi tidak boleh ada
+    #   laga grup di tanggal yang sama atau setelah Final.
     # Ganda campuran disebar 1 laga/hari di tiap hari yang ada laga campuran
     # (tidak pernah lebih dari 1, tidak pernah kosong di hari itu) supaya tidak
     # ada hari yang isinya ganda putra semua; sisa slot per hari diisi ganda
@@ -158,33 +163,31 @@ def build_matches():
             ("ganda_campuran", "A", 1, gc_a[0][0]),
             ("ganda_putra", "A", 1, gp_a[0][0]),
             ("ganda_putra", "A", 1, gp_a[0][1]),
+            ("ganda_putra", "B", 1, gp_b[0][0]),
         ]),
         ("2026-07-21", [
             ("ganda_campuran", "A", 1, gc_a[0][1]),
-            ("ganda_putra", "B", 1, gp_b[0][0]),
             ("ganda_putra", "B", 1, gp_b[0][1]),
+            ("ganda_putra", "A", 2, gp_a[1][0]),
         ]),
         ("2026-07-22", [
             ("ganda_campuran", "A", 2, gc_a[1][0]),
-            ("ganda_putra", "A", 2, gp_a[1][0]),
             ("ganda_putra", "A", 2, gp_a[1][1]),
-        ]),
-        ("2026-07-23", [
             ("ganda_putra", "B", 2, gp_b[1][0]),
         ]),
-        # 2026-07-24: sengaja dikosongkan (hari cadangan reschedule)
-        ("2026-07-25", [
+        ("2026-07-23", [
             ("ganda_campuran", "A", 2, gc_a[1][1]),
+        ]),
+        # 2026-07-24, 25, 26: sengaja dikosongkan (Jumat cadangan, Sabtu-Minggu libur)
+        ("2026-07-27", [
+            ("ganda_campuran", "A", 3, gc_a[2][0]),
             ("ganda_putra", "B", 2, gp_b[1][1]),
             ("ganda_putra", "A", 3, gp_a[2][0]),
         ]),
-        ("2026-07-26", [
-            ("ganda_campuran", "A", 3, gc_a[2][0]),
+        ("2026-07-28", [
+            ("ganda_campuran", "A", 3, gc_a[2][1]),
             ("ganda_putra", "A", 3, gp_a[2][1]),
             ("ganda_putra", "B", 3, gp_b[2][0]),
-        ]),
-        ("2026-07-27", [
-            ("ganda_campuran", "A", 3, gc_a[2][1]),
             ("ganda_putra", "B", 3, gp_b[2][1]),
         ]),
     ]
@@ -195,8 +198,9 @@ def build_matches():
         for idx, (category, group, round_no, (a, b)) in enumerate(day_matches):
             add(category, group, round_no, round_label_map[round_no], a, b, date, TIME_SLOTS[idx], TABLE)
 
-    # Grand Final Ganda Putra: Juara Group A vs Juara Group B (tim ditentukan setelah fase grup)
-    add("ganda_putra", "FINAL", 4, "Final", None, None, "2026-07-28", "18:00", "Meja 1")
+    # Grand Final Ganda Putra: Juara Group A vs Juara Group B (tim ditentukan setelah fase grup).
+    # Digelar 29 Juli, sehari setelah laga grup terakhir (28 Juli) -- sekaligus jadi hari Penutupan.
+    add("ganda_putra", "FINAL", 4, "Final", None, None, "2026-07-29", "18:00", "Meja 1")
 
     return matches
 
@@ -217,7 +221,7 @@ def main():
         "start_date": "2026-07-20",
         "end_date": "2026-07-29",
         "buffer_dates": ["2026-07-24"],
-        "final_date": "2026-07-28",
+        "final_date": "2026-07-29",
         "closing_date": "2026-07-29",
         "time_window": "18.00 - 20.00 WIB",
         "time_window_note": "After Office Hours",

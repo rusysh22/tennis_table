@@ -1,4 +1,4 @@
-<a class="match-card" href="{{ url_for('match_detail', match_id=m.id) }}" data-match-id="{{ m.id }}">
+<a class="match-card" href="{{ url_for('match_detail', match_id=m.id) }}" data-match-id="{{ m.id }}" data-modal-match="{{ url_for('match_fragment', match_id=m.id) }}">
   <div class="cat-row">
     <span class="badge {{ 'badge-putra' if m.category == 'ganda_putra' else 'badge-campuran' }}">{{ m.category_label }}</span>
     <span style="display:flex; gap:.35rem;">

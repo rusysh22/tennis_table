@@ -95,6 +95,94 @@
     setInterval(refresh, 15000);
   }
 
+  // ---------- share button (progressive enhancement, works for content
+  // injected later too since it's a class on <html>, not a one-time toggle) ----------
+  if (navigator.share) {
+    document.documentElement.classList.add("share-supported");
+  }
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("#shareBtn");
+    if (!btn || !navigator.share) return;
+    navigator.share({
+      title: btn.getAttribute("data-share-title") || document.title,
+      text: btn.getAttribute("data-share-text") || "",
+      url: btn.getAttribute("data-share-url") || window.location.href,
+    }).catch(function () {});
+  });
+
+  // ---------- modal detail pertandingan (klik kartu jadwal/kalender -> popup,
+  // termasuk form komentar & kelola admin di dalamnya lewat AJAX) ----------
+  (function () {
+    var modal = document.getElementById("matchModal");
+    var modalBody = document.getElementById("matchModalBody");
+    var modalClose = document.getElementById("matchModalClose");
+    if (!modal || !modalBody || !modalClose) return;
+
+    var modalDirty = false; // true kalau ada form yang berhasil disubmit di dalam modal
+
+    function openModal() {
+      modal.hidden = false;
+      document.body.classList.add("modal-open");
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      document.body.classList.remove("modal-open");
+      if (modalDirty) {
+        modalDirty = false;
+        window.location.reload();
+      }
+    }
+
+    function loadFragment(url) {
+      modalBody.innerHTML = '<div class="modal-loading">Memuat…</div>';
+      openModal();
+      fetch(url, { cache: "no-store" })
+        .then(function (r) { return r.text(); })
+        .then(function (html) { modalBody.innerHTML = html; })
+        .catch(function () {
+          modalBody.innerHTML = '<div class="modal-loading">Gagal memuat detail pertandingan. Coba lagi.</div>';
+        });
+    }
+
+    // buka modal saat kartu/laga dengan [data-modal-match] diklik
+    document.addEventListener("click", function (e) {
+      var trigger = e.target.closest("[data-modal-match]");
+      if (!trigger) return;
+      e.preventDefault();
+      loadFragment(trigger.getAttribute("data-modal-match"));
+    });
+
+    modalClose.addEventListener("click", closeModal);
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !modal.hidden) closeModal();
+    });
+
+    // form komentar & kelola admin di dalam modal -> submit lewat AJAX,
+    // lalu render ulang isi modal dengan hasil terbaru dari server
+    document.addEventListener("submit", function (e) {
+      var form = e.target.closest(".js-ajax-form");
+      if (!form || !modalBody.contains(form)) return;
+      e.preventDefault();
+      var submitBtn = form.querySelector("button[type='submit']");
+      if (submitBtn) submitBtn.disabled = true;
+      // form.action bisa "ke-shadow" kalau form punya <input name="action">
+      // (mis. form skor/WO/reschedule di sini) -- getAttribute tidak kena masalah itu.
+      fetch(form.getAttribute("action"), { method: "POST", body: new FormData(form) })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+          modalDirty = true;
+          modalBody.innerHTML = html;
+        })
+        .catch(function () {
+          if (submitBtn) submitBtn.disabled = false;
+        });
+    });
+  })();
+
   // ---------- reveal-on-scroll ----------
   var revealTargets = document.querySelectorAll(".match-card, .cal-day, .bracket-node, .stat-card");
   if ("IntersectionObserver" in window && revealTargets.length) {

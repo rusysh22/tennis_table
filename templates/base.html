@@ -90,6 +90,15 @@
   </div>
 </footer>
 
+<div class="modal-overlay" id="matchModal" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-label="Detail pertandingan">
+    <button class="modal-close" id="matchModalClose" type="button" aria-label="Tutup"></button>
+    <div class="modal-body" id="matchModalBody">
+      <div class="modal-loading">Memuat…</div>
+    </div>
+  </div>
+</div>
+
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% block scripts %}{% endblock %}
 </body>
