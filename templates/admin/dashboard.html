@@ -75,7 +75,7 @@
     tim benar-benar berubah (bukan cuma urutan babak). Tanggal, jam, dan meja tiap slot tidak berubah.
     Hanya memengaruhi laga Ganda Putra fase grup — laga Ganda Campuran dan Final tidak disentuh. Skor/status
     laga Ganda Putra yang sudah diinput akan ikut ter-reset karena pasangannya berubah. Data saat ini
-    dicadangkan otomatis ke <code>data/backups/</code> sebelum diacak.
+    dicadangkan otomatis sebelum diacak.
   </p>
   <form method="post" action="{{ url_for('admin_shuffle_putra') }}"
         onsubmit="return confirm('Undi ulang Grup A dan Grup B Ganda Putra dari awal? Lawan tanding tiap tim akan berubah, dan skor/status laga Ganda Putra yang sudah diinput akan ter-reset. Data saat ini dicadangkan otomatis.');">
@@ -90,7 +90,7 @@
     berubah, meski tetap setiap tim ketemu semua tim lain persis sekali (namanya juga round robin 1 grup).
     Tanggal, jam, dan meja tiap slot tidak berubah. Hanya memengaruhi laga Ganda Campuran — laga Ganda Putra
     dan Final tidak disentuh. Skor/status laga Ganda Campuran yang sudah diinput akan ikut ter-reset karena
-    pasangannya berubah. Data saat ini dicadangkan otomatis ke <code>data/backups/</code> sebelum diacak.
+    pasangannya berubah. Data saat ini dicadangkan otomatis sebelum diacak.
   </p>
   <form method="post" action="{{ url_for('admin_shuffle_campuran') }}"
         onsubmit="return confirm('Undi ulang jadwal Ganda Campuran dari awal? Urutan lawan tiap tim per tanggal akan berubah, dan skor/status laga Ganda Campuran yang sudah diinput akan ter-reset. Data saat ini dicadangkan otomatis.');">
@@ -102,8 +102,8 @@
   <legend>⚠️ Reset Data</legend>
   <p style="font-size:.85rem; color:#a0677a; margin-bottom:.8rem;">
     Mengembalikan seluruh jadwal, skor, status, dan riwayat reschedule ke kondisi awal (sama seperti saat
-    turnamen belum dimulai). Data saat ini akan otomatis dicadangkan ke <code>data/backups/</code> sebelum
-    ditimpa, tapi tindakan ini tetap <strong>tidak bisa dibatalkan lewat aplikasi</strong> — pastikan yakin.
+    turnamen belum dimulai). Data saat ini akan otomatis dicadangkan sebelum ditimpa, tapi tindakan ini tetap
+    <strong>tidak bisa dibatalkan lewat aplikasi</strong> — pastikan yakin.
   </p>
   <form method="post" action="{{ url_for('admin_reset') }}"
         onsubmit="return confirm('Reset SEMUA data pertandingan (skor, status, jadwal) ke kondisi awal? Data saat ini akan dicadangkan otomatis, tapi tindakan ini tidak bisa dibatalkan lewat aplikasi.');">

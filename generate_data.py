@@ -141,40 +141,49 @@ def build_matches():
     gc_a = circle_rounds(["MM", "TL", "PA", "NG"])
 
     # Hanya 1 meja tersedia -> laga berurutan (bukan paralel) dalam jendela
-    # 18.00-20.00 WIB, 4 slot per hari (per laga sekitar 30 menit).
+    # 18.00-20.00 WIB, maksimal 3 slot per hari (per laga sekitar 30 menit).
     TABLE = "Meja 1"
-    TIME_SLOTS = ["18:00", "18:30", "19:00", "19:30"]
+    TIME_SLOTS = ["18:00", "18:30", "19:00"]
 
-    # Jadwal 20-24 Juli 2026: campur kategori, satu meja, 4 laga/hari berurutan.
-    # Ganda campuran disebar 1-2 laga/hari di setiap hari (tidak pernah kosong)
-    # supaya satu hari tidak diisi ganda putra semua; sisa slot per hari baru
-    # diisi ganda putra, mengikuti urutan babak masing-masing grup.
+    # Jadwal 20-27 Juli 2026 (Final tetap 28, Penutupan tetap 29 -- tidak disentuh):
+    # - 24 Juli sengaja dikosongkan (hari cadangan reschedule).
+    # - 23 Juli cuma 1 laga.
+    # - Sisanya disebar rata di 20, 21, 22, 25, 26, 27 (maksimal 3 laga/hari).
+    # Ganda campuran disebar 1 laga/hari di tiap hari yang ada laga campuran
+    # (tidak pernah lebih dari 1, tidak pernah kosong di hari itu) supaya tidak
+    # ada hari yang isinya ganda putra semua; sisa slot per hari diisi ganda
+    # putra mengikuti urutan babak masing-masing grup.
     plan = [
         ("2026-07-20", [
             ("ganda_campuran", "A", 1, gc_a[0][0]),
             ("ganda_putra", "A", 1, gp_a[0][0]),
-            ("ganda_campuran", "A", 1, gc_a[0][1]),
             ("ganda_putra", "A", 1, gp_a[0][1]),
         ]),
         ("2026-07-21", [
-            ("ganda_campuran", "A", 2, gc_a[1][0]),
+            ("ganda_campuran", "A", 1, gc_a[0][1]),
             ("ganda_putra", "B", 1, gp_b[0][0]),
             ("ganda_putra", "B", 1, gp_b[0][1]),
-            ("ganda_putra", "A", 2, gp_a[1][0]),
         ]),
         ("2026-07-22", [
-            ("ganda_campuran", "A", 2, gc_a[1][1]),
+            ("ganda_campuran", "A", 2, gc_a[1][0]),
+            ("ganda_putra", "A", 2, gp_a[1][0]),
             ("ganda_putra", "A", 2, gp_a[1][1]),
-            ("ganda_putra", "B", 2, gp_b[1][0]),
-            ("ganda_putra", "B", 2, gp_b[1][1]),
         ]),
         ("2026-07-23", [
-            ("ganda_campuran", "A", 3, gc_a[2][0]),
+            ("ganda_putra", "B", 2, gp_b[1][0]),
+        ]),
+        # 2026-07-24: sengaja dikosongkan (hari cadangan reschedule)
+        ("2026-07-25", [
+            ("ganda_campuran", "A", 2, gc_a[1][1]),
+            ("ganda_putra", "B", 2, gp_b[1][1]),
             ("ganda_putra", "A", 3, gp_a[2][0]),
+        ]),
+        ("2026-07-26", [
+            ("ganda_campuran", "A", 3, gc_a[2][0]),
             ("ganda_putra", "A", 3, gp_a[2][1]),
             ("ganda_putra", "B", 3, gp_b[2][0]),
         ]),
-        ("2026-07-24", [
+        ("2026-07-27", [
             ("ganda_campuran", "A", 3, gc_a[2][1]),
             ("ganda_putra", "B", 3, gp_b[2][1]),
         ]),
@@ -185,8 +194,6 @@ def build_matches():
     for date, day_matches in plan:
         for idx, (category, group, round_no, (a, b)) in enumerate(day_matches):
             add(category, group, round_no, round_label_map[round_no], a, b, date, TIME_SLOTS[idx], TABLE)
-
-    # Hari cadangan / reschedule buffer: 25-27 Juli (tidak ada laga default)
 
     # Grand Final Ganda Putra: Juara Group A vs Juara Group B (tim ditentukan setelah fase grup)
     add("ganda_putra", "FINAL", 4, "Final", None, None, "2026-07-28", "18:00", "Meja 1")
@@ -209,7 +216,7 @@ def main():
         "tournament_short_name": "InterSport 2026",
         "start_date": "2026-07-20",
         "end_date": "2026-07-29",
-        "buffer_dates": ["2026-07-25", "2026-07-26", "2026-07-27"],
+        "buffer_dates": ["2026-07-24"],
         "final_date": "2026-07-28",
         "closing_date": "2026-07-29",
         "time_window": "18.00 - 20.00 WIB",

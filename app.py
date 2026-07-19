@@ -418,7 +418,7 @@ def admin_reset():
     utils.backup_data_files("teams.json", "matches.json")
     utils.save_json("teams.json", generate_data.TEAMS)
     utils.save_matches(generate_data.build_matches())
-    flash("Semua data pertandingan telah direset ke kondisi awal. Data sebelumnya tersimpan otomatis di data/backups/.", "success")
+    flash("Semua data pertandingan telah direset ke kondisi awal. Data sebelumnya tersimpan otomatis sebagai cadangan.", "success")
     return redirect(url_for("admin_dashboard"))
 
 
