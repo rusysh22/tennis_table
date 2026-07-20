@@ -802,7 +802,7 @@ def admin_edit_match(match_id):
                         img.save(output, format="JPEG", quality=75, optimize=True)
                         output.seek(0)
                         
-                        filename = clean_url.split("/")[-1]
+                        filename = "docs/" + clean_url.split("/")[-1]
                         s3_client = boto3.client(
                             's3', endpoint_url=SUPABASE_S3_ENDPOINT,
                             aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
