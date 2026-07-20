@@ -1,5 +1,6 @@
 <div class="detail-hero">
-  <span class="badge {{ 'badge-putra' if m.category == 'ganda_putra' else 'badge-campuran' }}">{{ m.category_label }}</span>
+  <span class="badge {{ 'badge-putra' if m.category == 'ganda_putra' else 'badge-campuran' }}">{{ m.category_label
+    }}</span>
   <span class="badge badge-status badge-{{ m.status }}">{{ m.status_label }}</span>
   {% if m.is_walkover %}<span class="badge badge-wo">WO</span>{% endif %}
   <h1 style="margin-top:.6rem;">{% if m.group != 'FINAL' %}Group {{ m.group }} · {% endif %}{{ m.round_label }}</h1>
@@ -7,7 +8,8 @@
 
   <div class="detail-vs">
     <div class="detail-team">
-      <span class="team-chip lg" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+      <span class="team-chip lg" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code
+        }}</span>
       <small class="player-names" style="width:100%;">
         <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
         <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>
@@ -23,7 +25,8 @@
     <div class="x">VS</div>
     {% endif %}
     <div class="detail-team">
-      <span class="team-chip lg" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+      <span class="team-chip lg" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code
+        }}</span>
       <small class="player-names" style="width:100%;">
         <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
         <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>
@@ -36,7 +39,9 @@
 
 {% if m.sets %}
 <div class="sets-table">
-  <div class="section-head"><h2>Detail Skor per Set</h2></div>
+  <div class="section-head">
+    <h2>Detail Skor per Set</h2>
+  </div>
   <div class="table-wrap">
     <table class="standings">
       <thead>
@@ -60,24 +65,47 @@
 </div>
 {% endif %}
 
+{% if m.docs %}
+<div class="section-head">
+  <h2>📸 Dokumentasi</h2>
+</div>
+<div style="display:flex; flex-wrap:wrap; gap:.8rem;">
+  {% for doc in m.docs %}
+  <div
+    style="width:100px; height:100px; border-radius:10px; overflow:hidden; border:1px solid rgba(0,0,0,0.1); cursor:pointer; box-shadow:var(--shadow-sm); transition:transform .2s;"
+    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+    <img src="{{ doc.url }}" class="public-doc-img" alt="Dokumentasi" style="width:100%; height:100%; object-fit:cover;"
+      data-full-src="{{ doc.url }}">
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
 {% if m.notes %}
-<div class="section-head"><h2>Catatan</h2></div>
+<div class="section-head">
+  <h2>Catatan</h2>
+</div>
 <p>{{ m.notes }}</p>
 {% endif %}
 
 {% if m.reschedule_history %}
-<div class="section-head"><h2>Riwayat Reschedule</h2></div>
+<div class="section-head">
+  <h2>Riwayat Reschedule</h2>
+</div>
 <div class="admin-shell">
   {% for h in m.reschedule_history %}
   <div class="history-item">
-    {{ h.from_date }} {{ h.from_time }} ({{ h.from_court }}) &rarr; <strong>{{ h.to_date }} {{ h.to_time }} ({{ h.to_court }})</strong>
+    {{ h.from_date }} {{ h.from_time }} ({{ h.from_court }}) &rarr; <strong>{{ h.to_date }} {{ h.to_time }} ({{
+      h.to_court }})</strong>
     {% if h.reason %} — {{ h.reason }}{% endif %}
   </div>
   {% endfor %}
 </div>
 {% endif %}
 
-<div class="section-head" id="komentar"><h2>💬 Komentar &amp; Request Reschedule</h2></div>
+<div class="section-head" id="komentar">
+  <h2>💬 Komentar &amp; Request Reschedule</h2>
+</div>
 <div class="admin-shell">
   <p style="font-size:.82rem; color:#a0677a; margin-bottom:1rem;">
     Mau minta reschedule laga ini atau ada catatan lain buat panitia? Tulis di sini —
@@ -88,7 +116,8 @@
   <div class="comment-list">
     {% for c in m.comments|reverse %}
     <div class="comment-item">
-      <div class="comment-head"><strong>{{ c.name }}</strong><span class="comment-time">{{ c.at | format_datetime_id }}</span></div>
+      <div class="comment-head"><strong>{{ c.name }}</strong><span class="comment-time">{{ c.at | format_datetime_id
+          }}</span></div>
       <p class="comment-text">{{ c.comment }}</p>
     </div>
     {% endfor %}
@@ -97,39 +126,47 @@
   <p class="muted" style="font-size:.85rem;">Belum ada komentar untuk pertandingan ini.</p>
   {% endif %}
 
-  <form method="post" action="{{ url_for('add_comment', match_id=m.id) }}" class="comment-form{{ ' js-ajax-form' if is_modal else '' }}">
+  <form method="post" action="{{ url_for('add_comment', match_id=m.id) }}"
+    class="comment-form{{ ' js-ajax-form' if is_modal else '' }}">
     {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
     <label>Nama <span class="req">*</span>
       <input type="text" name="name" required maxlength="60" placeholder="Nama Anda">
     </label>
     <label>Komentar <span class="req">*</span>
-      <textarea name="comment" rows="3" required maxlength="500" placeholder="Mis. minta reschedule ke tanggal lain karena ada acara kantor..."></textarea>
+      <textarea name="comment" rows="3" required maxlength="500"
+        placeholder="Mis. minta reschedule ke tanggal lain karena ada acara kantor..."></textarea>
     </label>
     <button class="btn btn-primary" type="submit">Kirim Komentar</button>
   </form>
 </div>
 
 {% if is_admin and raw is defined %}
-<div class="section-head"><h2>✏️ Kelola Pertandingan</h2></div>
+<div class="section-head">
+  <h2>✏️ Kelola Pertandingan</h2>
+</div>
 <div class="admin-shell">
   {% if m.group == 'FINAL' %}
   <fieldset>
     <legend>Tim Final (otomatis dari juara grup)</legend>
-    <p style="font-size:.85rem; color:#a0677a;">Juara Group A: <strong>{{ champ_a or '-' }}</strong> · Juara Group B: <strong>{{ champ_b or '-' }}</strong></p>
-    <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}" class="{{ 'js-ajax-form' if is_modal else '' }}">
+    <p style="font-size:.85rem; color:#a0677a;">Juara Group A: <strong>{{ champ_a or '-' }}</strong> · Juara Group B:
+      <strong>{{ champ_b or '-' }}</strong></p>
+    <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
+      class="{{ 'js-ajax-form' if is_modal else '' }}">
       <input type="hidden" name="action" value="set_teams">
       {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
       <div class="form-grid">
         <label>Tim A
           <select name="team_a">
             <option value="">- Pilih -</option>
-            {% for code in teams %}<option value="{{ code }}" {{ 'selected' if raw.team_a == code }}>{{ code }} — {{ teams[code].player1 }}/{{ teams[code].player2 }}</option>{% endfor %}
+            {% for code in teams %}<option value="{{ code }}" {{ 'selected' if raw.team_a==code }}>{{ code }} — {{
+              teams[code].player1 }}/{{ teams[code].player2 }}</option>{% endfor %}
           </select>
         </label>
         <label>Tim B
           <select name="team_b">
             <option value="">- Pilih -</option>
-            {% for code in teams %}<option value="{{ code }}" {{ 'selected' if raw.team_b == code }}>{{ code }} — {{ teams[code].player1 }}/{{ teams[code].player2 }}</option>{% endfor %}
+            {% for code in teams %}<option value="{{ code }}" {{ 'selected' if raw.team_b==code }}>{{ code }} — {{
+              teams[code].player1 }}/{{ teams[code].player2 }}</option>{% endfor %}
           </select>
         </label>
       </div>
@@ -143,33 +180,41 @@
 
   {% set max_sets = m.sets_needed * 2 - 1 %}
   <fieldset>
-    <legend>🔴 Live Score / Input Skor per Set <span style="font-size:.7rem; font-weight:700; color:#a0677a; text-transform:none;">({{ m.best_of_label }})</span></legend>
-    <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}" class="{{ 'js-ajax-form' if is_modal else '' }}">
+    <legend>🔴 Live Score / Input Skor per Set <span
+        style="font-size:.7rem; font-weight:700; color:#a0677a; text-transform:none;">({{ m.best_of_label }})</span>
+    </legend>
+    <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
+      class="{{ 'js-ajax-form' if is_modal else '' }}">
       <input type="hidden" name="action" value="save_score">
       {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
 
       <div class="score-input-head">
         <span></span>
-        <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+        <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code
+          }}</span>
         <span></span>
-        <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+        <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code
+          }}</span>
       </div>
       {% for i in range(1, max_sets + 1) %}
       <div class="score-input-row">
         <span class="set-label">Set {{ i }}</span>
-        <input type="number" min="0" max="30" name="set{{ i }}_a" value="{{ raw.sets[i-1][0] if raw.sets|length >= i else '' }}" inputmode="numeric">
+        <input type="number" min="0" max="30" name="set{{ i }}_a"
+          value="{{ raw.sets[i-1][0] if raw.sets|length >= i else '' }}" inputmode="numeric">
         <span class="score-input-sep">:</span>
-        <input type="number" min="0" max="30" name="set{{ i }}_b" value="{{ raw.sets[i-1][1] if raw.sets|length >= i else '' }}" inputmode="numeric">
+        <input type="number" min="0" max="30" name="set{{ i }}_b"
+          value="{{ raw.sets[i-1][1] if raw.sets|length >= i else '' }}" inputmode="numeric">
       </div>
       {% endfor %}
 
       <div class="form-grid" style="margin-top:1rem;">
         <label>Status pertandingan
           <select name="status">
-            <option value="scheduled" {{ 'selected' if raw.status == 'scheduled' }}>Terjadwal</option>
-            <option value="live" {{ 'selected' if raw.status == 'live' }}>🔴 Live sekarang</option>
-            <option value="completed" {{ 'selected' if raw.status == 'completed' }} disabled>✅ Selesai (otomatis dari skor)</option>
-            <option value="postponed" {{ 'selected' if raw.status == 'postponed' }}>Ditunda</option>
+            <option value="scheduled" {{ 'selected' if raw.status=='scheduled' }}>Terjadwal</option>
+            <option value="live" {{ 'selected' if raw.status=='live' }}>🔴 Live sekarang</option>
+            <option value="completed" {{ 'selected' if raw.status=='completed' }} disabled>✅ Selesai (otomatis dari
+              skor)</option>
+            <option value="postponed" {{ 'selected' if raw.status=='postponed' }}>Ditunda</option>
           </select>
         </label>
       </div>
@@ -189,35 +234,43 @@
     <p style="font-size:.82rem; color:#a0677a; margin-top:-.3rem;">
       Pakai ini kalau salah satu tim tidak hadir / mundur sebelum atau di tengah laga, sehingga pertandingan
       langsung ditandai <strong>Selesai</strong> tanpa perlu skor lengkap 3 set.
-      {% if m.is_walkover %}<br><span class="badge badge-wo" style="margin-top:.4rem; display:inline-block;">Laga ini sudah ditandai WO</span>{% endif %}
+      {% if m.is_walkover %}<br><span class="badge badge-wo" style="margin-top:.4rem; display:inline-block;">Laga ini
+        sudah ditandai WO</span>{% endif %}
     </p>
-    <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}" class="{{ 'js-ajax-form' if is_modal else '' }}">
+    <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
+      class="{{ 'js-ajax-form' if is_modal else '' }}">
       <input type="hidden" name="action" value="walkover">
       {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
       <div class="form-grid">
         <label>Pemenang WO
           <select name="wo_winner" required>
             <option value="">- Pilih tim yang menang -</option>
-            <option value="{{ m.team_a_code }}" {{ 'selected' if raw.winner == m.team_a_code }}>{{ m.team_a_code }} — {{ m.team_a_label }}</option>
-            <option value="{{ m.team_b_code }}" {{ 'selected' if raw.winner == m.team_b_code }}>{{ m.team_b_code }} — {{ m.team_b_label }}</option>
+            <option value="{{ m.team_a_code }}" {{ 'selected' if raw.winner==m.team_a_code }}>{{ m.team_a_code }} — {{
+              m.team_a_label }}</option>
+            <option value="{{ m.team_b_code }}" {{ 'selected' if raw.winner==m.team_b_code }}>{{ m.team_b_code }} — {{
+              m.team_b_label }}</option>
           </select>
         </label>
       </div>
       <label>Alasan (opsional, tampil di halaman publik)
-        <input type="text" name="wo_reason" placeholder="mis. AD tidak hadir, GS mundur karena cedera, dsb." value="{{ raw.notes if raw.walkover else '' }}">
+        <input type="text" name="wo_reason" placeholder="mis. AD tidak hadir, GS mundur karena cedera, dsb."
+          value="{{ raw.notes if raw.walkover else '' }}">
       </label>
-      <button class="btn btn-dark btn-block" type="submit" style="margin-top:.8rem;" onclick="return confirm('Tandai pertandingan ini selesai via WO?');">🚩 Tandai Selesai via WO</button>
+      <button class="btn btn-dark btn-block" type="submit" style="margin-top:.8rem;"
+        onclick="return confirm('Tandai pertandingan ini selesai via WO?');">🚩 Tandai Selesai via WO</button>
     </form>
   </fieldset>
 
   <fieldset>
     <legend>🔁 Reschedule Pertandingan</legend>
-    <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}" class="{{ 'js-ajax-form' if is_modal else '' }}">
+    <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
+      class="{{ 'js-ajax-form' if is_modal else '' }}">
       <input type="hidden" name="action" value="reschedule">
       {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
       <div class="form-grid">
         <label>Tanggal Baru
-          <input type="date" name="new_date" value="{{ raw.date }}" min="{{ config.start_date }}" max="{{ config.end_date }}" required>
+          <input type="date" name="new_date" value="{{ raw.date }}" min="{{ config.start_date }}"
+            max="{{ config.end_date }}" required>
         </label>
         <label>Jam Baru
           <input type="time" name="new_time" value="{{ raw.time }}" required>
@@ -227,28 +280,92 @@
           <input type="hidden" name="new_court" value="Meja 1">
         </label>
       </div>
-      <p style="font-size:.78rem; color:#a0677a; margin-top:-.4rem;">Hanya tersedia 1 meja, jadi seluruh laga berjalan berurutan di Meja 1.</p>
+      <p style="font-size:.78rem; color:#a0677a; margin-top:-.4rem;">Hanya tersedia 1 meja, jadi seluruh laga berjalan
+        berurutan di Meja 1.</p>
       <label>Alasan reschedule (opsional)
         <input type="text" name="reason" placeholder="mis. Meja rusak, salah satu pemain berhalangan, dsb.">
       </label>
       <button class="btn btn-dark btn-block" type="submit" style="margin-top:.8rem;">🔁 Simpan Reschedule</button>
     </form>
   </fieldset>
+
+  <fieldset>
+    <legend>📸 Dokumentasi Pertandingan</legend>
+    <p style="font-size:.82rem; color:#a0677a; margin-top:-.3rem;">
+      Upload foto pertandingan (JPG/WEBP). Gambar akan dikompres otomatis dan disimpan di Media Pertandingan
+    </p>
+    {% if raw.docs %}
+    <div style="display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem;">
+      {% for doc in raw.docs %}
+      <div
+        style="position:relative; width:80px; height:80px; border-radius:8px; overflow:hidden; border:1px solid rgba(0,0,0,0.1);">
+        <img src="{{ doc.url }}" alt="Dokumentasi" style="width:100%; height:100%; object-fit:cover;">
+        <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
+          class="{{ 'js-ajax-form' if is_modal else '' }}" style="position:absolute; top:2px; right:2px;">
+          <input type="hidden" name="action" value="delete_doc">
+          {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
+          <input type="hidden" name="doc_url" value="{{ doc.url }}">
+          <button type="submit"
+            style="background:rgba(255,0,0,0.7); border:none; color:#fff; border-radius:50%; width:20px; height:20px; font-size:10px; cursor:pointer;"
+            onclick="return confirm('Hapus gambar ini?');">X</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}" enctype="multipart/form-data"
+      class="{{ 'js-ajax-form' if is_modal else '' }}">
+      <input type="hidden" name="action" value="upload_doc">
+      {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
+      <div style="display:flex; gap:.6rem; margin-top:.5rem; flex-wrap:wrap;">
+
+        <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.8rem;">
+          📷 Kamera Langsung
+          <input type="file" name="doc_file_cam" accept="image/*" capture="environment" style="display:none;"
+            onchange="this.form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))">
+        </label>
+
+        <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.8rem;">
+          📁 File Galeri
+          <input type="file" name="doc_file" accept="image/jpeg, image/png, image/webp" style="display:none;"
+            onchange="this.form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))">
+        </label>
+
+      </div>
+      <p style="font-size:.75rem; color:#a0677a; margin-top:.6rem; text-align:center;">
+        Pilih salah satu tombol. File otomatis terupload begitu dipilih/dijepret.
+      </p>
+    </form>
+  </fieldset>
 </div>
 {% endif %}
 
-{% set copy_text = m.team_a_code ~ " vs " ~ m.team_b_code ~ " — " ~ m.category_label ~ "\n" ~ (("Group " ~ m.group ~ " · ") if m.group != 'FINAL' else "") ~ m.round_label ~ "\n\n" ~ m.team_a_player1 ~ "/" ~ m.team_a_player2 ~ "\nvs\n" ~ m.team_b_player1 ~ "/" ~ m.team_b_player2 ~ "\n\n📅 " ~ m.date_label ~ "\n⏰ " ~ m.time ~ " WIB\n📍 " ~ m.court ~ "\n" ~ url_for('match_detail', match_id=m.id, _external=True) %}
+{% set copy_text = m.team_a_code ~ " vs " ~ m.team_b_code ~ " — " ~ m.category_label ~ "\n" ~ (("Group " ~ m.group ~ " ·
+") if m.group != 'FINAL' else "") ~ m.round_label ~ "\n\n" ~ m.team_a_player1 ~ "/" ~ m.team_a_player2 ~ "\nvs\n" ~
+m.team_b_player1 ~ "/" ~ m.team_b_player2 ~ "\n\n📅 " ~ m.date_label ~ "\n⏰ " ~ m.time ~ " WIB\n📍 " ~ m.court ~ "\n" ~
+url_for('match_detail', match_id=m.id, _external=True) %}
 
 {% if is_modal %}
 <div class="floating-actions">
   <button class="floating-btn copyBtn" type="button" title="Copy Detail" data-copy-text="{{ copy_text }}">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+    </svg>
   </button>
   <button class="floating-btn" id="shareBtn" type="button" title="Bagikan"
     data-share-title="{{ m.team_a_code }} vs {{ m.team_b_code }}{% if m.status in ('completed', 'live') %} ({{ m.sets_a }}-{{ m.sets_b }}){% endif %} — {{ m.category_label }}"
-    data-share-text="{{ share_text }}"
-    data-share-url="{{ url_for('match_detail', match_id=m.id, _external=True) }}">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+    data-share-text="{{ share_text }}" data-share-url="{{ url_for('match_detail', match_id=m.id, _external=True) }}">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="18" cy="5" r="3"></circle>
+      <circle cx="6" cy="12" r="3"></circle>
+      <circle cx="18" cy="19" r="3"></circle>
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+    </svg>
   </button>
 </div>
 {% endif %}
@@ -258,17 +375,28 @@
   <a class="btn btn-outline" href="{{ url_for('jadwal') }}">&larr; Kembali ke Jadwal</a>
   <button class="btn btn-outline" id="shareBtn" type="button"
     data-share-title="{{ m.team_a_code }} vs {{ m.team_b_code }}{% if m.status in ('completed', 'live') %} ({{ m.sets_a }}-{{ m.sets_b }}){% endif %} — {{ m.category_label }}"
-    data-share-text="{{ share_text }}"
-    data-share-url="{{ url_for('match_detail', match_id=m.id, _external=True) }}">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+    data-share-text="{{ share_text }}" data-share-url="{{ url_for('match_detail', match_id=m.id, _external=True) }}">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="18" cy="5" r="3"></circle>
+      <circle cx="6" cy="12" r="3"></circle>
+      <circle cx="18" cy="19" r="3"></circle>
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+    </svg>
     Bagikan
   </button>
   <button class="btn btn-outline copyBtn" type="button" data-copy-text="{{ copy_text }}">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+    </svg>
     Copy Link
   </button>
   {% endif %}
   {% if not is_modal and is_admin %}
-  <a class="btn btn-primary" href="{{ url_for('admin_edit_match', match_id=m.id) }}">✏️ Kelola Lengkap (Halaman Penuh)</a>
+  <a class="btn btn-primary" href="{{ url_for('admin_edit_match', match_id=m.id) }}">✏️ Kelola Lengkap (Halaman
+    Penuh)</a>
   {% endif %}
 </div>

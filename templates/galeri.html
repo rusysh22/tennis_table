@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Galeri Foto — {{ config.tournament_short_name }}{% endblock %}
+
+{% block content %}
+<div class="section-head" style="margin-top:0;">
+  <h2>📸 Galeri Dokumentasi</h2>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-field">
+    <p style="margin:0; font-size:.85rem; color:var(--ink); font-weight:500;">
+      Kumpulan momen dan hasil jepretan dari pertandingan yang telah berlangsung.
+    </p>
+  </div>
+</div>
+
+{% if photos %}
+<div class="gallery-masonry">
+  {% for p in photos %}
+  <div class="gallery-item">
+    <div class="gallery-img-wrap">
+      <img src="{{ p.url }}" class="public-doc-img gallery-img" alt="Foto {{ p.team_a_code }} vs {{ p.team_b_code }}" data-full-src="{{ p.url }}" loading="lazy">
+      <div class="gallery-overlay">
+        <div class="gallery-info">
+          <span class="gallery-teams">{{ p.team_a_code }} vs {{ p.team_b_code }}</span>
+          <span class="gallery-meta">{{ p.category_label }} · {{ p.date_label }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="emoji">📷</div>
+  <p style="font-weight:700; color:var(--maroon-700); font-size:1.1rem; margin-bottom:.5rem;">Belum ada foto</p>
+  <p style="font-size:.85rem; color:#8a5760;">Galeri masih kosong. Panitia akan mengupload dokumentasi saat pertandingan berjalan.</p>
+</div>
+{% endif %}
+{% endblock %}

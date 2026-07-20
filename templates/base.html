@@ -68,6 +68,7 @@
         Live <span class="live-dot" aria-hidden="true"></span>
       </a>
       <a href="{{ url_for('klasemen') }}" class="{{ 'active' if request.endpoint in ('klasemen','bracket') }}">Klasemen</a>
+      <a href="{{ url_for('galeri') }}" class="{{ 'active' if request.endpoint == 'galeri' }}">Galeri</a>
       <a href="{{ url_for('aturan') }}" class="{{ 'active' if request.endpoint == 'aturan' }}">Aturan</a>
       {% if is_admin %}
       <a href="{{ url_for('admin_dashboard') }}" class="nav-admin">Admin</a>
@@ -143,6 +144,12 @@
   <span class="bell-badge">1</span>
 </button>
 {% endif %}
+
+<!-- Lightbox Modal -->
+<div class="lightbox-overlay" id="lightboxModal">
+  <span class="lightbox-close" id="lightboxClose">&times;</span>
+  <img src="" id="lightboxImg" class="lightbox-content" alt="Preview Dokumen">
+</div>
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% block scripts %}{% endblock %}

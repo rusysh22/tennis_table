@@ -301,7 +301,7 @@
   })();
 
   // ---------- reveal-on-scroll ----------
-  var revealTargets = document.querySelectorAll(".match-card, .cal-day, .bracket-node, .stat-card");
+  var revealTargets = document.querySelectorAll(".match-card, .cal-day, .bracket-node, .stat-card, .gallery-item");
   if ("IntersectionObserver" in window && revealTargets.length) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -313,4 +313,47 @@
     }, { threshold: 0.1 });
     revealTargets.forEach(function (el) { io.observe(el); });
   }
+
+  // ---------- lightbox modal ----------
+  (function() {
+    var lightbox = document.getElementById("lightboxModal");
+    var lightboxImg = document.getElementById("lightboxImg");
+    var lightboxClose = document.getElementById("lightboxClose");
+
+    if (!lightbox || !lightboxImg) return;
+
+    // Delegate click for dynamically loaded docs
+    document.addEventListener("click", function(e) {
+      if (e.target.classList.contains("public-doc-img")) {
+        e.preventDefault();
+        var src = e.target.getAttribute("data-full-src");
+        if (src) {
+          lightboxImg.src = src;
+          lightbox.classList.add("active");
+          document.body.style.overflow = "hidden"; // Prevent background scroll
+        }
+      }
+    });
+
+    function closeLightbox() {
+      lightbox.classList.remove("active");
+      document.body.style.overflow = "";
+      setTimeout(function() { lightboxImg.src = ""; }, 300); // clear after transition
+    }
+
+    if (lightboxClose) {
+      lightboxClose.addEventListener("click", closeLightbox);
+    }
+    lightbox.addEventListener("click", function(e) {
+      if (e.target === lightbox) {
+        closeLightbox();
+      }
+    });
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape" && lightbox.classList.contains("active")) {
+        closeLightbox();
+      }
+    });
+  })();
+
 })();

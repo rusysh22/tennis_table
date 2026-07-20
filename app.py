@@ -5,6 +5,10 @@ from functools import wraps
 from flask import (
     Flask, render_template, request, redirect, url_for, session, jsonify, abort, flash, send_file
 )
+import boto3
+import io
+import uuid
+from PIL import Image
 
 import og_image
 import utils
@@ -31,6 +35,65 @@ if not app.secret_key:
                # Set env var SECRET_KEY di hosting supaya key konsisten antar-instance.
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "pingpong2026")
+
+SUPABASE_S3_ENDPOINT = os.environ.get("SUPABASE_S3_ENDPOINT", "https://jfutygknyhqfqfyhqhvy.storage.supabase.co/storage/v1/s3")
+SUPABASE_REGION = os.environ.get("SUPABASE_REGION", "ap-northeast-1")
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME", "media")
+
+def compress_and_upload_image(file, match_id):
+    if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
+        return None, "Konfigurasi S3 (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY) belum diset di environment."
+    try:
+        img = Image.open(file)
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+        
+        # Compress the image
+        img.thumbnail((1200, 1200)) # Resize if larger than 1200px
+        output = io.BytesIO()
+        img.save(output, format="JPEG", quality=75, optimize=True)
+        output.seek(0)
+        
+        filename = f"docs/{match_id}_{uuid.uuid4().hex[:8]}.jpg"
+        
+        s3_client = boto3.client(
+            's3',
+            endpoint_url=SUPABASE_S3_ENDPOINT,
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+            region_name=SUPABASE_REGION
+        )
+        s3_client.upload_fileobj(
+            output,
+            S3_BUCKET_NAME,
+            filename,
+            ExtraArgs={'ContentType': 'image/jpeg'}
+        )
+        
+        file_url = f"https://jfutygknyhqfqfyhqhvy.supabase.co/storage/v1/object/public/{S3_BUCKET_NAME}/{filename}"
+        return file_url, None
+    except Exception as e:
+        return None, str(e)
+
+def delete_from_supabase(file_url):
+    if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
+        return
+    try:
+        prefix = f"https://jfutygknyhqfqfyhqhvy.supabase.co/storage/v1/object/public/{S3_BUCKET_NAME}/"
+        if file_url.startswith(prefix):
+            filename = file_url[len(prefix):]
+            s3_client = boto3.client(
+                's3',
+                endpoint_url=SUPABASE_S3_ENDPOINT,
+                aws_access_key_id=AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                region_name=SUPABASE_REGION
+            )
+            s3_client.delete_object(Bucket=S3_BUCKET_NAME, Key=filename)
+    except Exception:
+        pass
 
 ROUND_LABELS = {1: "Babak 1", 2: "Babak 2", 3: "Babak 3", 4: "Final"}
 STATUS_LABELS = {
@@ -300,6 +363,29 @@ def rekap():
     return render_template("rekap.html", matches=completed, kategori=kategori)
 
 
+@app.route("/galeri")
+def galeri():
+    teams, matches, config = data_context()
+    enriched = [enrich_match(m, teams) for m in matches]
+    photos = []
+    for m in enriched:
+        if m.get("docs"):
+            for doc in m["docs"]:
+                photos.append({
+                    "url": doc["url"],
+                    "uploaded_at": doc.get("uploaded_at", ""),
+                    "match_id": m["id"],
+                    "team_a_code": m["team_a_code"],
+                    "team_b_code": m["team_b_code"],
+                    "category_label": m["category_label"],
+                    "round_label": m["round_label"],
+                    "date_label": m["date_label"],
+                    "time": m["time"]
+                })
+    photos.sort(key=lambda p: p["uploaded_at"], reverse=True)
+    return render_template("galeri.html", photos=photos)
+
+
 def _match_detail_context(match_id, is_modal):
     teams, matches, config = data_context()
     m = utils.get_match(matches, match_id)
@@ -554,6 +640,33 @@ def admin_edit_match(match_id):
             m["team_b"] = request.form.get("team_b") or None
             utils.save_matches(matches)
             flash("Tim final diperbarui.", "success")
+            
+        elif action == "upload_doc":
+            if len(m.get("docs", [])) >= 3:
+                flash("Maksimal 3 foto dokumentasi per pertandingan.", "error")
+            else:
+                file = request.files.get("doc_file") or request.files.get("doc_file_cam")
+                if file and file.filename:
+                    file_url, error = compress_and_upload_image(file, match_id)
+                    if error:
+                        flash(f"Gagal mengunggah dokumen: {error}", "error")
+                    elif file_url:
+                        m.setdefault("docs", []).append({
+                            "url": file_url,
+                            "uploaded_at": datetime.now().isoformat(timespec="seconds")
+                        })
+                        utils.save_matches(matches)
+                        flash("Dokumen berhasil diunggah dan dikompres.", "success")
+                else:
+                    flash("Pilih file gambar terlebih dahulu.", "error")
+        
+        elif action == "delete_doc":
+            doc_url = request.form.get("doc_url")
+            if doc_url and "docs" in m:
+                m["docs"] = [d for d in m["docs"] if d.get("url") != doc_url]
+                utils.save_matches(matches)
+                delete_from_supabase(doc_url)
+                flash("Dokumen berhasil dihapus beserta filenya di S3.", "success")
 
         if request.form.get("modal"):
             return redirect(url_for("match_fragment", match_id=match_id))
