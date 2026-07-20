@@ -13,7 +13,12 @@
   {% if m.status == 'completed' or m.status == 'live' %}
   <div class="vs-row" style="margin-top:.5rem;">
     <div class="vs-team">
-      <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+      <div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 3px;">
+        <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+        {% if m.vote_total_a > 0 or m.vote_total_b > 0 %}
+        <div class="mini-vote-bar"><div class="mini-vote-fill" style="width: {{ m.vote_pct_a }}%; background: {{ m.team_a_color }};"></div></div>
+        {% endif %}
+      </div>
       <small class="player-names">
         <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
         <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>
@@ -25,7 +30,12 @@
       <span class="score-num" data-field="sets_b">{{ m.sets_b }}</span>
     </div>
     <div class="vs-team vs-team-right">
-      <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 3px;">
+        <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+        {% if m.vote_total_a > 0 or m.vote_total_b > 0 %}
+        <div class="mini-vote-bar"><div class="mini-vote-fill" style="width: {{ m.vote_pct_b }}%; background: {{ m.team_b_color }};"></div></div>
+        {% endif %}
+      </div>
       <small class="player-names">
         <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
         <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>
@@ -35,7 +45,12 @@
   {% else %}
   <div class="vs-row">
     <div class="vs-team">
-      <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+      <div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 3px;">
+        <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+        {% if m.vote_total_a > 0 or m.vote_total_b > 0 %}
+        <div class="mini-vote-bar"><div class="mini-vote-fill" style="width: {{ m.vote_pct_a }}%; background: {{ m.team_a_color }};"></div></div>
+        {% endif %}
+      </div>
       <small class="player-names">
         <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
         <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>
@@ -43,7 +58,12 @@
     </div>
     <div class="vs-mid">VS</div>
     <div class="vs-team vs-team-right">
-      <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 3px;">
+        <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+        {% if m.vote_total_a > 0 or m.vote_total_b > 0 %}
+        <div class="mini-vote-bar"><div class="mini-vote-fill" style="width: {{ m.vote_pct_b }}%; background: {{ m.team_b_color }};"></div></div>
+        {% endif %}
+      </div>
       <small class="player-names">
         <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
         <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>

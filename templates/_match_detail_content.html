@@ -148,8 +148,7 @@
 </div>
 <div class="admin-shell">
   <p style="font-size:.82rem; color:#a0677a; margin-bottom:1rem;">
-    Mau minta reschedule laga ini atau ada catatan lain buat panitia? Tulis di sini —
-    sertakan nama dan alasannya supaya mudah ditindaklanjuti.
+    Berikan dukungan untuk tim jagoanmu atau request reschedule laga ini ke panitia. Tuliskan komentar positifmu di sini!
   </p>
 
   {% if m.comments %}
@@ -174,8 +173,8 @@
       <input type="text" name="name" required maxlength="60" placeholder="Nama Anda">
     </label>
     <label>Komentar <span class="req">*</span>
-      <textarea name="comment" rows="3" required maxlength="500"
-        placeholder="Mis. minta reschedule ke tanggal lain karena ada acara kantor..."></textarea>
+      <textarea name="comment" rows="3" required maxlength="200"
+        placeholder="Tulis dukungan semangat untuk tim atau request reschedule (maks 200 karakter)..."></textarea>
     </label>
     <button class="btn btn-primary" type="submit">Kirim Komentar</button>
   </form>

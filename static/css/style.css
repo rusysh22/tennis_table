@@ -634,7 +634,7 @@ legend{ font-family:var(--font-display); font-weight:700; color:var(--red-600); 
 .history-item{ font-size:.78rem; color:#8a5760; padding:.4rem 0; border-bottom:1px dashed var(--pink-100); }
 
 /* ====================== KOMENTAR / REQUEST RESCHEDULE ====================== */
-.comment-list{ display:flex; flex-direction:column; gap:.7rem; margin-bottom:1.2rem; }
+.comment-list{ display:flex; flex-direction:column; gap:.7rem; margin-bottom:1.2rem; max-height: 250px; overflow-y: auto; padding-right: 5px; }
 .comment-item{ background:var(--paper); border-radius:var(--radius-sm); padding:.8rem .9rem; }
 .comment-head{ display:flex; align-items:baseline; justify-content:space-between; gap:.6rem; flex-wrap:wrap; color:var(--maroon-700); font-size:.85rem; }
 .comment-time{ font-size:.72rem; color:#a0677a; font-weight:500; flex:none; }
@@ -1189,4 +1189,20 @@ html.share-supported #shareBtn.floating-btn {
 @keyframes winnerGlow {
   0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 5px rgba(255, 255, 255, 0.4); }
   100% { box-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 15px rgba(255, 255, 255, 0.8); }
+}
+
+.mini-vote-bar {
+  width: 100%;
+  max-width: 45px;
+  height: 3px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 2px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  overflow: hidden;
+}
+.mini-vote-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
 }

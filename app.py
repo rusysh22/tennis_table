@@ -472,15 +472,27 @@ def add_comment(match_id):
     target = url_for("match_fragment", match_id=match_id) if request.form.get("modal") \
         else url_for("match_detail", match_id=match_id) + "#komentar"
 
+    session_key = f"comments_{match_id}"
+    comments_made = session.get(session_key, 0)
+    if comments_made >= 3:
+        flash("Batas maksimum 3 komentar per sesi.", "error")
+        return redirect(target)
+
     name = request.form.get("name", "").strip()
     comment = request.form.get("comment", "").strip()
     if not name or not comment:
         flash("Nama dan komentar wajib diisi.", "error")
         return redirect(target)
+        
+    if len(comment) > 200:
+        flash("Komentar terlalu panjang (maksimal 200 karakter).", "error")
+        return redirect(target)
+
+    session[session_key] = comments_made + 1
 
     # Censor bad words
     clean_name = utils.censor_text(name[:60])
-    clean_comment = utils.censor_text(comment[:500])
+    clean_comment = utils.censor_text(comment[:200])
 
     m.setdefault("comments", []).append({
         "name": clean_name,
