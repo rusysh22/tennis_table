@@ -7,10 +7,30 @@
   <p style="opacity:.8; font-size:.82rem; margin-top:.2rem;">{{ m.best_of_label }}</p>
 
   <div class="detail-vs">
-    <div class="detail-team">
-      <span class="team-chip lg" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code
-        }}</span>
-      <small class="player-names" style="width:100%;">
+    <div class="detail-team {% if m.winner == 'a' %}team-winner{% elif m.winner == 'b' %}team-loser{% endif %}" style="position: relative;">
+      <div class="team-chip-wrapper" style="position: relative; display: inline-block;">
+        <span class="team-chip lg" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+        {% if m.is_voting_open %}
+        <button class="vote-trigger-btn" onclick="toggleVotePopup('a', '{{ m.id }}')" title="Vote untuk {{ m.team_a_code }}">+vote</button>
+        <div class="vote-popup" id="vote-popup-a-{{ m.id }}" style="display: none;">
+          {% for e in ['🔥', '👏', '❤️', '😲', '💪'] %}
+          <button type="button" class="vp-btn" onclick="submitVote('{{ m.id }}', 'a', '{{ e }}')">{{ e }}</button>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <div class="team-vote-stats">
+        <div class="vote-bar-bg" title="Persentase: {{ m.vote_pct_a }}%">
+          <div class="vote-bar-fill" id="vote-bar-a-{{ m.id }}" style="width: {{ m.vote_pct_a }}%; background: {{ m.team_a_color }};"></div>
+        </div>
+        <div class="vote-summary" id="vote-summary-a-{{ m.id }}">
+          {% set va = m.votes.a if m.votes else {} %}
+          {% for e, count in va.items() %}
+            {% if count > 0 %}<span class="vs-item"><span class="vs-emoji">{{ e }}</span><span class="vs-count">{{ count }}</span></span>{% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <small class="player-names" style="width:100%; margin-top:2px;">
         <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
         <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>
       </small>
@@ -24,10 +44,30 @@
     {% else %}
     <div class="x">VS</div>
     {% endif %}
-    <div class="detail-team">
-      <span class="team-chip lg" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code
-        }}</span>
-      <small class="player-names" style="width:100%;">
+    <div class="detail-team {% if m.winner == 'b' %}team-winner{% elif m.winner == 'a' %}team-loser{% endif %}" style="position: relative;">
+      <div class="team-chip-wrapper" style="position: relative; display: inline-block;">
+        <span class="team-chip lg" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+        {% if m.is_voting_open %}
+        <button class="vote-trigger-btn" onclick="toggleVotePopup('b', '{{ m.id }}')" title="Vote untuk {{ m.team_b_code }}">+vote</button>
+        <div class="vote-popup" id="vote-popup-b-{{ m.id }}" style="display: none;">
+          {% for e in ['🔥', '👏', '❤️', '😲', '💪'] %}
+          <button type="button" class="vp-btn" onclick="submitVote('{{ m.id }}', 'b', '{{ e }}')">{{ e }}</button>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <div class="team-vote-stats">
+        <div class="vote-bar-bg" title="Persentase: {{ m.vote_pct_b }}%">
+          <div class="vote-bar-fill" id="vote-bar-b-{{ m.id }}" style="width: {{ m.vote_pct_b }}%; background: {{ m.team_b_color }};"></div>
+        </div>
+        <div class="vote-summary" id="vote-summary-b-{{ m.id }}">
+          {% set vb = m.votes.b if m.votes else {} %}
+          {% for e, count in vb.items() %}
+            {% if count > 0 %}<span class="vs-item"><span class="vs-emoji">{{ e }}</span><span class="vs-count">{{ count }}</span></span>{% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <small class="player-names" style="width:100%; margin-top:2px;">
         <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
         <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>
       </small>
@@ -126,6 +166,7 @@
   <p class="muted" style="font-size:.85rem;">Belum ada komentar untuk pertandingan ini.</p>
   {% endif %}
 
+  {% if m.status != 'completed' %}
   <form method="post" action="{{ url_for('add_comment', match_id=m.id) }}"
     class="comment-form{{ ' js-ajax-form' if is_modal else '' }}">
     {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
@@ -138,6 +179,9 @@
     </label>
     <button class="btn btn-primary" type="submit">Kirim Komentar</button>
   </form>
+  {% else %}
+  <p class="muted" style="font-size:.85rem; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 6px; text-align: center; margin-top: 1rem;">Pertandingan telah selesai. Fitur komentar dinonaktifkan.</p>
+  {% endif %}
 </div>
 
 {% if is_admin and raw is defined %}

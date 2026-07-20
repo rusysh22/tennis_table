@@ -6,18 +6,44 @@
   <h1>{{ config.tournament_name }}</h1>
 
   <div class="hero-meta">
-    <div class="hero-chip"><div class="k">Tanggal</div><div class="v">{{ config.start_date[8:10] }}&ndash;{{ config.end_date[8:10] }} Juli {{ config.start_date[:4] }}</div></div>
-    <div class="hero-chip"><div class="k">Waktu</div><div class="v">{{ config.time_window }}</div></div>
-    <div class="hero-chip"><div class="k">Sesi</div><div class="v">{{ config.time_window_note }}</div></div>
-    <div class="hero-chip"><div class="k">Lokasi</div><div class="v">{{ config.venue }}</div></div>
+    <div class="hero-chip">
+      <div class="k">Tanggal</div>
+      <div class="v">{{ config.start_date[8:10] }}&ndash;{{ config.end_date[8:10] }} Juli {{ config.start_date[:4] }}
+      </div>
+    </div>
+    <div class="hero-chip">
+      <div class="k">Waktu</div>
+      <div class="v">{{ config.time_window }}</div>
+    </div>
+    <div class="hero-chip">
+      <div class="k">Sesi</div>
+      <div class="v">{{ config.time_window_note }}</div>
+    </div>
+    <div class="hero-chip">
+      <div class="k">Lokasi</div>
+      <div class="v">{{ config.venue }}</div>
+    </div>
   </div>
 
   <div class="countdown" id="countdown" data-target="{{ config.start_date }}T18:00:00+07:00">
-    <div id="cd-label" class="v" style="width:100%;font-size:.8rem;opacity:.85;margin-bottom:.2rem;">Menuju hari pertama pertandingan</div>
-    <div class="unit"><div class="num" id="cd-days">--</div><div class="lbl">Hari</div></div>
-    <div class="unit"><div class="num" id="cd-hours">--</div><div class="lbl">Jam</div></div>
-    <div class="unit"><div class="num" id="cd-mins">--</div><div class="lbl">Menit</div></div>
-    <div class="unit"><div class="num" id="cd-secs">--</div><div class="lbl">Detik</div></div>
+    <div id="cd-label" class="v" style="width:100%;font-size:.8rem;opacity:.85;margin-bottom:.2rem;">Menuju hari pertama
+      pertandingan</div>
+    <div class="unit">
+      <div class="num" id="cd-days">--</div>
+      <div class="lbl">Hari</div>
+    </div>
+    <div class="unit">
+      <div class="num" id="cd-hours">--</div>
+      <div class="lbl">Jam</div>
+    </div>
+    <div class="unit">
+      <div class="num" id="cd-mins">--</div>
+      <div class="lbl">Menit</div>
+    </div>
+    <div class="unit">
+      <div class="num" id="cd-secs">--</div>
+      <div class="lbl">Detik</div>
+    </div>
   </div>
 
   <div class="hero-actions">
@@ -37,14 +63,28 @@
 </section>
 
 <div class="stats-row">
-  <div class="stat-card"><div class="num">{{ team_count }}</div><div class="lbl">Tim Terdaftar</div></div>
-  <div class="stat-card"><div class="num">{{ total_matches }}</div><div class="lbl">Total Pertandingan</div></div>
-  <div class="stat-card"><div class="num">{{ completed_count }}</div><div class="lbl">Sudah Selesai</div></div>
-  <div class="stat-card"><div class="num">2</div><div class="lbl">Kategori (Putra &amp; Campuran)</div></div>
+  <div class="stat-card">
+    <div class="num">{{ team_count }}</div>
+    <div class="lbl">Tim Terdaftar</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ total_matches }}</div>
+    <div class="lbl">Total Pertandingan</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ completed_count }}</div>
+    <div class="lbl">Sudah Selesai</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">2</div>
+    <div class="lbl">Kategori (Putra &amp; Campuran)</div>
+  </div>
 </div>
 
 {% if live_now %}
-<div class="section-head"><h2>🔴 Sedang Berlangsung</h2><a class="link-more" href="{{ url_for('live') }}">Lihat semua &rarr;</a></div>
+<div class="section-head">
+  <h2>🔴 Sedang Berlangsung</h2><a class="link-more" href="{{ url_for('live') }}">Lihat semua &rarr;</a>
+</div>
 <div class="match-grid" data-live-poll>
   {% for m in live_now %}
   {% include "_match_card.html" %}
@@ -52,7 +92,9 @@
 </div>
 {% endif %}
 
-<div class="section-head"><h2>📅 Pertandingan Mendatang</h2><a class="link-more" href="{{ url_for('jadwal') }}">Jadwal lengkap &rarr;</a></div>
+<div class="section-head">
+  <h2>📅 Pertandingan Mendatang</h2><a class="link-more" href="{{ url_for('jadwal') }}">Jadwal lengkap &rarr;</a>
+</div>
 {% if upcoming %}
 <div class="match-grid">
   {% for m in upcoming %}
@@ -60,16 +102,80 @@
   {% endfor %}
 </div>
 {% else %}
-<div class="empty-state"><div class="emoji">🏓</div>Belum ada jadwal mendatang.</div>
+<div class="empty-state">
+  <div class="emoji">🏓</div>Belum ada jadwal mendatang.
+</div>
 {% endif %}
 
 {% if recent %}
-<div class="section-head"><h2>📋 Hasil Terbaru</h2><a class="link-more" href="{{ url_for('rekap') }}">Rekap lengkap &rarr;</a></div>
+<div class="section-head">
+  <h2>📋 Hasil Terbaru</h2><a class="link-more" href="{{ url_for('rekap') }}">Rekap lengkap &rarr;</a>
+</div>
 <div class="match-grid">
   {% for m in recent %}
   {% include "_match_card.html" %}
   {% endfor %}
 </div>
+{% endif %}
+
+{% if recent_comments %}
+<div id="floating-comments" class="floating-comments">
+  <div class="fc-header">
+    <div class="fc-header-title">💬 Live Comment</div>
+    <button id="fc-close-btn" class="fc-close" aria-label="Tutup">&times;</button>
+  </div>
+  <div class="fc-body">
+    {% for c in recent_comments %}
+    <div class="fc-item" data-index="{{ loop.index0 }}">
+      <div class="fc-match">🏓 <strong>{{ c.match_label }}</strong></div>
+      <div class="fc-user">👤 <strong>{{ c.name }}</strong></div>
+      <div class="fc-text">"{{ c.comment }}"</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<script>
+  (function () {
+    const container = document.getElementById('floating-comments');
+    const items = document.querySelectorAll('.fc-item');
+    const closeBtn = document.getElementById('fc-close-btn');
+    
+    if (!items.length) return;
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        container.style.display = 'none';
+      });
+    }
+
+    let currentIndex = 0;
+    // Sembunyikan semua dulu
+    items.forEach(item => item.style.display = 'none');
+
+    function showNext() {
+      if (container.style.display === 'none') return; // Stop jika sudah diclose
+
+      // Sembunyikan yang saat ini aktif
+      items.forEach(item => {
+        item.style.display = 'none';
+        item.classList.remove('fc-active');
+      });
+
+      // Tampilkan yang berikutnya
+      const currentItem = items[currentIndex];
+      currentItem.style.display = 'block';
+      // Force reflow
+      void currentItem.offsetWidth;
+      currentItem.classList.add('fc-active');
+
+      currentIndex = (currentIndex + 1) % items.length;
+      setTimeout(showNext, 5000); // Ganti tiap 5 detik (sesuai durasi animasi)
+    }
+
+    // Mulai animasi pertama
+    showNext();
+  })();
+</script>
 {% endif %}
 
 {% endblock %}

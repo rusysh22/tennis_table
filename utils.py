@@ -2,10 +2,43 @@ import json
 import os
 import shutil
 import threading
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 _LOCK = threading.Lock()
+
+def now_wib():
+    return datetime.now(timezone(timedelta(hours=7)))
+
+BAD_WORDS = {
+    "anjing", "babi", "monyet", "kunyuk", "bangsat", "bajingan", "tolol", "goblok", "bego", 
+    "idiot", "kampret", "keparat", "kontol", "memek", "jembut", "ngentot", "perek", "pelacur",
+    "jablay", "sialan", "jancok", "dancok", "pantek", "telek", "tai", "asu", "bgst", "anjg", "gblk"
+}
+
+import re
+def censor_text(text):
+    if not text:
+        return text
+    
+    # Split text into words, but keep whitespace so we can reconstruct
+    words = re.split(r'(\s+)', text)
+    censored_words = []
+    
+    for w in words:
+        if not w.strip():
+            censored_words.append(w)
+            continue
+            
+        clean_w = ''.join(c for c in w if c.isalnum()).lower()
+        if clean_w in BAD_WORDS:
+            # Replace alphanumeric characters with '*', preserve punctuation
+            censored_w = ''.join('*' if c.isalnum() else c for c in w)
+            censored_words.append(censored_w)
+        else:
+            censored_words.append(w)
+            
+    return "".join(censored_words)
 
 # Penyimpanan data: default file lokal data/*.json (untuk dev). Vercel serverless
 # filesystem-nya read-only, jadi kalau env var DATABASE_URL tersedia, otomatis
@@ -137,7 +170,7 @@ def load_config():
 def backup_data_files(*names):
     """Cadangkan data sebelum operasi merusak (mis. reset/acak ulang).
     Di DB: disalin ke tennis.app_data_backups. Di lokal: disalin ke data/backups/."""
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    ts = now_wib().strftime("%Y%m%d_%H%M%S")
     if USE_DB:
         with _db_conn() as conn, conn.cursor() as cur:
             for name in names:

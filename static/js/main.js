@@ -357,3 +357,87 @@
   })();
 
 })();
+
+// Global function for voting
+window.toggleVotePopup = function(team, matchId) {
+  var popupId = 'vote-popup-' + team + '-' + matchId;
+  var popup = document.getElementById(popupId);
+  if (!popup) return;
+  var isVisible = popup.style.display === 'flex';
+  
+  // hide all others first
+  document.querySelectorAll('.vote-popup').forEach(function(p) { p.style.display = 'none'; });
+  
+  if (!isVisible) {
+    popup.style.display = 'flex';
+  }
+};
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.team-chip-wrapper') && !e.target.closest('.vote-popup')) {
+    document.querySelectorAll('.vote-popup').forEach(function(p) { p.style.display = 'none'; });
+  }
+});
+
+window.submitVote = function(matchId, team, emoji) {
+  // close popup
+  var popup = document.getElementById('vote-popup-' + team + '-' + matchId);
+  if (popup) popup.style.display = 'none';
+
+  var formData = new FormData();
+  formData.append('team', team);
+  formData.append('emoji', emoji);
+
+  fetch(`/pertandingan/${matchId}/vote`, {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    var toast = document.getElementById('vote-toast');
+    if (toast) {
+      toast.style.display = 'block';
+      toast.className = 'vote-toast ' + (data.success ? 'success' : 'error');
+      toast.textContent = data.message || (data.success ? `Berhasil! Sisa kesempatan: ${data.votes_left}` : '');
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    } else if (!data.success && data.message) {
+      alert(data.message);
+    }
+    
+    if (data.success) {
+      // Update count
+      var summaryDiv = document.getElementById('vote-summary-' + team + '-' + matchId);
+      if (summaryDiv) {
+        var items = summaryDiv.querySelectorAll('.vs-item');
+        var found = false;
+        items.forEach(function(item) {
+          if (item.querySelector('.vs-emoji').textContent === emoji) {
+            item.querySelector('.vs-count').textContent = data.new_count;
+            found = true;
+          }
+        });
+        if (!found) {
+          var newItem = document.createElement('span');
+          newItem.className = 'vs-item';
+          newItem.innerHTML = '<span class="vs-emoji">' + emoji + '</span><span class="vs-count">' + data.new_count + '</span>';
+          summaryDiv.appendChild(newItem);
+        }
+      }
+      
+      // Update bars
+      var barA = document.getElementById('vote-bar-a-' + matchId);
+      var barB = document.getElementById('vote-bar-b-' + matchId);
+      if (barA && data.pct_a !== undefined) {
+        barA.style.width = data.pct_a + '%';
+        barA.parentElement.title = 'Persentase: ' + data.pct_a + '%';
+      }
+      if (barB && data.pct_b !== undefined) {
+        barB.style.width = data.pct_b + '%';
+        barB.parentElement.title = 'Persentase: ' + data.pct_b + '%';
+      }
+    }
+  })
+  .catch(err => {
+    console.error('Vote error:', err);
+  });
+};

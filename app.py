@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 
 from flask import (
@@ -134,7 +134,39 @@ def enrich_match(m, teams):
     m["sets_b"] = sb
     m["sets_needed"] = utils.sets_needed_to_win(m)
     m["best_of_label"] = "Best of 5" if m["sets_needed"] == 3 else "Best of 3"
+    
+    m["winner"] = None
+    if m["status"] == "completed":
+        if sa > sb: m["winner"] = "a"
+        elif sb > sa: m["winner"] = "b"
+        
     m["comments"] = m.get("comments", [])
+    
+    # Voting logic
+    match_dt_str = f"{m['date']} {m['time']}"
+    try:
+        match_dt = datetime.strptime(match_dt_str, "%Y-%m-%d %H:%M").replace(tzinfo=timezone(timedelta(hours=7)))
+        m["is_voting_open"] = utils.now_wib() < match_dt - timedelta(hours=1)
+    except:
+        m["is_voting_open"] = False
+        
+    if m["status"] == "completed":
+        m["is_voting_open"] = False
+        
+    m["votes"] = m.get("votes", {"a": {}, "b": {}})
+    total_a = sum(m["votes"]["a"].values())
+    total_b = sum(m["votes"]["b"].values())
+    total_votes = total_a + total_b
+    
+    m["vote_total_a"] = total_a
+    m["vote_total_b"] = total_b
+    if total_votes > 0:
+        m["vote_pct_a"] = int(round((total_a / total_votes) * 100))
+        m["vote_pct_b"] = 100 - m["vote_pct_a"]
+    else:
+        m["vote_pct_a"] = 0
+        m["vote_pct_b"] = 0
+        
     return m
 
 
@@ -170,7 +202,7 @@ def inject_globals():
     return {
         "config": config,
         "is_admin": bool(session.get("is_admin")),
-        "now": datetime.now(),
+        "now": utils.now_wib(),
     }
 
 
@@ -186,7 +218,7 @@ def _close_db_connection(exception=None):
 def index():
     teams, matches, config = data_context()
     enriched = [enrich_match(m, teams) for m in matches]
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = utils.now_wib().strftime("%Y-%m-%d")
 
     upcoming = sorted(
         [m for m in enriched if m["status"] in ("scheduled", "live") and m["date"] >= today],
@@ -201,11 +233,26 @@ def index():
     total_matches = len(matches)
     completed_count = sum(1 for m in matches if m["status"] == "completed")
 
+    all_comments = []
+    for m in enriched:
+        if m["status"] == "completed":
+            continue
+        if m.get("comments"):
+            for c in m["comments"]:
+                all_comments.append({
+                    "name": c["name"],
+                    "comment": c["comment"],
+                    "match_label": f"{m['team_a_code']} vs {m['team_b_code']}",
+                    "at": c["at"]
+                })
+    all_comments.sort(key=lambda x: x["at"], reverse=True)
+    recent_comments = all_comments[:15]
+
     return render_template(
         "index.html",
         upcoming=upcoming, live_now=live_now, recent=recent,
         total_matches=total_matches, completed_count=completed_count,
-        team_count=len(teams),
+        team_count=len(teams), recent_comments=recent_comments,
     )
 
 
@@ -341,7 +388,7 @@ def live():
     teams, matches, config = data_context()
     enriched = [enrich_match(m, teams) for m in matches]
     live_now = [m for m in enriched if m["status"] == "live"]
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = utils.now_wib().strftime("%Y-%m-%d")
     today_matches = sorted(
         [m for m in enriched if m["date"] == today],
         key=lambda m: (m["time"], m["court"]),
@@ -431,14 +478,73 @@ def add_comment(match_id):
         flash("Nama dan komentar wajib diisi.", "error")
         return redirect(target)
 
+    # Censor bad words
+    clean_name = utils.censor_text(name[:60])
+    clean_comment = utils.censor_text(comment[:500])
+
     m.setdefault("comments", []).append({
-        "name": name[:60],
-        "comment": comment[:500],
-        "at": datetime.now().isoformat(timespec="seconds"),
+        "name": clean_name,
+        "comment": clean_comment,
+        "at": utils.now_wib().isoformat(timespec="seconds"),
     })
     utils.save_matches(matches)
     flash("Komentar terkirim. Panitia akan meninjau permintaan Anda.", "success")
     return redirect(target)
+
+
+@app.route("/pertandingan/<match_id>/vote", methods=["POST"])
+def vote_match(match_id):
+    team = request.form.get("team")
+    emoji = request.form.get("emoji")
+    
+    valid_emojis = ["🔥", "👏", "❤️", "😲", "💪"]
+    if emoji not in valid_emojis or team not in ("a", "b"):
+        return jsonify({"success": False, "message": "Data tidak valid"}), 400
+        
+    session_key = f"vote_{match_id}"
+    vote_count = session.get(session_key, 0)
+    
+    if vote_count >= 2:
+        return jsonify({"success": False, "message": "Batas maksimum 2 vote per sesi."}), 403
+        
+    teams, matches, config = data_context()
+    m = utils.get_match(matches, match_id)
+    if not m:
+        return jsonify({"success": False, "message": "Pertandingan tidak ditemukan"}), 404
+        
+    # Check time limit
+    try:
+        match_dt_str = f"{m['date']} {m['time']}"
+        match_dt = datetime.strptime(match_dt_str, "%Y-%m-%d %H:%M").replace(tzinfo=timezone(timedelta(hours=7)))
+        if utils.now_wib() >= match_dt - timedelta(hours=1):
+            return jsonify({"success": False, "message": "Voting ditutup 1 jam sebelum pertandingan."}), 403
+    except:
+        pass
+        
+    if "votes" not in m:
+        m["votes"] = {"a": {e: 0 for e in valid_emojis}, "b": {e: 0 for e in valid_emojis}}
+        
+    if emoji not in m["votes"][team]:
+        m["votes"][team][emoji] = 0
+        
+    m["votes"][team][emoji] += 1
+    session[session_key] = vote_count + 1
+    utils.save_matches(matches)
+    
+    total_a = sum(m["votes"]["a"].values())
+    total_b = sum(m["votes"]["b"].values())
+    total_votes = total_a + total_b
+    pct_a = int(round((total_a / total_votes) * 100)) if total_votes > 0 else 0
+    pct_b = 100 - pct_a if total_votes > 0 else 0
+    
+    return jsonify({
+        "success": True,
+        "new_count": m["votes"][team][emoji],
+        "votes_left": 2 - (vote_count + 1),
+        "pct_a": pct_a,
+        "pct_b": pct_b
+    })
+
 
 
 # ---------- Share card (Open Graph) ----------
@@ -627,7 +733,7 @@ def admin_edit_match(match_id):
                     "from_date": m["date"], "from_time": m["time"], "from_court": m["court"],
                     "to_date": new_date, "to_time": new_time, "to_court": new_court,
                     "reason": reason,
-                    "at": datetime.now().isoformat(timespec="seconds"),
+                    "at": utils.now_wib().isoformat(timespec="seconds"),
                 })
                 m["date"], m["time"], m["court"] = new_date, new_time, new_court
                 if m["status"] == "scheduled":
@@ -653,7 +759,7 @@ def admin_edit_match(match_id):
                     elif file_url:
                         m.setdefault("docs", []).append({
                             "url": file_url,
-                            "uploaded_at": datetime.now().isoformat(timespec="seconds")
+                            "uploaded_at": utils.now_wib().isoformat(timespec="seconds")
                         })
                         utils.save_matches(matches)
                         flash("Dokumen berhasil diunggah dan dikompres.", "success")
