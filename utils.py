@@ -13,7 +13,8 @@ def now_wib():
 BAD_WORDS = {
     "anjing", "babi", "monyet", "kunyuk", "bangsat", "bajingan", "tolol", "goblok", "bego", 
     "idiot", "kampret", "keparat", "kontol", "memek", "jembut", "ngentot", "perek", "pelacur",
-    "jablay", "sialan", "jancok", "dancok", "pantek", "telek", "tai", "asu", "bgst", "anjg", "gblk"
+    "jablay", "sialan", "jancok", "dancok", "pantek", "telek", "tai", "asu", "bgst", "anjg", "gblk",
+    "picek", "buta", "budeg", "pincang"
 }
 
 import re

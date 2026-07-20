@@ -8,7 +8,8 @@ from flask import (
 import boto3
 import io
 import uuid
-from PIL import Image
+from PIL import Image, ImageOps
+import requests
 
 import og_image
 import utils
@@ -47,6 +48,7 @@ def compress_and_upload_image(file, match_id):
         return None, "Konfigurasi S3 (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY) belum diset di environment."
     try:
         img = Image.open(file)
+        img = ImageOps.exif_transpose(img)
         if img.mode in ("RGBA", "P"):
             img = img.convert("RGB")
         
@@ -785,6 +787,39 @@ def admin_edit_match(match_id):
                 utils.save_matches(matches)
                 delete_from_supabase(doc_url)
                 flash("Dokumen berhasil dihapus beserta filenya di S3.", "success")
+                
+        elif action == "rotate_doc":
+            doc_url = request.form.get("doc_url")
+            if doc_url and "docs" in m:
+                try:
+                    clean_url = doc_url.split("?")[0]
+                    resp = requests.get(doc_url)
+                    if resp.status_code == 200:
+                        img = Image.open(io.BytesIO(resp.content))
+                        img = img.rotate(-90, expand=True)
+                        
+                        output = io.BytesIO()
+                        img.save(output, format="JPEG", quality=75, optimize=True)
+                        output.seek(0)
+                        
+                        filename = clean_url.split("/")[-1]
+                        s3_client = boto3.client(
+                            's3', endpoint_url=SUPABASE_S3_ENDPOINT,
+                            aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                            region_name=SUPABASE_REGION
+                        )
+                        s3_client.upload_fileobj(output, S3_BUCKET_NAME, filename, ExtraArgs={'ContentType': 'image/jpeg', 'CacheControl': 'no-cache'})
+                        
+                        for d in m["docs"]:
+                            if d.get("url", "").split("?")[0] == clean_url:
+                                d["url"] = clean_url + f"?v={utils.now_wib().timestamp()}"
+                                
+                        utils.save_matches(matches)
+                        flash("Dokumen berhasil di-rotate 90 derajat.", "success")
+                    else:
+                        flash("Gagal mengunduh dokumen dari S3 untuk di-rotate.", "error")
+                except Exception as e:
+                    flash(f"Gagal me-rotate dokumen: {e}", "error")
 
         if request.form.get("modal"):
             return redirect(url_for("match_fragment", match_id=match_id))
