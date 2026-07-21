@@ -25,9 +25,16 @@
     </div>
   </div>
 
-  <div class="countdown" id="countdown" data-target="{{ config.start_date }}T18:00:00+07:00">
-    <div id="cd-label" class="v" style="width:100%;font-size:.8rem;opacity:.85;margin-bottom:.2rem;">Menuju hari pertama
-      pertandingan</div>
+  {% if is_live %}
+  <div style="font-size: 1rem; font-weight: bold; color: #fff; text-align: center; margin-top: .5rem; margin-bottom: 1rem; background: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.5); padding: 0.6rem 1rem; border-radius: 8px; display: inline-block;">
+    <span class="pulse-dot" style="display:inline-block; width:10px; height:10px; background:var(--brand-red); border-radius:50%; margin-right:6px; box-shadow: 0 0 8px var(--brand-red);"></span>
+    Sedang Ada Pertandingan Berlangsung!
+  </div>
+  {% elif next_match %}
+  <div class="countdown" id="countdown" data-target="{{ next_match.date }}T{{ next_match.time }}:00+07:00">
+    <div id="cd-label" class="v" style="width:100%;font-size:.8rem;opacity:.85;margin-bottom:.2rem;">
+      Menuju jadwal berikutnya: <strong>{{ next_match.team_a_code }} vs {{ next_match.team_b_code }}</strong>
+    </div>
     <div class="unit">
       <div class="num" id="cd-days">--</div>
       <div class="lbl">Hari</div>
@@ -45,6 +52,11 @@
       <div class="lbl">Detik</div>
     </div>
   </div>
+  {% else %}
+  <div style="font-size: 1rem; font-weight: bold; color: #fff; text-align: center; margin-top: .5rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.1); padding: 0.6rem 1rem; border-radius: 8px; display: inline-block;">
+    🎉 Seluruh jadwal turnamen telah selesai.
+  </div>
+  {% endif %}
 
   <div class="hero-actions">
     <a class="btn btn-primary" href="{{ url_for('jadwal') }}">📅 Lihat Jadwal</a>

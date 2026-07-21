@@ -249,12 +249,21 @@ def index():
                 })
     all_comments.sort(key=lambda x: x["at"], reverse=True)
     recent_comments = all_comments[:15]
+    
+    next_match = None
+    for m in upcoming:
+        if m["status"] == "scheduled":
+            next_match = m
+            break
+            
+    is_live = len(live_now) > 0
 
     return render_template(
         "index.html",
         upcoming=upcoming, live_now=live_now, recent=recent,
         total_matches=total_matches, completed_count=completed_count,
         team_count=len(teams), recent_comments=recent_comments,
+        next_match=next_match, is_live=is_live,
     )
 
 

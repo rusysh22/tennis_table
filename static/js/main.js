@@ -32,7 +32,7 @@
       var now = new Date();
       var diff = target - now;
       if (diff <= 0) {
-        if (elLabel) elLabel.textContent = "Turnamen sedang berlangsung!";
+        if (elLabel) elLabel.textContent = "Waktu jadwal telah tiba! Silakan refresh halaman.";
         elD.textContent = elH.textContent = elM.textContent = elS.textContent = "00";
         return;
       }
