@@ -877,12 +877,9 @@ html.share-supported #shareBtn.floating-btn {
   column-gap: 1.2rem;
   padding: 1rem 0;
 }
-.gallery-parallax {
+.gallery-item {
   break-inside: avoid;
   margin-bottom: 1.2rem;
-  will-change: transform;
-}
-.gallery-item {
   border-radius: var(--radius-sm);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -960,6 +957,69 @@ html.share-supported #shareBtn.floating-btn {
   }
   .gallery-teams { font-size: 0.75rem; }
   .gallery-meta { font-size: 0.65rem; }
+}
+
+/* ---------- rolling marquee (dipakai saat foto cukup banyak) ---------- */
+.gallery-marquee {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  height: min(640px, 75vh);
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+.marquee-col {
+  overflow: hidden;
+  height: 100%;
+}
+.marquee-track {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  animation: marqueeUp 42s linear infinite;
+  will-change: transform;
+}
+.marquee-col-2 .marquee-track { animation-name: marqueeDown; animation-duration: 38s; }
+.marquee-col-3 .marquee-track { animation-duration: 46s; }
+.marquee-col:hover .marquee-track { animation-play-state: paused; }
+.marquee-track .gallery-item { break-inside: auto; margin-bottom: 0; }
+
+@keyframes marqueeUp {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+@keyframes marqueeDown {
+  from { transform: translateY(-50%); }
+  to { transform: translateY(0); }
+}
+
+.gallery-marquee-fade {
+  position: absolute;
+  left: 0; right: 0;
+  height: 160px;
+  pointer-events: none;
+  z-index: 2;
+}
+.gallery-marquee-fade-top {
+  top: 0;
+  background: linear-gradient(to bottom, var(--paper) 0%, rgba(255, 244, 246, 0) 100%);
+}
+.gallery-marquee-fade-bottom {
+  bottom: 0;
+  background: linear-gradient(to top, var(--paper) 0%, rgba(255, 244, 246, 0) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation-play-state: paused; }
+}
+
+@media (max-width: 600px) {
+  .gallery-marquee {
+    gap: 0.7rem;
+    height: min(480px, 65vh);
+  }
+  .gallery-marquee-fade { height: 90px; }
 }
 
 /* ====================== FLOATING COMMENTS ====================== */
