@@ -59,6 +59,52 @@
     </div>
   </div>
 
+  {% if putra_champion %}
+  <div class="bracket-col final-col">
+    <div class="champion-showcase">
+      {% if putra_champion_photo %}
+      <img src="{{ putra_champion_photo }}" alt="Foto juara {{ putra_champion_label }}" class="champion-photo">
+      {% else %}
+      <div class="champion-photo champion-photo-empty">🏆</div>
+      {% endif %}
+      <div class="champion-info">
+        <span class="champion-info-label">Juara Ganda Putra</span>
+        <strong class="champion-info-name">{{ putra_champion_label }}</strong>
+      </div>
+    </div>
+    {% if is_admin %}
+    <div class="admin-shell champion-admin">
+      <form method="post" action="{{ url_for('admin_upload_champion_photo', category='ganda_putra', group='FINAL') }}" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="upload_champion_photo">
+        <input type="hidden" name="redirect_to" value="bracket">
+        <div style="display:flex; gap:.6rem; flex-wrap:wrap;">
+          <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.7rem;">
+            📷 Kamera Langsung
+            <input type="file" name="champion_photo_cam" accept="image/*" capture="environment" style="display:none;"
+              onchange="this.form.submit()">
+          </label>
+          <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.7rem;">
+            📁 File Galeri
+            <input type="file" name="champion_photo" accept="image/jpeg, image/png, image/webp" style="display:none;"
+              onchange="this.form.submit()">
+          </label>
+        </div>
+        <p style="font-size:.75rem; color:#a0677a; margin-top:.6rem; text-align:center;">
+          Upload/ganti foto juara Ganda Putra. File otomatis terupload begitu dipilih/dijepret.
+        </p>
+      </form>
+      {% if putra_champion_photo %}
+      <form method="post" action="{{ url_for('admin_upload_champion_photo', category='ganda_putra', group='FINAL') }}" onsubmit="return confirm('Hapus foto juara ini?');" style="margin-top:.6rem;">
+        <input type="hidden" name="action" value="delete_champion_photo">
+        <input type="hidden" name="redirect_to" value="bracket">
+        <button type="submit" class="btn btn-outline" style="width:100%;">🗑️ Hapus Foto</button>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
   <div class="bracket-col">
     <div style="font-size:.72rem; font-weight:700; text-transform:uppercase; color:var(--red-600); margin-bottom:-1rem;">Group B</div>
     {% for r in standings_b %}

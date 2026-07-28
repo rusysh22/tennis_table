@@ -53,9 +53,61 @@
     </div>
   </div>
   {% else %}
-  <div style="font-size: 1rem; font-weight: bold; color: #fff; text-align: center; margin-top: .5rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.1); padding: 0.6rem 1rem; border-radius: 8px; display: inline-block;">
+  <div class="hero-firework-wrap" aria-hidden="true"><canvas id="heroFireworkCanvas"></canvas></div>
+
+  <div style="font-size: 1rem; font-weight: bold; color: #fff; text-align: center; margin-top: .5rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.1); padding: 0.6rem 1rem; border-radius: 8px; display: inline-block; position:relative; z-index:1;">
     🎉 Seluruh jadwal turnamen telah selesai.
   </div>
+
+  <p class="hero-congrats" style="position:relative; z-index:1;">
+    <span id="heroTypewriter" class="hero-typewriter" data-text="Selamat kepada seluruh juara Mini-Round Table Tennis InterSport 2026! Sampai jumpa di turnamen berikutnya 🏓"></span><span class="hero-typewriter-cursor">|</span>
+  </p>
+
+  {% if gc_champion_label or putra_champion_label %}
+  <div class="hero-champions">
+    {% if putra_champion_label %}
+    <div class="hero-champion-card">
+      {% if putra_champion_photo %}
+      <img src="{{ putra_champion_photo }}" alt="Foto juara Ganda Putra" class="hero-champion-photo">
+      {% else %}
+      <div class="hero-champion-photo hero-champion-photo-empty">🏆</div>
+      {% endif %}
+      <div class="hero-champion-info">
+        <span class="hero-champion-label">🏆 Juara Ganda Putra</span>
+        <strong class="hero-champion-name">{{ putra_champion_label }}</strong>
+      </div>
+    </div>
+    {% endif %}
+    {% if gc_champion_label %}
+    <div class="hero-champion-card">
+      {% if gc_champion_photo %}
+      <img src="{{ gc_champion_photo }}" alt="Foto juara Ganda Campuran" class="hero-champion-photo">
+      {% else %}
+      <div class="hero-champion-photo hero-champion-photo-empty">🏆</div>
+      {% endif %}
+      <div class="hero-champion-info">
+        <span class="hero-champion-label">🏆 Juara Ganda Campuran</span>
+        <strong class="hero-champion-name">{{ gc_champion_label }}</strong>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if hero_gallery_photos %}
+  <div class="hero-gallery-strip">
+    <div class="hero-gallery-fade hero-gallery-fade-left"></div>
+    <div class="hero-gallery-fade hero-gallery-fade-right"></div>
+    <div class="hero-gallery-track">
+      {% for p in hero_gallery_photos %}
+      <img src="{{ p.url }}" class="hero-gallery-img" loading="lazy" alt="Dokumentasi pertandingan">
+      {% endfor %}
+      {% for p in hero_gallery_photos %}
+      <img src="{{ p.url }}" class="hero-gallery-img" loading="lazy" alt="Dokumentasi pertandingan">
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
   {% endif %}
 
   <div class="hero-actions">
@@ -187,6 +239,102 @@
     // Mulai animasi pertama
     showNext();
   })();
+</script>
+{% endif %}
+
+{% if tournament_ended %}
+<script>
+(function () {
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- typewriter ucapan selamat ----------
+  var tw = document.getElementById("heroTypewriter");
+  if (tw) {
+    var fullText = tw.getAttribute("data-text") || "";
+    if (reduceMotion) {
+      tw.textContent = fullText;
+    } else {
+      tw.textContent = "";
+      var i = 0;
+      (function typeNext() {
+        if (i <= fullText.length) {
+          tw.textContent = fullText.slice(0, i);
+          i++;
+          setTimeout(typeNext, 32);
+        }
+      })();
+    }
+  }
+
+  // ---------- kembang api (canvas) ----------
+  if (reduceMotion) return;
+  var canvas = document.getElementById("heroFireworkCanvas");
+  var hero = canvas ? canvas.closest(".hero") : null;
+  if (!canvas || !hero) return;
+  var ctx = canvas.getContext("2d");
+  var particles = [];
+  var w, h;
+
+  function resize() {
+    w = canvas.width = hero.clientWidth;
+    h = canvas.height = hero.clientHeight;
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  var colors = ["#ff3b57", "#ff6f91", "#ffc2d1", "#ffd166", "#8ecae6", "#ffffff"];
+
+  function spawnBurst() {
+    var cx = w * (0.15 + Math.random() * 0.7);
+    var cy = h * (0.15 + Math.random() * 0.5);
+    var color = colors[Math.floor(Math.random() * colors.length)];
+    var count = 26 + Math.floor(Math.random() * 14);
+    for (var i = 0; i < count; i++) {
+      var angle = (Math.PI * 2 * i) / count + Math.random() * 0.2;
+      var speed = 1.2 + Math.random() * 2.4;
+      particles.push({
+        x: cx, y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        decay: 0.012 + Math.random() * 0.012,
+        color: color,
+        size: 1.5 + Math.random() * 1.5,
+      });
+    }
+  }
+
+  var lastBurst = 0;
+  var burstInterval = 1400;
+
+  function tick(ts) {
+    ctx.clearRect(0, 0, w, h);
+    if (!lastBurst || ts - lastBurst > burstInterval) {
+      spawnBurst();
+      lastBurst = ts;
+      burstInterval = 1100 + Math.random() * 1400;
+    }
+    for (var i = particles.length - 1; i >= 0; i--) {
+      var p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.02; // gravitasi ringan
+      p.life -= p.decay;
+      if (p.life <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+      ctx.globalAlpha = Math.max(p.life, 0);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
 </script>
 {% endif %}
 

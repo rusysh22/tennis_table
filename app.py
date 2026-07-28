@@ -257,6 +257,25 @@ def index():
             break
             
     is_live = len(live_now) > 0
+    tournament_ended = not is_live and not next_match
+
+    gc_champion = None
+    gc_champion_photo = None
+    putra_champion = None
+    putra_champion_photo = None
+    hero_gallery_photos = []
+    if tournament_ended:
+        gc_champion = utils.group_champion(matches, teams, "ganda_campuran", "A")
+        gc_champion_photo = config.get("champions", {}).get("ganda_campuran_A", {}).get("photo_url")
+        putra_champion = final_champion(matches, "ganda_putra")
+        putra_champion_photo = config.get("champions", {}).get("ganda_putra_FINAL", {}).get("photo_url")
+
+        doc_photos = []
+        for m in enriched:
+            for doc in m.get("docs", []):
+                doc_photos.append({"url": doc["url"], "uploaded_at": doc.get("uploaded_at", "")})
+        doc_photos.sort(key=lambda p: p["uploaded_at"], reverse=True)
+        hero_gallery_photos = doc_photos[:16]
 
     return render_template(
         "index.html",
@@ -264,6 +283,12 @@ def index():
         total_matches=total_matches, completed_count=completed_count,
         team_count=len(teams), recent_comments=recent_comments,
         next_match=next_match, is_live=is_live,
+        tournament_ended=tournament_ended,
+        gc_champion_label=utils.team_label(teams, gc_champion) if gc_champion else None,
+        gc_champion_photo=gc_champion_photo,
+        putra_champion_label=utils.team_label(teams, putra_champion) if putra_champion else None,
+        putra_champion_photo=putra_champion_photo,
+        hero_gallery_photos=hero_gallery_photos,
     )
 
 
@@ -365,14 +390,28 @@ def klasemen():
     return render_template("klasemen.html", groups=groups)
 
 
+def final_champion(matches, category):
+    """Pemenang laga FINAL (juara turnamen keseluruhan), beda dengan juara grup fase round-robin."""
+    final_match = next((m for m in matches if m["group"] == "FINAL" and m["category"] == category), None)
+    if final_match and final_match.get("status") == "completed":
+        return final_match.get("winner")
+    return None
+
+
 @app.route("/admin/juara/<category>/<group>", methods=["POST"])
 @login_required
 def admin_upload_champion_photo(category, group):
     teams, matches, config = data_context()
-    champion = utils.group_champion(matches, teams, category, group)
+    redirect_to = request.form.get("redirect_to", "klasemen")
+    redirect_endpoint = "bracket" if redirect_to == "bracket" else "klasemen"
+
+    if group == "FINAL":
+        champion = final_champion(matches, category)
+    else:
+        champion = utils.group_champion(matches, teams, category, group)
     if not champion:
         flash("Kategori/grup ini belum punya juara (belum semua pertandingan selesai).", "error")
-        return redirect(url_for("klasemen"))
+        return redirect(url_for(redirect_endpoint))
 
     action = request.form.get("action")
     champions = config.setdefault("champions", {})
@@ -385,17 +424,17 @@ def admin_upload_champion_photo(category, group):
             champions.pop(key, None)
             utils.save_json("config.json", config)
             flash("Foto juara berhasil dihapus.", "success")
-        return redirect(url_for("klasemen"))
+        return redirect(url_for(redirect_endpoint))
 
     file = request.files.get("champion_photo_cam") or request.files.get("champion_photo")
     if not file or not file.filename:
         flash("Pilih file foto juara terlebih dahulu.", "error")
-        return redirect(url_for("klasemen"))
+        return redirect(url_for(redirect_endpoint))
 
     file_url, error = compress_and_upload_image(file, f"champion_{key}")
     if error:
         flash(f"Gagal mengunggah foto juara: {error}", "error")
-        return redirect(url_for("klasemen"))
+        return redirect(url_for(redirect_endpoint))
 
     old = champions.get(key, {}).get("photo_url")
     if old:
@@ -424,6 +463,9 @@ def bracket():
     gc_standings = utils.compute_standings(matches, teams, "ganda_campuran", "A")
     gc_champion = utils.group_champion(matches, teams, "ganda_campuran", "A")
 
+    putra_champion = final_champion(matches, "ganda_putra")
+    putra_champion_photo = config.get("champions", {}).get("ganda_putra_FINAL", {}).get("photo_url")
+
     return render_template(
         "bracket.html",
         champ_a=champ_a, champ_b=champ_b,
@@ -441,6 +483,9 @@ def bracket():
         standings_a=standings_a, standings_b=standings_b,
         gc_standings=gc_standings, gc_champion=gc_champion,
         gc_champion_label=utils.team_label(teams, gc_champion) if gc_champion else None,
+        putra_champion=putra_champion,
+        putra_champion_label=utils.team_label(teams, putra_champion) if putra_champion else None,
+        putra_champion_photo=putra_champion_photo,
     )
 
 
