@@ -877,9 +877,12 @@ html.share-supported #shareBtn.floating-btn {
   column-gap: 1.2rem;
   padding: 1rem 0;
 }
-.gallery-item {
+.gallery-parallax {
   break-inside: avoid;
   margin-bottom: 1.2rem;
+  will-change: transform;
+}
+.gallery-item {
   border-radius: var(--radius-sm);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -896,12 +899,17 @@ html.share-supported #shareBtn.floating-btn {
   width: 100%;
   padding-bottom: 0;
   display: block;
+  overflow: hidden;
 }
 .gallery-img {
   width: 100%;
   height: auto;
   display: block;
   cursor: pointer;
+  transition: transform 0.45s ease;
+}
+.gallery-item:hover .gallery-img {
+  transform: scale(1.08);
 }
 .gallery-overlay {
   position: absolute;
@@ -919,6 +927,11 @@ html.share-supported #shareBtn.floating-btn {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  transform: translateY(10px);
+  transition: transform 0.35s ease;
+}
+.gallery-item:hover .gallery-info {
+  transform: translateY(0);
 }
 .gallery-teams {
   color: #fff;

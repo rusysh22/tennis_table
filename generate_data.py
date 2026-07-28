@@ -225,7 +225,7 @@ def main():
         "closing_date": "2026-07-29",
         "time_window": "18.00 - 20.00 WIB",
         "time_window_note": "After Office Hours",
-        "venue": "Gedung Graha Mitra Lantai 2",
+        "venue": "Synergy Room",
         "final_note": "Final Ganda Putra mempertemukan Juara Group A vs Juara Group B",
         "categories": [
             {"key": "ganda_putra", "label": "Ganda Putra", "groups": ["A", "B"], "has_final": True},

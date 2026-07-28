@@ -15,15 +15,17 @@
 </div>
 
 {% if photos %}
-<div class="gallery-masonry">
+<div class="gallery-masonry" id="galleryMasonry">
   {% for p in photos %}
-  <div class="gallery-item">
-    <div class="gallery-img-wrap">
-      <img src="{{ p.url }}" class="public-doc-img gallery-img" alt="Foto {{ p.team_a_code }} vs {{ p.team_b_code }}" data-full-src="{{ p.url }}" loading="lazy">
-      <div class="gallery-overlay">
-        <div class="gallery-info">
-          <span class="gallery-teams">{{ p.team_a_code }} vs {{ p.team_b_code }}</span>
-          <span class="gallery-meta">{{ p.category_label }} · {{ p.date_label }}</span>
+  <div class="gallery-parallax" data-parallax>
+    <div class="gallery-item" style="animation-delay: {{ (loop.index0 % 9) * 0.07 }}s;">
+      <div class="gallery-img-wrap">
+        <img src="{{ p.url }}" class="public-doc-img gallery-img" alt="Foto {{ p.team_a_code }} vs {{ p.team_b_code }}" data-full-src="{{ p.url }}" loading="lazy">
+        <div class="gallery-overlay">
+          <div class="gallery-info">
+            <span class="gallery-teams">{{ p.team_a_code }} vs {{ p.team_b_code }}</span>
+            <span class="gallery-meta">{{ p.category_label }} · {{ p.date_label }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -36,5 +38,69 @@
   <p style="font-weight:700; color:var(--maroon-700); font-size:1.1rem; margin-bottom:.5rem;">Belum ada foto</p>
   <p style="font-size:.85rem; color:#8a5760;">Galeri masih kosong. Panitia akan mengupload dokumentasi saat pertandingan berjalan.</p>
 </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if photos %}
+<script>
+(function () {
+  var items = Array.prototype.slice.call(document.querySelectorAll("[data-parallax]"));
+  if (!items.length) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  var AMPLITUDE = 26; // px, semi-pelan
+  var factors = [];
+
+  function assignColumns() {
+    // Kelompokkan berdasarkan posisi X asli tiap foto (bukan urutan DOM),
+    // supaya tetap benar walau tinggi tiap foto beda (portrait vs landscape).
+    var lefts = items.map(function (el) { return Math.round(el.getBoundingClientRect().left); });
+    var distinct = lefts.filter(function (v, i) { return lefts.indexOf(v) === i; }).sort(function (a, b) { return a - b; });
+    var dirByCol = distinct.map(function (_, colIndex) { return colIndex % 2 === 0 ? -1 : 1; });
+
+    items.forEach(function (el, i) {
+      var col = distinct.indexOf(lefts[i]);
+      var dir = dirByCol[col] || 1;
+      // sedikit variasi per foto biar gerakannya terasa organik, bukan seragam
+      var jitter = 0.85 + (i % 5) * 0.07;
+      factors[i] = dir * jitter;
+    });
+  }
+
+  var ticking = false;
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight;
+    items.forEach(function (el, i) {
+      var rect = el.getBoundingClientRect();
+      var center = rect.top + rect.height / 2;
+      var progress = (vh / 2 - center) / vh; // -0.5..0.5 saat elemen melewati viewport
+      var y = progress * AMPLITUDE * factors[i];
+      el.style.transform = "translateY(" + y.toFixed(1) + "px)";
+    });
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  window.addEventListener("load", function () {
+    assignColumns();
+    update();
+  });
+  window.addEventListener("resize", function () {
+    assignColumns();
+    update();
+  });
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  assignColumns();
+  update();
+})();
+</script>
 {% endif %}
 {% endblock %}
