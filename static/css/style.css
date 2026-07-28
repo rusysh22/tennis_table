@@ -453,6 +453,23 @@ table.standings.standings-campuran .rank-pill.gold{ background:var(--grad-campur
 .champion-tag.tag-putra{ background:var(--grad-putra); }
 .champion-tag.tag-campuran{ background:var(--grad-campuran); color:var(--maroon-900); }
 
+.champion-showcase{
+  display:flex; align-items:center; gap:1rem; background:var(--white); border-radius:var(--radius);
+  padding:1rem; margin:.8rem 0 1.2rem; box-shadow:var(--shadow-md);
+}
+.champion-photo{
+  width:84px; height:84px; border-radius:var(--radius-sm); object-fit:cover; flex-shrink:0;
+  box-shadow:var(--shadow-sm);
+}
+.champion-photo-empty{
+  display:flex; align-items:center; justify-content:center; font-size:2rem;
+  background:var(--grad-accent);
+}
+.champion-info{ display:flex; flex-direction:column; gap:.2rem; }
+.champion-info-label{ font-size:.75rem; color:#a0677a; font-weight:600; }
+.champion-info-name{ font-size:1.05rem; color:var(--maroon-700); font-family:var(--font-display); }
+.champion-admin{ margin:0 0 1.2rem; padding:1rem; }
+
 /* ====================== CALENDAR ====================== */
 .calendar-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:.8rem; }
 .cal-day{

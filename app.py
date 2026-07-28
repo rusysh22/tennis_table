@@ -348,16 +348,66 @@ def aturan():
 @app.route("/klasemen")
 def klasemen():
     teams, matches, config = data_context()
+    champions = config.get("champions", {})
     groups = []
     for cat in config["categories"]:
         for g in cat["groups"]:
             rows = utils.compute_standings(matches, teams, cat["key"], g)
+            champion = utils.group_champion(matches, teams, cat["key"], g)
+            champ_info = champions.get(f"{cat['key']}_{g}", {})
             groups.append({
                 "category": cat["key"], "category_label": cat["label"],
                 "group": g, "rows": rows,
-                "champion": utils.group_champion(matches, teams, cat["key"], g),
+                "champion": champion,
+                "champion_label": utils.team_label(teams, champion) if champion else None,
+                "champion_photo": champ_info.get("photo_url"),
             })
     return render_template("klasemen.html", groups=groups)
+
+
+@app.route("/admin/juara/<category>/<group>", methods=["POST"])
+@login_required
+def admin_upload_champion_photo(category, group):
+    teams, matches, config = data_context()
+    champion = utils.group_champion(matches, teams, category, group)
+    if not champion:
+        flash("Kategori/grup ini belum punya juara (belum semua pertandingan selesai).", "error")
+        return redirect(url_for("klasemen"))
+
+    action = request.form.get("action")
+    champions = config.setdefault("champions", {})
+    key = f"{category}_{group}"
+
+    if action == "delete_champion_photo":
+        old = champions.get(key, {}).get("photo_url")
+        if old:
+            delete_from_supabase(old)
+            champions.pop(key, None)
+            utils.save_json("config.json", config)
+            flash("Foto juara berhasil dihapus.", "success")
+        return redirect(url_for("klasemen"))
+
+    file = request.files.get("champion_photo_cam") or request.files.get("champion_photo")
+    if not file or not file.filename:
+        flash("Pilih file foto juara terlebih dahulu.", "error")
+        return redirect(url_for("klasemen"))
+
+    file_url, error = compress_and_upload_image(file, f"champion_{key}")
+    if error:
+        flash(f"Gagal mengunggah foto juara: {error}", "error")
+        return redirect(url_for("klasemen"))
+
+    old = champions.get(key, {}).get("photo_url")
+    if old:
+        delete_from_supabase(old)
+
+    champions[key] = {
+        "photo_url": file_url,
+        "uploaded_at": utils.now_wib().isoformat(timespec="seconds"),
+    }
+    utils.save_json("config.json", config)
+    flash("Foto juara berhasil diunggah.", "success")
+    return redirect(url_for("klasemen"))
 
 
 @app.route("/bracket")
