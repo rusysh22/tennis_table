@@ -39,12 +39,12 @@
         <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.7rem;">
           📷 Kamera Langsung
           <input type="file" name="champion_photo_cam" accept="image/*" capture="environment" style="display:none;"
-            onchange="this.form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))">
+            onchange="this.form.submit()">
         </label>
         <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.7rem;">
           📁 File Galeri
           <input type="file" name="champion_photo" accept="image/jpeg, image/png, image/webp" style="display:none;"
-            onchange="this.form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))">
+            onchange="this.form.submit()">
         </label>
       </div>
       <p style="font-size:.75rem; color:#a0677a; margin-top:.6rem; text-align:center;">
