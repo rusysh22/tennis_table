@@ -965,7 +965,7 @@ html.share-supported #shareBtn.floating-btn {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.2rem;
-  height: min(640px, 75vh);
+  height: min(1400px, 160vh);
   overflow: hidden;
   border-radius: var(--radius);
 }
@@ -1017,7 +1017,7 @@ html.share-supported #shareBtn.floating-btn {
 @media (max-width: 600px) {
   .gallery-marquee {
     gap: 0.7rem;
-    height: min(480px, 65vh);
+    height: min(1000px, 140vh);
   }
   .gallery-marquee-fade { height: 90px; }
 }
