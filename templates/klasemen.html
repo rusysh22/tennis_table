@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_champion_macros.html" import champion_name %}
 {% block title %}Klasemen — {{ config.tournament_short_name }}{% endblock %}
 {% block og_title %}📊 Klasemen — {{ config.tournament_short_name }}{% endblock %}
 {% block og_image %}{{ url_for('og_default_image', title='Klasemen', subtitle='Papan peringkat Ganda Putra & Ganda Campuran', tag='KLASEMEN', _external=True) }}{% endblock %}
@@ -7,6 +8,54 @@
 {% include "_subnav_klasemen.html" %}
 
 <div class="section-head"><h2>📊 Klasemen per Grup</h2></div>
+
+{% if putra_champion_team %}
+<div class="group-block">
+  <h3>
+    <span class="badge badge-putra">Ganda Putra</span>
+    <span class="champion-tag tag-putra">🏆 Juara Turnamen</span>
+  </h3>
+  <div class="champion-showcase">
+    {% if putra_champion_photo %}
+    <img src="{{ putra_champion_photo }}" alt="Foto juara Ganda Putra" class="champion-photo public-doc-img" data-full-src="{{ putra_champion_photo }}">
+    {% else %}
+    <div class="champion-photo champion-photo-empty">🏆</div>
+    {% endif %}
+    <div class="champion-info">
+      <span class="champion-info-label">Juara Ganda Putra (Final)</span>
+      {{ champion_name(putra_champion_team) }}
+    </div>
+  </div>
+  {% if is_admin %}
+  <div class="admin-shell champion-admin">
+    <form method="post" action="{{ url_for('admin_upload_champion_photo', category='ganda_putra', group='FINAL') }}" enctype="multipart/form-data">
+      <input type="hidden" name="action" value="upload_champion_photo">
+      <div style="display:flex; gap:.6rem; flex-wrap:wrap;">
+        <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.7rem;">
+          📷 Kamera Langsung
+          <input type="file" name="champion_photo_cam" accept="image/*" capture="environment" style="display:none;"
+            onchange="this.form.submit()">
+        </label>
+        <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.7rem;">
+          📁 File Galeri
+          <input type="file" name="champion_photo" accept="image/jpeg, image/png, image/webp" style="display:none;"
+            onchange="this.form.submit()">
+        </label>
+      </div>
+      <p style="font-size:.75rem; color:#a0677a; margin-top:.6rem; text-align:center;">
+        Upload/ganti foto juara Ganda Putra (pemenang laga Final). File otomatis terupload begitu dipilih/dijepret.
+      </p>
+    </form>
+    {% if putra_champion_photo %}
+    <form method="post" action="{{ url_for('admin_upload_champion_photo', category='ganda_putra', group='FINAL') }}" onsubmit="return confirm('Hapus foto juara ini?');" style="margin-top:.6rem;">
+      <input type="hidden" name="action" value="delete_champion_photo">
+      <button type="submit" class="btn btn-outline" style="width:100%;">🗑️ Hapus Foto</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
 
 {% for g in groups %}
 {% set cat_class = 'standings-putra' if g.category == 'ganda_putra' else 'standings-campuran' %}
@@ -21,13 +70,13 @@
   {% if g.champion %}
   <div class="champion-showcase">
     {% if g.champion_photo %}
-    <img src="{{ g.champion_photo }}" alt="Foto juara {{ g.champion_label }}" class="champion-photo">
+    <img src="{{ g.champion_photo }}" alt="Foto juara Group {{ g.group }}" class="champion-photo public-doc-img" data-full-src="{{ g.champion_photo }}">
     {% else %}
     <div class="champion-photo champion-photo-empty">🏆</div>
     {% endif %}
     <div class="champion-info">
       <span class="champion-info-label">Juara {{ g.category_label }} Group {{ g.group }}</span>
-      <strong class="champion-info-name">{{ g.champion_label }}</strong>
+      {{ champion_name(g.champion_team) }}
     </div>
   </div>
 

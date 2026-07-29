@@ -112,6 +112,20 @@ TBD_COLOR = "#9c9c9c"
 TBD_TEXT = "#ffffff"
 
 
+def champion_display(teams, code):
+    """Data tampilan juara: chip kode tim + nama anggota terpisah (bukan digabung '/')."""
+    if not code:
+        return None
+    t = teams.get(code, {})
+    return {
+        "code": code,
+        "player1": t.get("player1", ""),
+        "player2": t.get("player2", ""),
+        "color": t.get("color", TBD_COLOR),
+        "text": t.get("text", TBD_TEXT),
+    }
+
+
 def enrich_match(m, teams):
     m = dict(m)
     m["team_a_label"] = utils.team_label(teams, m["team_a"])
@@ -284,9 +298,9 @@ def index():
         team_count=len(teams), recent_comments=recent_comments,
         next_match=next_match, is_live=is_live,
         tournament_ended=tournament_ended,
-        gc_champion_label=utils.team_label(teams, gc_champion) if gc_champion else None,
+        gc_champion_team=champion_display(teams, gc_champion),
         gc_champion_photo=gc_champion_photo,
-        putra_champion_label=utils.team_label(teams, putra_champion) if putra_champion else None,
+        putra_champion_team=champion_display(teams, putra_champion),
         putra_champion_photo=putra_champion_photo,
         hero_gallery_photos=hero_gallery_photos,
     )
@@ -384,10 +398,19 @@ def klasemen():
                 "category": cat["key"], "category_label": cat["label"],
                 "group": g, "rows": rows,
                 "champion": champion,
-                "champion_label": utils.team_label(teams, champion) if champion else None,
+                "champion_team": champion_display(teams, champion),
                 "champion_photo": champ_info.get("photo_url"),
             })
-    return render_template("klasemen.html", groups=groups)
+
+    putra_champion = final_champion(matches, "ganda_putra")
+    putra_champion_team = champion_display(teams, putra_champion)
+    putra_champion_photo = champions.get("ganda_putra_FINAL", {}).get("photo_url")
+
+    return render_template(
+        "klasemen.html", groups=groups,
+        putra_champion_team=putra_champion_team,
+        putra_champion_photo=putra_champion_photo,
+    )
 
 
 def final_champion(matches, category):
@@ -446,7 +469,7 @@ def admin_upload_champion_photo(category, group):
     }
     utils.save_json("config.json", config)
     flash("Foto juara berhasil diunggah.", "success")
-    return redirect(url_for("klasemen"))
+    return redirect(url_for(redirect_endpoint))
 
 
 @app.route("/bracket")
@@ -484,7 +507,7 @@ def bracket():
         gc_standings=gc_standings, gc_champion=gc_champion,
         gc_champion_label=utils.team_label(teams, gc_champion) if gc_champion else None,
         putra_champion=putra_champion,
-        putra_champion_label=utils.team_label(teams, putra_champion) if putra_champion else None,
+        putra_champion_team=champion_display(teams, putra_champion),
         putra_champion_photo=putra_champion_photo,
     )
 

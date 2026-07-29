@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_champion_macros.html" import champion_name %}
 {% block title %}{{ config.tournament_short_name }} — Beranda{% endblock %}
 {% block content %}
 
@@ -60,34 +61,37 @@
   </div>
 
   <p class="hero-congrats" style="position:relative; z-index:1;">
-    <span id="heroTypewriter" class="hero-typewriter" data-text="Selamat kepada seluruh juara Mini-Round Table Tennis InterSport 2026! Sampai jumpa di turnamen berikutnya 🏓"></span><span class="hero-typewriter-cursor">|</span>
+    <span id="heroTypewriter" class="hero-typewriter"></span><span class="hero-typewriter-cursor">|</span>
   </p>
+  <script id="heroCongratsData" type="application/json">
+    ["Selamat kepada seluruh juara Mini-Round Table Tennis InterSport 2026! 🏆", "Terima kasih atas sportivitas dan semangat juang seluruh peserta! 👏", "Sampai jumpa di turnamen berikutnya! 🏓🎉"]
+  </script>
 
-  {% if gc_champion_label or putra_champion_label %}
+  {% if gc_champion_team or putra_champion_team %}
   <div class="hero-champions">
-    {% if putra_champion_label %}
+    {% if putra_champion_team %}
     <div class="hero-champion-card">
       {% if putra_champion_photo %}
-      <img src="{{ putra_champion_photo }}" alt="Foto juara Ganda Putra" class="hero-champion-photo">
+      <img src="{{ putra_champion_photo }}" alt="Foto juara Ganda Putra" class="hero-champion-photo public-doc-img" data-full-src="{{ putra_champion_photo }}">
       {% else %}
       <div class="hero-champion-photo hero-champion-photo-empty">🏆</div>
       {% endif %}
       <div class="hero-champion-info">
         <span class="hero-champion-label">🏆 Juara Ganda Putra</span>
-        <strong class="hero-champion-name">{{ putra_champion_label }}</strong>
+        {{ champion_name(putra_champion_team, 'hero-champion-name') }}
       </div>
     </div>
     {% endif %}
-    {% if gc_champion_label %}
+    {% if gc_champion_team %}
     <div class="hero-champion-card">
       {% if gc_champion_photo %}
-      <img src="{{ gc_champion_photo }}" alt="Foto juara Ganda Campuran" class="hero-champion-photo">
+      <img src="{{ gc_champion_photo }}" alt="Foto juara Ganda Campuran" class="hero-champion-photo public-doc-img" data-full-src="{{ gc_champion_photo }}">
       {% else %}
       <div class="hero-champion-photo hero-champion-photo-empty">🏆</div>
       {% endif %}
       <div class="hero-champion-info">
         <span class="hero-champion-label">🏆 Juara Ganda Campuran</span>
-        <strong class="hero-champion-name">{{ gc_champion_label }}</strong>
+        {{ champion_name(gc_champion_team, 'hero-champion-name') }}
       </div>
     </div>
     {% endif %}
@@ -100,10 +104,10 @@
     <div class="hero-gallery-fade hero-gallery-fade-right"></div>
     <div class="hero-gallery-track">
       {% for p in hero_gallery_photos %}
-      <img src="{{ p.url }}" class="hero-gallery-img" loading="lazy" alt="Dokumentasi pertandingan">
+      <img src="{{ p.url }}" class="hero-gallery-img public-doc-img" data-full-src="{{ p.url }}" loading="lazy" alt="Dokumentasi pertandingan">
       {% endfor %}
       {% for p in hero_gallery_photos %}
-      <img src="{{ p.url }}" class="hero-gallery-img" loading="lazy" alt="Dokumentasi pertandingan">
+      <img src="{{ p.url }}" class="hero-gallery-img public-doc-img" data-full-src="{{ p.url }}" loading="lazy" alt="Dokumentasi pertandingan">
       {% endfor %}
     </div>
   </div>
@@ -249,20 +253,55 @@
 
   // ---------- typewriter ucapan selamat ----------
   var tw = document.getElementById("heroTypewriter");
-  if (tw) {
-    var fullText = tw.getAttribute("data-text") || "";
-    if (reduceMotion) {
-      tw.textContent = fullText;
-    } else {
-      tw.textContent = "";
-      var i = 0;
-      (function typeNext() {
-        if (i <= fullText.length) {
-          tw.textContent = fullText.slice(0, i);
-          i++;
-          setTimeout(typeNext, 32);
+  var dataEl = document.getElementById("heroCongratsData");
+  if (tw && dataEl) {
+    var messages = [];
+    try { messages = JSON.parse(dataEl.textContent); } catch (e) { messages = []; }
+
+    if (messages.length) {
+      if (reduceMotion) {
+        tw.textContent = messages[0];
+      } else {
+        var msgIndex = 0;
+        var HOLD_MS = 2200;
+
+        function typeMessage(text, onDone) {
+          var i = 0;
+          (function step() {
+            tw.textContent = text.slice(0, i);
+            if (i <= text.length) {
+              i++;
+              setTimeout(step, 32);
+            } else {
+              onDone();
+            }
+          })();
         }
-      })();
+        function eraseMessage(text, onDone) {
+          var i = text.length;
+          (function step() {
+            tw.textContent = text.slice(0, Math.max(i, 0));
+            if (i > 0) {
+              i--;
+              setTimeout(step, 18);
+            } else {
+              onDone();
+            }
+          })();
+        }
+        function cycle() {
+          var text = messages[msgIndex % messages.length];
+          typeMessage(text, function () {
+            setTimeout(function () {
+              eraseMessage(text, function () {
+                msgIndex++;
+                cycle();
+              });
+            }, HOLD_MS);
+          });
+        }
+        cycle();
+      }
     }
   }
 

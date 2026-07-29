@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_champion_macros.html" import champion_name %}
 {% block title %}Bracket Final — {{ config.tournament_short_name }}{% endblock %}
 {% block content %}
 
@@ -63,13 +64,13 @@
   <div class="bracket-col final-col">
     <div class="champion-showcase">
       {% if putra_champion_photo %}
-      <img src="{{ putra_champion_photo }}" alt="Foto juara {{ putra_champion_label }}" class="champion-photo">
+      <img src="{{ putra_champion_photo }}" alt="Foto juara Ganda Putra" class="champion-photo public-doc-img" data-full-src="{{ putra_champion_photo }}">
       {% else %}
       <div class="champion-photo champion-photo-empty">🏆</div>
       {% endif %}
       <div class="champion-info">
         <span class="champion-info-label">Juara Ganda Putra</span>
-        <strong class="champion-info-name">{{ putra_champion_label }}</strong>
+        {{ champion_name(putra_champion_team) }}
       </div>
     </div>
     {% if is_admin %}

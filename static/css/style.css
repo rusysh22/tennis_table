@@ -287,7 +287,7 @@ button{ font-family:inherit; }
 
 .hero-congrats{
   position:relative; z-index:1; text-align:center; margin:0 0 1.2rem;
-  font-family:var(--font-display); font-weight:700; font-size:clamp(1rem, 2.4vw, 1.3rem);
+  font-family:var(--font-display); font-weight:700; font-size:clamp(.75rem, 1.4vw, .92rem);
   background:linear-gradient(90deg, #ffd166, #ff9db3, #ffd166);
   background-size:200% auto;
   -webkit-background-clip:text; background-clip:text; color:transparent;
@@ -310,6 +310,8 @@ button{ font-family:inherit; }
 .hero-champion-photo{
   width:64px; height:64px; border-radius:12px; object-fit:cover; flex-shrink:0; box-shadow:var(--shadow-sm);
 }
+img.hero-champion-photo{ cursor:pointer; transition:transform .2s ease; }
+img.hero-champion-photo:hover{ transform:scale(1.06); }
 .hero-champion-photo-empty{
   display:flex; align-items:center; justify-content:center; font-size:1.6rem; background:var(--grad-accent);
 }
@@ -332,6 +334,7 @@ button{ font-family:inherit; }
 .hero-gallery-strip:hover .hero-gallery-track{ animation-play-state:paused; }
 .hero-gallery-img{
   height:100%; width:150px; object-fit:cover; border-radius:10px; flex-shrink:0; box-shadow:var(--shadow-sm);
+  cursor:pointer;
 }
 .hero-gallery-fade{
   position:absolute; top:0; bottom:0; width:70px; z-index:2; pointer-events:none;
@@ -533,14 +536,22 @@ table.standings.standings-campuran .rank-pill.gold{ background:var(--grad-campur
   width:84px; height:84px; border-radius:var(--radius-sm); object-fit:cover; flex-shrink:0;
   box-shadow:var(--shadow-sm);
 }
+img.champion-photo{ cursor:pointer; transition:transform .2s ease; }
+img.champion-photo:hover{ transform:scale(1.04); }
 .champion-photo-empty{
   display:flex; align-items:center; justify-content:center; font-size:2rem;
   background:var(--grad-accent);
 }
-.champion-info{ display:flex; flex-direction:column; gap:.2rem; }
+.champion-info{ display:flex; flex-direction:column; gap:.3rem; }
 .champion-info-label{ font-size:.75rem; color:#a0677a; font-weight:600; }
 .champion-info-name{ font-size:1.05rem; color:var(--maroon-700); font-family:var(--font-display); }
 .champion-admin{ margin:0 0 1.2rem; padding:1rem; }
+
+.champion-team-chip{
+  display:inline-block; font-size:.72rem; font-weight:700; padding:.15rem .5rem; border-radius:999px;
+  margin-right:.4rem; font-family:var(--font-display); vertical-align:middle;
+}
+.champion-team-players{ vertical-align:middle; }
 
 /* ====================== CALENDAR ====================== */
 .calendar-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:.8rem; }
