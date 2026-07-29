@@ -1,6 +1,9 @@
 {% macro champion_name(team, name_class='champion-info-name') %}
 {% if team %}
 <span class="champion-team-chip" style="background:{{ team.color }}; color:{{ team.text }};">{{ team.code }}</span>
-<span class="{{ name_class }} champion-team-players">{{ team.player1 }}{% if team.player2 %} &amp; {{ team.player2 }}{% endif %}</span>
+<span class="{{ name_class }} champion-team-players">
+  <span class="champion-team-player-line">{{ team.player1 }}</span>
+  {% if team.player2 %}<span class="champion-team-player-line">{{ team.player2 }}</span>{% endif %}
+</span>
 {% endif %}
 {% endmacro %}
