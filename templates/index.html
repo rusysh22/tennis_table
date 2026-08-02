@@ -123,33 +123,65 @@
   </div>
 </section>
 
-<div class="section-head"><h2>🏟️ Cabang Olahraga</h2></div>
+<div class="section-head" style="margin-top: 2rem;"><h2>🏟️ Arena &amp; Cabang Olahraga</h2></div>
 <div class="sport-hub-grid">
   {% for sport in sport_cards %}
     {% if sport.enabled %}
-    <a class="sport-hub-card" href="{{ switch_sport_url(sport.key) }}">
+    <a class="sport-hub-card sport-theme-{{ sport.key }}" href="{{ switch_sport_url(sport.key) }}">
     {% else %}
-    <div class="sport-hub-card disabled" aria-disabled="true">
+    <div class="sport-hub-card sport-theme-{{ sport.key }} disabled" aria-disabled="true">
     {% endif %}
-      <div class="sport-hub-head">
-        <span class="sport-hub-icon" aria-hidden="true">{{ sport.icon }}</span>
-        <div><h3>{{ sport.name }}</h3><span>{{ sport.division_count }} divisi</span></div>
-        {% if not sport.enabled %}<span class="sport-coming-soon">Segera</span>{% endif %}
+      <div class="sport-card-top">
+        <div class="sport-card-icon-wrap">
+          <span class="sport-card-icon" aria-hidden="true">{{ sport.icon }}</span>
+        </div>
+        <div class="sport-card-title-area">
+          <h3>{{ sport.name }}</h3>
+          <span class="sport-card-div-tag">🏆 {{ sport.division_count }} Divisi Pertandingan</span>
+        </div>
+        {% if not sport.enabled %}
+        <span class="sport-coming-soon">Segera</span>
+        {% else %}
+        <span class="sport-arrow" aria-hidden="true">&rarr;</span>
+        {% endif %}
       </div>
-      <div class="sport-hub-stats">
-        <span><strong>{{ sport.live_count }}</strong> live</span>
-        <span><strong>{{ sport.completed_count }}</strong>/{{ sport.match_count }} selesai</span>
+      <div class="sport-card-stats-bar">
+        {% if sport.live_count > 0 %}
+        <span class="sport-stat-badge stat-live"><span class="pulse-dot" style="width:7px; height:7px; margin-right:3px;"></span> <strong>{{ sport.live_count }}</strong> Sedang Live</span>
+        {% else %}
+        <span class="sport-stat-badge stat-offline">⚪ Offline / 0 Live</span>
+        {% endif %}
+        <span class="sport-stat-badge stat-completed">🏁 <strong>{{ sport.completed_count }}</strong> / {{ sport.match_count }} Laga Selesai</span>
       </div>
-      {% if sport.next_match %}
-      <p class="sport-next-match">
-        Berikutnya: <strong>{{ sport.next_match.team_a_code }} vs {{ sport.next_match.team_b_code }}</strong><br>
-        {{ sport.next_match.date_label }} · {{ sport.next_match.time }}
-      </p>
-      {% elif sport.enabled %}
-      <p class="sport-next-match muted">Belum ada pertandingan mendatang.</p>
-      {% else %}
-      <p class="sport-next-match muted">Menunggu konfigurasi divisi dan jadwal.</p>
+      {% if sport.match_count > 0 %}
+      {% set pct = (sport.completed_count / sport.match_count * 100) | round | int %}
+      <div class="sport-card-progress" title="Progress pertandingan: {{ pct }}%">
+        <div class="sport-card-progress-bar" style="width: {{ pct }}%;"></div>
+      </div>
       {% endif %}
+      <div class="sport-card-next-match">
+        {% if sport.next_match %}
+        <div class="next-match-header">
+          <span class="next-tag">⚡ Laga Berikutnya</span>
+          <span class="next-time">📅 {{ sport.next_match.date_label }} · {{ sport.next_match.time }} WIB</span>
+        </div>
+        <div class="next-match-teams">
+          <strong>{{ sport.next_match.team_a_code }}</strong>
+          <span class="vs-badge">vs</span>
+          <strong>{{ sport.next_match.team_b_code }}</strong>
+        </div>
+        {% elif sport.enabled %}
+        <div class="next-match-empty">
+          <span class="empty-icon">☕</span>
+          <span>Belum ada jadwal pertandingan mendatang.</span>
+        </div>
+        {% else %}
+        <div class="next-match-empty">
+          <span class="empty-icon">🔒</span>
+          <span>Menunggu konfigurasi divisi dan jadwal turnamen.</span>
+        </div>
+        {% endif %}
+      </div>
     {% if sport.enabled %}</a>{% else %}</div>{% endif %}
   {% endfor %}
 </div>
