@@ -58,17 +58,6 @@
 
 {% block site_header %}
 <header class="site-header">
-  <div class="header-rail">
-    <div class="header-rail-inner">
-      <span class="header-system-mark"><i aria-hidden="true"></i>Sistem Kompetisi InterSport</span>
-      <span class="header-rail-context">
-        <span class="header-online"><i aria-hidden="true"></i>Arena terhubung</span>
-        <span>{{ config.venue }}</span>
-        <span>{{ config.time_window }}</span>
-      </span>
-    </div>
-  </div>
-
   <div class="header-deck">
     <div class="header-inner">
       <a class="brand" href="{{ sport_url('index') }}" aria-label="{{ config.tournament_short_name }} — kembali ke beranda">
@@ -79,7 +68,6 @@
         <span class="brand-text">
           <span class="brand-kicker">Tournament Series</span>
           <strong>{{ config.tournament_short_name }}</strong>
-          <small><span>{{ config.venue }}</span><i aria-hidden="true"></i><span>{{ config.time_window }}</span></small>
         </span>
       </a>
 
@@ -89,19 +77,19 @@
       </button>
 
       <nav class="main-nav" id="mainNav" aria-label="Navigasi utama">
-        <a href="{{ sport_url('index') }}" data-nav="01" class="{{ 'active' if request.endpoint == 'index' }}" aria-current="{{ 'page' if request.endpoint == 'index' else 'false' }}"><span>Beranda</span></a>
-        <a href="{{ sport_url('jadwal') }}" data-nav="02" class="{{ 'active' if request.endpoint in ('jadwal','kalender','rekap') }}" aria-current="{{ 'page' if request.endpoint in ('jadwal','kalender','rekap') else 'false' }}"><span>Jadwal</span></a>
-        <a href="{{ sport_url('live') }}" data-nav="03" class="{{ 'active' if request.endpoint == 'live' }}" aria-current="{{ 'page' if request.endpoint == 'live' else 'false' }}">
+        <a href="{{ sport_url('index') }}" class="{{ 'active' if request.endpoint == 'index' }}" aria-current="{{ 'page' if request.endpoint == 'index' else 'false' }}"><span>Beranda</span></a>
+        <a href="{{ sport_url('jadwal') }}" class="{{ 'active' if request.endpoint in ('jadwal','kalender','rekap') }}" aria-current="{{ 'page' if request.endpoint in ('jadwal','kalender','rekap') else 'false' }}"><span>Jadwal</span></a>
+        <a href="{{ sport_url('live') }}" class="{{ 'active' if request.endpoint == 'live' }}" aria-current="{{ 'page' if request.endpoint == 'live' else 'false' }}">
           <span>Live</span><span class="live-dot" aria-hidden="true"></span>
         </a>
-        <a href="{{ sport_url('klasemen') }}" data-nav="04" class="{{ 'active' if request.endpoint in ('klasemen','bracket') }}" aria-current="{{ 'page' if request.endpoint in ('klasemen','bracket') else 'false' }}"><span>Klasemen</span></a>
-        <a href="{{ sport_url('galeri') }}" data-nav="05" class="{{ 'active' if request.endpoint == 'galeri' }}" aria-current="{{ 'page' if request.endpoint == 'galeri' else 'false' }}"><span>Galeri</span></a>
-        <a href="{{ sport_url('aturan') }}" data-nav="06" class="{{ 'active' if request.endpoint == 'aturan' }}" aria-current="{{ 'page' if request.endpoint == 'aturan' else 'false' }}"><span>Aturan</span></a>
+        <a href="{{ sport_url('klasemen') }}" class="{{ 'active' if request.endpoint in ('klasemen','bracket') }}" aria-current="{{ 'page' if request.endpoint in ('klasemen','bracket') else 'false' }}"><span>Klasemen</span></a>
+        <a href="{{ sport_url('galeri') }}" class="{{ 'active' if request.endpoint == 'galeri' }}" aria-current="{{ 'page' if request.endpoint == 'galeri' else 'false' }}"><span>Galeri</span></a>
+        <a href="{{ sport_url('aturan') }}" class="{{ 'active' if request.endpoint == 'aturan' }}" aria-current="{{ 'page' if request.endpoint == 'aturan' else 'false' }}"><span>Aturan</span></a>
         {% if is_admin %}
-        <a href="{{ url_for('admin_dashboard') }}" data-nav="07" class="nav-admin"><span>Admin</span></a>
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-admin"><span>Admin</span></a>
         <form method="post" action="{{ url_for('admin_logout') }}" class="nav-logout-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <button type="submit" class="nav-admin nav-logout-button" data-nav="08"><span>Keluar</span></button>
+          <button type="submit" class="nav-admin nav-logout-button"><span>Keluar</span></button>
         </form>
         {% endif %}
         <button class="nav-bell bell-trigger" aria-label="Buka pusat pengumuman" title="Pusat pengumuman">

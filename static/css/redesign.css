@@ -1678,28 +1678,19 @@ legend{ color:var(--blue-800); }
 }
 .main-nav a,.main-nav .nav-logout-button{
   position:relative;
-  min-width:62px;
-  min-height:48px;
-  padding:.45rem .68rem .42rem;
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
+  min-width:54px;
+  min-height:40px;
+  padding:.5rem .85rem;
+  display:inline-flex;
+  align-items:center;
   justify-content:center;
-  gap:.18rem;
+  gap:.25rem;
   border-radius:13px 6px 13px 6px;
   color:#315668;
-  font-size:.75rem;
-  font-weight:800;
+  font-size:.82rem;
+  font-weight:700;
   line-height:1;
   transition:color .18s ease,background .18s ease,transform .18s ease,box-shadow .18s ease;
-}
-.main-nav a::before,.main-nav .nav-logout-button::before{
-  content:attr(data-nav);
-  color:#84a6b5;
-  font-size:.43rem;
-  font-weight:900;
-  letter-spacing:.1em;
-  line-height:1;
 }
 .main-nav a:hover,.main-nav .nav-logout-button:hover{
   color:var(--blue-800);
@@ -1711,7 +1702,6 @@ legend{ color:var(--blue-800); }
   background:linear-gradient(138deg,var(--blue-700),var(--green-700));
   box-shadow:0 10px 24px rgba(5,150,105,.2),inset 0 1px 0 rgba(255,255,255,.2);
 }
-.main-nav a.active::before{ color:rgba(255,255,255,.62); }
 .main-nav a.active::after{
   content:"";
   position:absolute;
