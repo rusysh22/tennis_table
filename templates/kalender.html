@@ -13,7 +13,7 @@
   <div class="cal-day {{ 'buffer' if d.is_buffer }} {{ 'weekend-day' if d.is_weekend and not d.is_buffer }} {{ 'final-day' if d.is_final }} {{ 'closing-day' if d.is_closing }} {{ 'is-today' if d.date == today_str }}"
        style="animation-delay:{{ (loop.index0 * 0.05)|round(2) }}s;">
     <div class="d-head">
-      <a class="d-link" href="{{ url_for('jadwal', tanggal=d.date) }}" title="Lihat jadwal {{ d.date }} di daftar">
+      <a class="d-link" href="{{ sport_url('jadwal', tanggal=d.date) }}" title="Lihat jadwal {{ d.date }} di daftar">
         <div class="d-num">{{ d.day_num }}</div>
         <div class="d-name">{{ d.day_name }}</div>
       </a>

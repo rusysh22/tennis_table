@@ -8,3 +8,4 @@ screenshot_*.png
 data/backups/
 .env
 .env.*
+!.env.example

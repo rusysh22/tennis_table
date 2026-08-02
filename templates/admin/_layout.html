@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title | default('Admin') }} — {{ config.tournament_short_name }}{% endblock %}
+{% block bodyclass %}admin-console-body{% endblock %}
+{% block site_bg %}{% endblock %}
+{% block site_header %}{% endblock %}
+{% block site_footer %}{% endblock %}
+
+{# ── ADMIN SHELL: replaces site-main with full-width admin layout ── #}
+{% block content %}
+<div class="ac-layout">
+
+  {# ══ SIDEBAR ══════════════════════════════════════════════ #}
+  <aside class="ac-sidebar" id="acSidebar">
+    <div class="ac-sidebar-brand">
+      <span class="ac-brand-icon">⚙️</span>
+      <div>
+        <strong>Admin Panel</strong>
+        <small>{{ config.tournament_short_name }}</small>
+      </div>
+    </div>
+
+    <nav class="ac-nav">
+      <span class="ac-nav-label">Turnamen</span>
+      <a href="{{ url_for('admin_dashboard') }}"
+         class="ac-nav-item {{ 'active' if request.endpoint == 'admin_dashboard' }}">
+        <span class="ac-nav-icon">📊</span>
+        <span>Dashboard & Jadwal</span>
+        {% if counts is defined %}<span class="ac-badge">{{ counts.scheduled }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('admin_participants') }}"
+         class="ac-nav-item {{ 'active' if request.endpoint in ('admin_participants',) }}">
+        <span class="ac-nav-icon">👥</span>
+        <span>Peserta &amp; Tim</span>
+      </a>
+      <a href="{{ url_for('admin_categories') }}"
+         class="ac-nav-item {{ 'active' if request.endpoint == 'admin_categories' }}">
+        <span class="ac-nav-icon">🏆</span>
+        <span>Divisi &amp; Cabor</span>
+      </a>
+      <a href="{{ url_for('admin_rules') }}"
+         class="ac-nav-item {{ 'active' if request.endpoint in ('admin_rules', 'admin_save_rules') }}">
+        <span class="ac-nav-icon">📜</span>
+        <span>Aturan Pertandingan</span>
+      </a>
+      <a href="{{ url_for('admin_schedule_generator') }}"
+         class="ac-nav-item {{ 'active' if request.endpoint == 'admin_schedule_generator' }}">
+        <span class="ac-nav-icon">⚡</span>
+        <span>Generate Jadwal</span>
+      </a>
+
+      <span class="ac-nav-label" style="margin-top:1.2rem;">Operasional</span>
+      <a href="{{ url_for('scorekeeper_index') }}"
+         class="ac-nav-item {{ 'active' if request.endpoint == 'scorekeeper_index' }}">
+        <span class="ac-nav-icon">🏓</span>
+        <span>Scorekeeper</span>
+      </a>
+      <a href="{{ url_for('admin_settings') }}"
+         class="ac-nav-item {{ 'active' if request.endpoint == 'admin_settings' }}">
+        <span class="ac-nav-icon">📹</span>
+        <span>Live &amp; Pengumuman</span>
+      </a>
+
+      {% if storage_backend == 'legacy' %}
+      <span class="ac-nav-label" style="margin-top:1.2rem;">Utilitas</span>
+      <a href="{{ url_for('admin_utilities') }}"
+         class="ac-nav-item {{ 'active' if request.endpoint == 'admin_utilities' }}">
+        <span class="ac-nav-icon">🔀</span>
+        <span>Utilitas &amp; Reset</span>
+      </a>
+      {% endif %}
+    </nav>
+
+    <div class="ac-sidebar-footer">
+      <a href="{{ url_for('index') }}" class="ac-footer-link">🌐 Web Publik</a>
+      <form method="post" action="{{ url_for('admin_logout') }}" style="margin:0;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="ac-footer-link ac-footer-logout">Keluar Admin</button>
+      </form>
+    </div>
+  </aside>
+
+  {# ══ MAIN WORKSPACE ══════════════════════════════════════ #}
+  <div class="ac-workspace">
+    {# Topbar #}
+    <header class="ac-topbar">
+      <button class="ac-sidebar-toggle" id="acToggle" aria-label="Toggle sidebar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="ac-topbar-title">
+        <h1>{{ page_title | default('Admin') }}</h1>
+        {% if page_subtitle %}<small>{{ page_subtitle }}</small>{% endif %}
+      </div>
+      <div class="ac-topbar-actions">
+        {% block topbar_actions %}{% endblock %}
+      </div>
+    </header>
+
+    {# Flash messages #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="ac-flashes">
+        {% for category, msg in messages %}
+        <div class="ac-flash ac-flash-{{ category }}">
+          <span>{{ '✅' if category == 'success' else '❌' if category == 'error' else 'ℹ️' }}</span>
+          {{ msg }}
+          <button onclick="this.parentElement.remove()" aria-label="Tutup">✕</button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    {# Page content #}
+    <main class="ac-content">
+      {% block admin_content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script>
+// Sidebar toggle for mobile
+document.getElementById('acToggle').addEventListener('click', function() {
+  document.getElementById('acSidebar').classList.toggle('open');
+});
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', function(e) {
+  const sidebar = document.getElementById('acSidebar');
+  const toggle = document.getElementById('acToggle');
+  if (window.innerWidth < 900 && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+    sidebar.classList.remove('open');
+  }
+});
+</script>
+{% endblock %}

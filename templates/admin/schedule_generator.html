@@ -1,0 +1,141 @@
+{% extends "admin/_layout.html" %}
+{% set page_title = "Generate Jadwal" %}
+{% set page_subtitle = "Buat jadwal pertandingan Round Robin & Knockout secara otomatis" %}
+
+{% block admin_content %}
+
+{% if not categories %}
+<div class="ac-card">
+  <div class="ac-empty">
+    <span class="ac-empty-icon">⚡</span>
+    <h3>Belum ada divisi terdaftar</h3>
+    <p>Anda harus membuat minimal satu divisi dan mendaftarkan peserta sebelum bisa generate jadwal.</p>
+    <div style="display:flex; gap:.75rem; justify-content:center; flex-wrap:wrap;">
+      <a href="{{ url_for('admin_categories') }}" class="ac-btn ac-btn-primary">🏆 Buat Divisi Dulu</a>
+      <a href="{{ url_for('admin_participants') }}" class="ac-btn ac-btn-secondary">👥 Daftar Peserta</a>
+    </div>
+  </div>
+</div>
+{% else %}
+
+{# ── HOW IT WORKS ── #}
+<div class="ac-card" style="margin-bottom:1.4rem; border-left:4px solid var(--green-500);">
+  <div class="ac-card-body" style="display:flex; gap:1rem; align-items:flex-start;">
+    <span style="font-size:2rem; flex-shrink:0;">💡</span>
+    <div>
+      <strong style="color:var(--navy-900); display:block; margin-bottom:.3rem;">Cara kerja Generator Jadwal:</strong>
+      <ol style="font-size:.9rem; color:var(--muted); margin:0; padding-left:1.2rem; line-height:1.7;">
+        <li>Setiap tim dalam satu grup akan bertarung melawan semua tim lain di grup yang sama (<strong>Round Robin</strong>).</li>
+        <li>Pemenang dari masing-masing grup otomatis melaju ke <strong>Babak Semifinal &amp; Final</strong> (jika diaktifkan).</li>
+        <li>Membuat jadwal untuk satu divisi <strong>tidak akan mengganggu</strong> jadwal divisi lainnya.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+{# ── GENERATOR FORM ── #}
+<div class="ac-card">
+  <div class="ac-card-header">
+    <h2>⚡ Buat Jadwal Otomatis</h2>
+  </div>
+  <div class="ac-card-body">
+    <form method="post" action="{{ url_for('admin_generate_group_to_knockout') }}"
+          onsubmit="return confirm('Generate ulang jadwal untuk divisi yang dipilih?\n\nJadwal lama untuk divisi ini akan digantikan berdasarkan data peserta saat ini.');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+      <div class="ac-form-row">
+        <div class="ac-form-field">
+          <label>1. Pilih Divisi *</label>
+          <select name="category_key" required id="gen_cat" onchange="updateGroupInfo()">
+            {% for cat in categories %}
+            <option value="{{ cat.key }}"
+                    data-groups="{{ cat.groups|join(',') }}"
+                    data-teams="{{ teams.values()|selectattr('category','eq',cat.key)|list|length }}">
+              {% if cat.sport_key == 'padel' %}🎾{% elif cat.sport_key == 'badminton' %}🏸{% else %}🏓{% endif %}
+              {{ cat.label }} ({{ cat.groups|length }} grup)
+            </option>
+            {% endfor %}
+          </select>
+          <div id="groupInfo" style="margin-top:.4rem; font-size:.8rem; color:var(--blue-700);"></div>
+        </div>
+        <div class="ac-form-field">
+          <label>2. Tanggal Mulai Pertandingan *</label>
+          <input type="date" name="start_date"
+                 value="{{ config.start_date }}"
+                 min="{{ config.start_date }}" max="{{ config.end_date }}" required>
+        </div>
+        <div class="ac-form-field">
+          <label>3. Nama Lapangan / Meja *</label>
+          <input type="text" name="court" value="Court 1" required placeholder="mis. Court 1, Meja 1, Lapangan A">
+        </div>
+      </div>
+
+      <div class="ac-form-actions">
+        <button type="submit" class="ac-btn ac-btn-primary" style="font-size:1rem; padding:.65rem 1.8rem;">
+          🚀 Generate Jadwal Sekarang
+        </button>
+        <a href="{{ url_for('admin_dashboard') }}" class="ac-btn ac-btn-secondary">Kembali ke Dashboard</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ── STATUS PER DIVISI ── #}
+<div class="ac-card" style="margin-top:1.4rem;">
+  <div class="ac-card-header">
+    <h2>📊 Status Peserta per Divisi</h2>
+  </div>
+  <div class="ac-table-wrap">
+    <table class="ac-table">
+      <thead>
+        <tr>
+          <th>Divisi</th>
+          <th>Grup</th>
+          <th>Jumlah Tim Terdaftar</th>
+          <th>Siap Generate?</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        {% set cat_teams = teams.values()|selectattr('category','eq',cat.key)|list %}
+        <tr>
+          <td><strong>{{ cat.label }}</strong></td>
+          <td>
+            {% for g in cat.groups %}
+            <span class="badge" style="background:var(--blue-100); color:var(--blue-800); font-size:.73rem; margin-right:.2rem;">
+              Grup {{ g }}: {{ cat_teams|selectattr('group','eq',g)|list|length }} tim
+            </span>
+            {% endfor %}
+          </td>
+          <td><strong>{{ cat_teams|length }}</strong> tim total</td>
+          <td>
+            {% if cat_teams|length >= 2 %}
+            <span class="badge badge-completed">✅ Siap</span>
+            {% else %}
+            <span class="badge" style="background:#fee2e2; color:#dc2626; font-size:.78rem;">
+              ⚠️ Minimal 2 tim
+            </span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<script>
+function updateGroupInfo() {
+  var sel = document.getElementById('gen_cat');
+  var opt = sel.options[sel.selectedIndex];
+  var groups = opt.getAttribute('data-groups') || '';
+  var count  = opt.getAttribute('data-teams') || '0';
+  var info   = document.getElementById('groupInfo');
+  if (info) {
+    info.textContent = count + ' tim terdaftar di divisi ini · Grup: ' + groups;
+  }
+}
+document.addEventListener('DOMContentLoaded', updateGroupInfo);
+</script>
+{% endblock %}

@@ -2,13 +2,31 @@ import json
 import os
 import shutil
 import threading
-from datetime import datetime, timezone, timedelta
+import base64
+import uuid
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+from domain.scoring import RuleProfile, validate_match_score, validate_score
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 _LOCK = threading.Lock()
 
-def now_wib():
-    return datetime.now(timezone(timedelta(hours=7)))
+
+class MatchNotFoundError(LookupError):
+    pass
+
+
+class MatchVersionConflictError(RuntimeError):
+    pass
+
+def now_wib(timezone_name=None):
+    return datetime.now(
+        ZoneInfo(
+            timezone_name
+            or os.environ.get("TOURNAMENT_TIMEZONE", "Asia/Jakarta")
+        )
+    )
 
 BAD_WORDS = {
     "anjing", "babi", "monyet", "kunyuk", "bangsat", "bajingan", "tolol", "goblok", "bego", 
@@ -41,11 +59,31 @@ def censor_text(text):
             
     return "".join(censored_words)
 
-# Penyimpanan data: default file lokal data/*.json (untuk dev). Vercel serverless
-# filesystem-nya read-only, jadi kalau env var DATABASE_URL tersedia, otomatis
-# pindah pakai Postgres (skema khusus "tennis", terisolasi dari tabel lain).
+# Penyimpanan data: legacy tetap menjadi default dan dapat memakai file JSON atau
+# dokumen JSONB di skema `tennis`. Backend normalized adalah cutover eksplisit;
+# DATABASE_URL saja tidak pernah mengaktifkannya secara tidak sengaja.
 DATABASE_URL = os.environ.get("DATABASE_URL")
-USE_DB = bool(DATABASE_URL)
+STORAGE_BACKEND = os.environ.get("STORAGE_BACKEND", "legacy").strip().lower()
+if STORAGE_BACKEND not in {"legacy", "normalized"}:
+    raise RuntimeError("STORAGE_BACKEND must be either 'legacy' or 'normalized'.")
+
+USE_NORMALIZED_DB = STORAGE_BACKEND == "normalized"
+USE_DB = bool(DATABASE_URL) and not USE_NORMALIZED_DB
+_NORMALIZED_REPOSITORY = None
+
+if USE_NORMALIZED_DB:
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL is required when STORAGE_BACKEND=normalized.")
+    from intersport_core.live_repository import (
+        NormalizedMatchNotFound,
+        NormalizedRepository,
+        NormalizedRepositoryError,
+        NormalizedVersionConflict,
+    )
+
+    _NORMALIZED_REPOSITORY = NormalizedRepository(
+        DATABASE_URL, os.environ.get("TOURNAMENT_SLUG")
+    )
 
 if USE_DB:
     import psycopg2
@@ -71,8 +109,7 @@ if USE_DB:
             return conn
         return _new_conn()
 
-    def close_request_connection():
-        """Panggil di teardown_appcontext Flask supaya koneksi per-request ditutup rapi."""
+    def _close_legacy_request_connection():
         from flask import g
         conn = g.pop("_pg_conn", None)
         if conn is not None:
@@ -105,6 +142,14 @@ if USE_DB:
 
     _ensure_schema()
 
+
+def close_request_connection():
+    """Close whichever per-request PostgreSQL connection is active."""
+    if USE_DB:
+        _close_legacy_request_connection()
+    if USE_NORMALIZED_DB:
+        _NORMALIZED_REPOSITORY.close_request_connection()
+
 DAY_NAMES = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
 MONTH_NAMES = [
     "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -117,6 +162,16 @@ def _path(name):
 
 
 def load_json(name):
+    if USE_NORMALIZED_DB:
+        loaders = {
+            "config.json": _NORMALIZED_REPOSITORY.load_config,
+            "teams.json": _NORMALIZED_REPOSITORY.load_teams,
+            "matches.json": _NORMALIZED_REPOSITORY.load_matches,
+        }
+        try:
+            return loaders[name]()
+        except KeyError as exc:
+            raise ValueError(f"Normalized storage does not expose {name!r}.") from exc
     if USE_DB:
         key = name.replace(".json", "")
         with _db_conn() as conn, conn.cursor() as cur:
@@ -136,6 +191,11 @@ def load_json(name):
 
 
 def save_json(name, data):
+    if USE_NORMALIZED_DB:
+        raise RuntimeError(
+            "Generic JSON writes are disabled for normalized storage; "
+            "use an entity-specific repository operation."
+        )
     if USE_DB:
         key = name.replace(".json", "")
         with _db_conn() as conn, conn.cursor() as cur:
@@ -156,22 +216,702 @@ def load_teams():
     return load_json("teams.json")
 
 
+def save_teams(teams):
+    if USE_NORMALIZED_DB:
+        raise RuntimeError(
+            "Whole-collection team writes are disabled for normalized storage."
+        )
+    save_json("teams.json", teams)
+
+
 def load_matches():
     return load_json("matches.json")
 
 
 def save_matches(matches):
+    if USE_NORMALIZED_DB:
+        raise RuntimeError(
+            "Whole-collection match writes are disabled for normalized storage."
+        )
     save_json("matches.json", matches)
+
+
+def _apply_match_update(matches, match_id, expected_version, updater):
+    match = get_match(matches, match_id)
+    if match is None:
+        raise MatchNotFoundError(match_id)
+
+    current_version = int(match.get("version", 0))
+    if expected_version is not None and current_version != expected_version:
+        raise MatchVersionConflictError(
+            f"Match {match_id} changed from version {expected_version} to {current_version}."
+        )
+
+    schedule_fields = ("date", "time", "court", "team_a", "team_b")
+    before_schedule = tuple(match.get(field) for field in schedule_fields)
+    before_status = match.get("status")
+    updater(match)
+    after_schedule = tuple(match.get(field) for field in schedule_fields)
+    if before_schedule != after_schedule or (
+        before_status == "cancelled" and match.get("status") != "cancelled"
+    ):
+        conflicts = find_schedule_conflicts(matches, match, exclude_match_id=match_id)
+        if conflicts:
+            raise ValueError(" ".join(conflicts))
+    match["version"] = current_version + 1
+    return match
+
+
+def find_schedule_conflicts(matches, candidate, exclude_match_id=None):
+    """Detect same-slot court and entrant conflicts for one candidate match."""
+    if (
+        candidate.get("status") == "cancelled"
+        or not candidate.get("date")
+        or not candidate.get("time")
+    ):
+        return []
+    candidate_entrants = {
+        code for code in (candidate.get("team_a"), candidate.get("team_b")) if code
+    }
+    conflicts = []
+    for other in matches:
+        if other.get("id") == (exclude_match_id or candidate.get("id")):
+            continue
+        if other.get("status") == "cancelled":
+            continue
+        if (
+            other.get("date") != candidate.get("date")
+            or other.get("time") != candidate.get("time")
+        ):
+            continue
+        if candidate.get("court") and other.get("court") == candidate.get("court"):
+            conflicts.append(
+                f"Bentrok lapangan dengan pertandingan {other.get('id')}."
+            )
+        other_entrants = {
+            code for code in (other.get("team_a"), other.get("team_b")) if code
+        }
+        overlap = candidate_entrants & other_entrants
+        if overlap:
+            conflicts.append(
+                "Bentrok peserta "
+                f"{', '.join(sorted(overlap))} dengan pertandingan {other.get('id')}."
+            )
+    return conflicts
+
+
+def update_match(match_id, updater, expected_version=None):
+    """Atomically update one match and increment its optimistic-lock version.
+
+    Both PostgreSQL backends use SELECT FOR UPDATE to prevent two workers from
+    silently overwriting each other. The local JSON path holds the process lock
+    for the complete read-modify-write cycle.
+    """
+    if USE_NORMALIZED_DB:
+        try:
+            return _NORMALIZED_REPOSITORY.update_match(
+                match_id, updater, expected_version=expected_version
+            )
+        except NormalizedMatchNotFound as exc:
+            raise MatchNotFoundError(match_id) from exc
+        except NormalizedVersionConflict as exc:
+            raise MatchVersionConflictError(str(exc)) from exc
+        except NormalizedRepositoryError as exc:
+            raise ValueError(str(exc)) from exc
+
+    if USE_DB:
+        key = "matches"
+        with _db_conn() as conn, conn.cursor() as cur:
+            cur.execute(
+                "SELECT data FROM tennis.app_data WHERE name = %s FOR UPDATE",
+                (key,),
+            )
+            row = cur.fetchone()
+            if row is None:
+                with open(_path("matches.json"), "r", encoding="utf-8") as source:
+                    matches = json.load(source)
+            else:
+                matches = row[0]
+
+            updated = _apply_match_update(
+                matches, match_id, expected_version, updater
+            )
+            cur.execute(
+                """
+                INSERT INTO tennis.app_data (name, data, updated_at)
+                VALUES (%s, %s, now())
+                ON CONFLICT (name) DO UPDATE
+                SET data = EXCLUDED.data, updated_at = now()
+                """,
+                (key, psycopg2.extras.Json(matches)),
+            )
+            conn.commit()
+            return updated
+
+    with _LOCK:
+        path = _path("matches.json")
+        with open(path, "r", encoding="utf-8") as source:
+            matches = json.load(source)
+        updated = _apply_match_update(matches, match_id, expected_version, updater)
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as destination:
+            json.dump(matches, destination, ensure_ascii=False, indent=2)
+        os.replace(tmp, path)
+        return updated
 
 
 def load_config():
     return load_json("config.json")
 
 
+def save_config(config):
+    if USE_NORMALIZED_DB:
+        raise RuntimeError("Whole-document config writes are disabled for normalized storage.")
+    save_json("config.json", config)
+
+
+def is_normalized_backend():
+    return USE_NORMALIZED_DB
+
+
+def list_sports():
+    if USE_NORMALIZED_DB:
+        return _NORMALIZED_REPOSITORY.list_sports()
+    config = load_config()
+    categories = config.get("categories", [])
+    enabled_sports = config.get("enabled_sports", ["table-tennis"])
+    counts = {"table-tennis": 0, "padel": 0, "badminton": 0}
+    for cat in categories:
+        s_key = cat.get("sport_key", "table-tennis")
+        counts[s_key] = counts.get(s_key, 0) + 1
+
+    return [
+        {
+            "key": "table-tennis",
+            "name": "Table Tennis",
+            "icon": "🏓",
+            "enabled": "table-tennis" in enabled_sports or counts.get("table-tennis", 0) > 0,
+            "display_order": 1,
+            "division_count": counts.get("table-tennis", 0),
+        },
+        {
+            "key": "padel",
+            "name": "Padel",
+            "icon": "🎾",
+            "enabled": "padel" in enabled_sports or counts.get("padel", 0) > 0,
+            "display_order": 2,
+            "division_count": counts.get("padel", 0),
+        },
+        {
+            "key": "badminton",
+            "name": "Badminton",
+            "icon": "🏸",
+            "enabled": "badminton" in enabled_sports or counts.get("badminton", 0) > 0,
+            "display_order": 3,
+            "division_count": counts.get("badminton", 0),
+        },
+    ]
+
+
+DEFAULT_STANDING_POLICY = {
+    "win_points": 2,
+    "played_loss_points": 1,
+    "walkover_loss_points": 0,
+    "tie_break_order": [
+        "competition_points",
+        "head_to_head",
+        "mini_table",
+        "segment_difference",
+        "point_difference",
+    ],
+}
+
+
+def load_competition_structure():
+    if USE_NORMALIZED_DB:
+        return _NORMALIZED_REPOSITORY.load_competition_structure()
+
+    config = load_config()
+    divisions = []
+    for order, category in enumerate(config.get("categories", []), start=1):
+        stages = [
+            {
+                "id": None,
+                "key": "group-stage",
+                "type": "group",
+                "name": "Babak Grup",
+                "sequence": 1,
+                "qualification_policy": (
+                    {"qualifiers_per_group": 1, "destination_stage": "final"}
+                    if category.get("has_final")
+                    else {"champion_from_standings": True}
+                ),
+                "groups": [
+                    {"key": key, "name": f"Group {key}", "display_order": index}
+                    for index, key in enumerate(category.get("groups", []), start=1)
+                ],
+            }
+        ]
+        if category.get("has_final"):
+            stages.append(
+                {
+                    "id": None,
+                    "key": "final",
+                    "type": "final",
+                    "name": "Final",
+                    "sequence": 2,
+                    "qualification_policy": {
+                        "source": "group-stage",
+                        "entrants": "group-winners",
+                    },
+                    "groups": [],
+                }
+            )
+        divisions.append(
+            {
+                "id": None,
+                "key": category["key"],
+                "name": category.get("label", category["key"]),
+                "sport_key": category.get("sport_key", "table-tennis"),
+                "sport_name": {
+                    "table-tennis": "Table Tennis",
+                    "padel": "Padel",
+                    "badminton": "Badminton",
+                }.get(category.get("sport_key", "table-tennis"), "Sport"),
+                "sport_icon": {
+                    "table-tennis": "🏓",
+                    "padel": "🎾",
+                    "badminton": "🏸",
+                }.get(category.get("sport_key", "table-tennis"), "🏆"),
+                "sport_enabled": True,
+                "feature_flags": {
+                    "schedule": True, "standings": True, "comments": True,
+                    "reactions": True, "media": True, "streaming": True,
+                },
+                "entrant_type": "team",
+                "min_team_size": 2,
+                "max_team_size": 2,
+                "enabled": True,
+                "display_order": order,
+                "standing_policy": {
+                    "key": "legacy-table-tennis",
+                    "version": 1,
+                    "name": "InterSport Table Tennis Group Policy",
+                    "config": dict(DEFAULT_STANDING_POLICY),
+                },
+                "default_rule_profile": {
+                    "table-tennis": {
+                        "key": "table-tennis-bo3", "version": 1, "name": "Table Tennis Best of 3", "segment_term": "game", "config": {"best_of": 3, "points_to_win": 11, "win_by": 2},
+                    },
+                    "padel": {
+                        "key": "padel-standard-advantage", "version": 1, "name": "Padel Best of 3 — Advantage", "segment_term": "set", "config": {"best_of": 3, "games_to_win_set": 6, "tie_break_at": "6-6", "game_scoring_method": "advantage", "deciding_set_policy": "standard"},
+                    },
+                    "badminton": {
+                        "key": "badminton-21-bo3", "version": 1, "name": "Badminton 21-point Best of 3", "segment_term": "game", "config": {"best_of": 3, "points_to_win": 21, "win_by": 2, "point_cap": 30},
+                    },
+                }.get(category.get("sport_key", "table-tennis"), {
+                    "key": "default-bo3", "version": 1, "name": "Default Best of 3", "segment_term": "game", "config": {"best_of": 3, "points_to_win": 11, "win_by": 2},
+                }),
+                "stages": stages,
+            }
+        )
+    return {
+        "tournament": {
+            "slug": config.get("tournament_short_name", "tournament"),
+            "name": config.get("tournament_name", "Tournament"),
+            "timezone": config.get("timezone", "Asia/Jakarta"),
+        },
+        "divisions": divisions,
+        "rule_profiles_by_sport": {
+            "table-tennis": [
+                {
+                    "key": "table-tennis-bo3",
+                    "version": 1,
+                    "name": "Table Tennis Best of 3",
+                    "segment_term": "game",
+                    "config": {"best_of": 3, "points_to_win": 11, "win_by": 2},
+                },
+                {
+                    "key": "table-tennis-bo5",
+                    "version": 1,
+                    "name": "Table Tennis Best of 5",
+                    "segment_term": "game",
+                    "config": {"best_of": 5, "points_to_win": 11, "win_by": 2},
+                },
+            ],
+            "badminton": [
+                {
+                    "key": "badminton-21-bo3",
+                    "version": 1,
+                    "name": "Badminton 21-point Best of 3",
+                    "segment_term": "game",
+                    "config": {
+                        "best_of": 3, "points_to_win": 21,
+                        "win_by": 2, "point_cap": 30,
+                    },
+                }
+            ],
+            "padel": [
+                {
+                    "key": "padel-standard-advantage",
+                    "version": 1,
+                    "name": "Padel Best of 3 — Advantage",
+                    "segment_term": "set",
+                    "config": {
+                        "best_of": 3, "games_to_win_set": 6,
+                        "tie_break_at": "6-6",
+                        "game_scoring_method": "advantage",
+                        "deciding_set_policy": "standard",
+                    },
+                },
+                {
+                    "key": "padel-standard-golden-point",
+                    "version": 1,
+                    "name": "Padel Best of 3 — Golden Point",
+                    "segment_term": "set",
+                    "config": {
+                        "best_of": 3, "games_to_win_set": 6,
+                        "tie_break_at": "6-6",
+                        "game_scoring_method": "golden_point",
+                        "deciding_set_policy": "standard",
+                    },
+                },
+            ],
+        },
+    }
+
+
+def update_announcement(title, body):
+    if USE_NORMALIZED_DB:
+        _NORMALIZED_REPOSITORY.update_announcement(title, body)
+        return
+    config = load_config()
+    config["announcement_title"] = title
+    config["announcement_text"] = body
+    save_json("config.json", config)
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  SPORT RULES — per-sport scoring config, editable by admin
+# ─────────────────────────────────────────────────────────────────────
+
+DEFAULT_SPORT_RULES = {
+    "table-tennis": {
+        "profile_key": "table-tennis-bo3",
+        "profile_name": "Tenis Meja — Best of 3 Games",
+        "segment_term": "game",       # "game" | "set"
+        "best_of": 3,                 # 3 or 5 or 7
+        "points_to_win": 11,          # 11 (standard) or 21 (old style)
+        "win_by": 2,                  # deuce margin
+        "point_cap": 0,               # 0 = no cap; 21 = cap (for badminton)
+        "games_to_win_set": 0,        # 0 = N/A (only used for padel sets)
+        "tie_break_at": "",           # "" = N/A; "6-6" for padel
+        "game_scoring_method": "",    # "" = N/A; "advantage"|"golden_point" for padel
+        "deciding_set_policy": "",    # "" = N/A; "standard"|"super_tiebreak" for padel
+        "notes": "Setiap game menang dengan 11 poin, selisih minimal 2. Kemenangan dihitung berdasarkan game yang dimenangkan.",
+    },
+    "badminton": {
+        "profile_key": "badminton-21-bo3",
+        "profile_name": "Badminton — Best of 3 Games",
+        "segment_term": "game",
+        "best_of": 3,
+        "points_to_win": 21,
+        "win_by": 2,
+        "point_cap": 30,              # deuce cap: 30-29 wins
+        "games_to_win_set": 0,
+        "tie_break_at": "",
+        "game_scoring_method": "",
+        "deciding_set_policy": "",
+        "notes": "Setiap game menang dengan 21 poin, deuce di 20-20, maksimal 30. Best of 3 games.",
+    },
+    "padel": {
+        "profile_key": "padel-standard-advantage",
+        "profile_name": "Padel — Best of 3 Sets (Advantage)",
+        "segment_term": "set",
+        "best_of": 3,
+        "points_to_win": 0,           # 0 = N/A (padel uses games_to_win_set)
+        "win_by": 0,
+        "point_cap": 0,
+        "games_to_win_set": 6,        # menang set jika capai 6 games
+        "tie_break_at": "6-6",        # tiebreak when score is 6-6
+        "game_scoring_method": "advantage",   # "advantage" | "golden_point"
+        "deciding_set_policy": "standard",    # "standard" | "super_tiebreak"
+        "notes": "Pertandingan dengan sistem game tradisional. Set dimenangkan saat capai 6 games, tiebreak di 6-6. Best of 3 sets.",
+    },
+}
+
+
+def get_sport_rules():
+    """Return per-sport scoring rules from config, falling back to defaults."""
+    config = load_config()
+    saved = config.get("sport_rules", {})
+    result = {}
+    for sport_key, defaults in DEFAULT_SPORT_RULES.items():
+        merged = dict(defaults)
+        merged.update(saved.get(sport_key, {}))
+        result[sport_key] = merged
+    return result
+
+
+def save_sport_rules(rules_by_sport: dict):
+    """Persist per-sport scoring rules into config.json."""
+    config = load_config()
+    existing = config.get("sport_rules", {})
+    for sport_key, rules in rules_by_sport.items():
+        existing[sport_key] = dict(DEFAULT_SPORT_RULES.get(sport_key, {}))
+        existing[sport_key].update(rules)
+    config["sport_rules"] = existing
+    save_json("config.json", config)
+
+
+
+def set_champion_photo(champion_key, photo_url=None, uploaded_at=None):
+    if USE_NORMALIZED_DB:
+        _NORMALIZED_REPOSITORY.set_champion_photo(
+            champion_key, photo_url=photo_url, uploaded_at=uploaded_at
+        )
+        return
+    config = load_config()
+    champions = config.setdefault("champions", {})
+    if photo_url:
+        champions[champion_key] = {
+            "photo_url": photo_url,
+            "uploaded_at": uploaded_at,
+        }
+    else:
+        champions.pop(champion_key, None)
+    save_json("config.json", config)
+
+
+def clean_youtube_embed_url(url):
+    if not url or not url.strip():
+        return ""
+    url = url.strip()
+    if "<iframe" in url.lower() and "src=" in url.lower():
+        match = re.search(r'src="([^"]+)"', url, re.IGNORECASE) or re.search(r"src='([^']+)'", url, re.IGNORECASE)
+        if match:
+            url = match.group(1)
+    vid_match = re.search(r'(?:youtube\.com/(?:watch\?v=|live/)|youtu\.be/)([\w-]+)', url)
+    if vid_match:
+        video_id = vid_match.group(1)
+        return f"https://www.youtube.com/embed/{video_id}"
+    return url
+
+
+def update_live_streaming_config(url, title=""):
+    if USE_NORMALIZED_DB and hasattr(_NORMALIZED_REPOSITORY, "update_live_stream"):
+        _NORMALIZED_REPOSITORY.update_live_stream(url, title)
+        return
+    config = load_config()
+    config["youtube_embed_url"] = clean_youtube_embed_url(url)
+    config["youtube_embed_title"] = title.strip() if title else ""
+    save_json("config.json", config)
+
+
+def dynamic_circle_rounds(codes):
+    if not codes or len(codes) < 2:
+        return []
+    team_list = list(codes)
+    if len(team_list) % 2 == 1:
+        team_list.append(None)
+    n = len(team_list)
+    rounds = []
+    for _ in range(n - 1):
+        rnd = []
+        for i in range(n // 2):
+            t1 = team_list[i]
+            t2 = team_list[n - 1 - i]
+            if t1 is not None and t2 is not None:
+                rnd.append((t1, t2))
+        if rnd:
+            rounds.append(rnd)
+        team_list = [team_list[0]] + [team_list[-1]] + team_list[1:-1]
+    return rounds
+
+
+def generate_group_to_knockout_schedule(category_key, start_date=None, time_slots=None, court="Meja 1"):
+    teams = load_teams()
+    config = load_config()
+    matches = load_matches()
+    
+    category = next((c for c in config.get("categories", []) if c.get("key") == category_key), None)
+    if not category:
+        raise ValueError(f"Divisi/Kategori '{category_key}' tidak ditemukan dalam konfigurasi.")
+    
+    sport_key = category.get("sport_key", "table-tennis")
+    cat_label = category.get("label", category_key)
+    groups = category.get("groups", ["A"])
+    has_final = category.get("has_final", True)
+    
+    if not start_date:
+        start_date = config.get("start_date", "2026-07-20")
+    if not time_slots:
+        time_slots = ["18:00", "18:30", "19:00", "19:30"]
+        
+    cat_teams = {code: t for code, t in teams.items() if t.get("category") == category_key}
+    if len(cat_teams) < 2:
+        raise ValueError(f"Divisi '{cat_label}' minimal membutuhkan 2 tim terdaftar untuk menguji putaran grup.")
+
+    matches = [m for m in matches if m.get("category") != category_key]
+    
+    existing_ids = {m.get("id") for m in matches}
+    mid_counter = 1
+    def get_next_id():
+        nonlocal mid_counter
+        while f"M{mid_counter:02d}" in existing_ids:
+            mid_counter += 1
+        new_id = f"M{mid_counter:02d}"
+        existing_ids.add(new_id)
+        return new_id
+
+    round_label_map = {1: "Babak 1", 2: "Babak 2", 3: "Babak 3", 4: "Babak 4", 5: "Babak 5"}
+    
+    group_matches_queue = []
+    for g in groups:
+        g_codes = [code for code, t in cat_teams.items() if t.get("group") == g or (len(groups) == 1 and not t.get("group"))]
+        rounds = dynamic_circle_rounds(g_codes)
+        for r_idx, rnd in enumerate(rounds, start=1):
+            for a, b in rnd:
+                group_matches_queue.append((g, r_idx, a, b))
+                
+    curr_date = datetime.strptime(start_date, "%Y-%m-%d")
+    slot_idx = 0
+    
+    for g, round_no, a, b in group_matches_queue:
+        time_str = time_slots[slot_idx % len(time_slots)]
+        matches.append({
+            "id": get_next_id(),
+            "category": category_key,
+            "category_label": cat_label,
+            "sport_key": sport_key,
+            "group": g,
+            "round": round_no,
+            "round_label": round_label_map.get(round_no, f"Babak {round_no}"),
+            "stage_type": "group",
+            "team_a": a,
+            "team_b": b,
+            "date": curr_date.strftime("%Y-%m-%d"),
+            "time": time_str,
+            "court": court,
+            "status": "scheduled",
+            "sets": [],
+            "winner": None,
+            "walkover": False,
+            "notes": "",
+            "reschedule_history": [],
+        })
+        slot_idx += 1
+        if slot_idx % len(time_slots) == 0:
+            curr_date += timedelta(days=1)
+            
+    knockout_count = 0
+    if has_final or len(groups) > 1:
+        final_date_str = config.get("final_date", curr_date.strftime("%Y-%m-%d"))
+        if len(groups) == 2:
+            matches.append({
+                "id": get_next_id(),
+                "category": category_key,
+                "category_label": cat_label,
+                "sport_key": sport_key,
+                "group": "FINAL",
+                "round": 4,
+                "round_label": "Final",
+                "stage_type": "final",
+                "team_a": None,
+                "team_b": None,
+                "date": final_date_str,
+                "time": "18:00",
+                "court": court,
+                "status": "scheduled",
+                "sets": [],
+                "winner": None,
+                "walkover": False,
+                "notes": f"Final {cat_label}: Juara Group A vs Juara Group B",
+                "reschedule_history": [],
+            })
+            knockout_count += 1
+        elif len(groups) > 2 or (len(groups) == 1 and len(cat_teams) >= 3):
+            matches.append({
+                "id": get_next_id(),
+                "category": category_key,
+                "category_label": cat_label,
+                "sport_key": sport_key,
+                "group": "FINAL",
+                "round": 4,
+                "round_label": "Final",
+                "stage_type": "final",
+                "team_a": None,
+                "team_b": None,
+                "date": final_date_str,
+                "time": "18:00",
+                "court": court,
+                "status": "scheduled",
+                "sets": [],
+                "winner": None,
+                "walkover": False,
+                "notes": f"Final {cat_label} (Knockout)",
+                "reschedule_history": [],
+            })
+            knockout_count += 1
+            
+    save_matches(matches)
+    return len(group_matches_queue), knockout_count
+
+
+def list_api_matches(
+    *, sport=None, division=None, status=None, match_date=None, limit=25,
+    cursor_value=None,
+):
+    if USE_NORMALIZED_DB:
+        return _NORMALIZED_REPOSITORY.list_api_matches(
+            sport=sport, division=division, status=status,
+            match_date=match_date, limit=limit, cursor_value=cursor_value,
+        )
+
+    matches = load_matches()
+    for match in matches:
+        match.setdefault("sport_key", "table-tennis")
+    if sport:
+        matches = [m for m in matches if m["sport_key"] == sport]
+    if division:
+        matches = [m for m in matches if m.get("category") == division]
+    if status:
+        matches = [m for m in matches if m.get("status") == status]
+    if match_date:
+        matches = [m for m in matches if m.get("date") == match_date]
+    matches.sort(key=lambda m: (m.get("date") or "9999-12-31", m.get("time") or "", m["id"]))
+    offset = 0
+    if cursor_value:
+        try:
+            padded = cursor_value + "=" * (-len(cursor_value) % 4)
+            offset = int(base64.urlsafe_b64decode(padded.encode()).decode())
+            if offset < 0:
+                raise ValueError("Cursor offset cannot be negative.")
+        except Exception as exc:
+            raise ValueError("Invalid pagination cursor.") from exc
+    page = matches[offset:offset + limit]
+    next_cursor = None
+    if offset + limit < len(matches):
+        next_cursor = base64.urlsafe_b64encode(
+            str(offset + limit).encode()
+        ).decode().rstrip("=")
+    return page, next_cursor
+
+
+def get_api_match(match_id):
+    if USE_NORMALIZED_DB:
+        return _NORMALIZED_REPOSITORY.get_api_match(match_id)
+    return get_match(load_matches(), match_id)
+
+
 def backup_data_files(*names):
     """Cadangkan data sebelum operasi merusak (mis. reset/acak ulang).
     Di DB: disalin ke tennis.app_data_backups. Di lokal: disalin ke data/backups/."""
     ts = now_wib().strftime("%Y%m%d_%H%M%S")
+    if USE_NORMALIZED_DB:
+        raise RuntimeError(
+            "Legacy collection backup is unavailable for normalized storage."
+        )
     if USE_DB:
         with _db_conn() as conn, conn.cursor() as cur:
             for name in names:
@@ -214,7 +954,7 @@ def team_label(teams, code):
 def team_short(teams, code):
     if not code:
         return "TBD"
-    return code
+    return teams.get(code, {}).get("code", code)
 
 
 def truncate_words(text, max_words=2):
@@ -239,7 +979,11 @@ def build_share_text(m):
     dibaca begitu masuk ke WhatsApp/Teams sebagai pesan teks biasa."""
     lines = [
         f"*{m['team_a_code']} vs {m['team_b_code']} — {m['category_label']}*",
-        (f"Group {m['group']} · " if m["group"] != "FINAL" else "") + m["round_label"],
+        (
+            f"{m.get('group')} · "
+            if m.get("stage_type") in {"group", "round_robin"} and m.get("group")
+            else ""
+        ) + m["round_label"],
         "",
         _team_names(m["team_a_player1"], m["team_a_player2"]),
         "vs",
@@ -268,19 +1012,67 @@ def compute_sets_won(sets):
 
 
 def sets_needed_to_win(match):
-    """Final Ganda Putra = Best of 5 (menang 3 set). Semua laga fase grup = Best of 3 (menang 2 set)."""
+    """Return the number of segments needed to win under the match profile."""
+    profile_config = match.get("_profile_config") or {}
+    if profile_config.get("best_of"):
+        return int(profile_config["best_of"]) // 2 + 1
+    # Legacy rule: men's doubles final is Best of 5; group matches are Best of 3.
     return 3 if match.get("group") == "FINAL" else 2
+
+
+def validate_match_segments(match, segments=None):
+    candidate_segments = match.get("sets") or [] if segments is None else segments
+    if match.get("_profile_key"):
+        return validate_score(
+            RuleProfile(
+                sport_key=match.get("sport_key", "table-tennis"),
+                profile_key=match["_profile_key"],
+                version=int(match.get("_profile_version", 1)),
+                config=match.get("_profile_config") or {},
+            ),
+            candidate_segments,
+        )
+    best_of = sets_needed_to_win(match) * 2 - 1
+    return validate_match_score(candidate_segments, best_of=best_of)
 
 
 def compute_winner(match):
     sets = match.get("sets") or []
     if not sets:
         return None
-    needed = sets_needed_to_win(match)
-    a, b = compute_sets_won(sets)
-    if a >= needed or b >= needed:
-        return match["team_a"] if a > b else match["team_b"]
+    result = validate_match_segments(match)
+    if result.is_complete:
+        return match["team_a"] if result.winner_side == "a" else match["team_b"]
     return None
+
+
+def validate_recorded_result(match):
+    """Return scoring validation plus record-level consistency errors."""
+    if match.get("walkover"):
+        errors = []
+        if match.get("winner") not in (match.get("team_a"), match.get("team_b")):
+            errors.append("Pemenang WO tidak sesuai dengan peserta pertandingan.")
+        return None, errors
+
+    result = validate_match_segments(match)
+    errors = list(result.errors)
+    if match.get("status") == "completed":
+        if not result.is_complete:
+            errors.append("Pertandingan selesai belum memiliki skor akhir yang sah.")
+        else:
+            expected_winner = (
+                match.get("team_a") if result.winner_side == "a" else match.get("team_b")
+            )
+            if match.get("winner") != expected_winner:
+                errors.append("Pemenang tersimpan tidak sesuai dengan skor.")
+    return result, errors
+
+
+def is_valid_completed_match(match):
+    if match.get("status") != "completed":
+        return False
+    _, errors = validate_recorded_result(match)
+    return not errors
 
 
 def sync_winner(match):
@@ -294,11 +1086,336 @@ def sync_winner(match):
     return match
 
 
-def compute_standings(matches, teams, category, group):
+def _scorekeeper_effective_events(match):
+    events = sorted(
+        match.get("scorekeeper_events") or [],
+        key=lambda event: int(event.get("sequence") or 0),
+    )
+    reversed_ids = {
+        event.get("reversal_of")
+        for event in events
+        if event.get("event_type") == "score.undo" and event.get("reversal_of")
+    }
+    return [
+        event for event in events
+        if event.get("event_type") != "score.undo"
+        and event.get("id") not in reversed_ids
+    ]
+
+
+def scorekeeper_terms(match, current_segment=None):
+    """Return sport/profile-aware labels and current-segment scoring limits."""
+    current_segment = current_segment or [0, 0]
+    sport_key = match.get("sport_key", "table-tennis")
+    config = match.get("_profile_config") or {}
+    segment_term = match.get("_segment_term") or (
+        "set" if sport_key == "padel" else "game"
+    )
+    segment_label = "Set" if segment_term == "set" else "Game"
+    unit_label = "Poin"
+    target = int(config.get("points_to_win", 11))
+    win_by = int(config.get("win_by", 2))
+    cap = config.get("point_cap")
+    is_deciding_tiebreak = False
+
+    if sport_key == "badminton":
+        target = int(config.get("points_to_win", 21))
+        win_by = int(config.get("win_by", 2))
+        cap = int(config.get("point_cap", 30))
+    elif sport_key == "padel":
+        completed = match.get("sets") or []
+        best_of = int(config.get("best_of", 3))
+        won_a, won_b = compute_sets_won(completed)
+        is_deciding_tiebreak = (
+            config.get("deciding_set_policy") == "match_tiebreak"
+            and len(completed) == best_of - 1
+            and won_a == won_b
+        )
+        if is_deciding_tiebreak:
+            unit_label = "Poin tie-break"
+            target = int(config.get("match_tiebreak_target", 10))
+            win_by = int(config.get("match_tiebreak_win_by", 2))
+            cap = None
+        else:
+            unit_label = "Game"
+            target = int(config.get("games_to_win_set", 6))
+            win_by = int(config.get("set_win_by", 2))
+            cap = 7 if config.get("tie_break_at", "6-6") else None
+
+    return {
+        "segment_term": segment_term,
+        "segment_label": segment_label,
+        "segment_label_lower": segment_label.lower(),
+        "unit_label": unit_label,
+        "unit_label_lower": unit_label.lower(),
+        "target": target,
+        "win_by": win_by,
+        "cap": cap,
+        "is_deciding_tiebreak": is_deciding_tiebreak,
+        "current_segment": list(current_segment),
+    }
+
+
+def scorekeeper_state(match):
+    """Build the live scorekeeper projection without affecting public standings."""
+    completed_sets = [list(scores) for scores in (match.get("sets") or [])]
+    effective = _scorekeeper_effective_events(match)
+    current = [0, 0]
+    latest_reversible = None
+    for event in effective:
+        if event.get("event_type") not in {"score.point_awarded", "score.correction_opened"}:
+            continue
+        metadata = event.get("metadata") or {}
+        if metadata.get("sets_after") != completed_sets:
+            continue
+        after_current = metadata.get("after_current")
+        if (
+            isinstance(after_current, list) and len(after_current) == 2
+            and all(isinstance(value, int) and value >= 0 for value in after_current)
+        ):
+            current = list(after_current)
+            latest_reversible = (
+                event if event.get("event_type") == "score.point_awarded" else None
+            )
+
+    validation = validate_match_segments(match, completed_sets)
+    sets_a, sets_b = compute_sets_won(completed_sets)
+    terms = scorekeeper_terms(match, current)
+    ready_to_finish = (
+        match.get("status") == "live"
+        and current == [0, 0]
+        and validation.is_complete
+    )
+    return {
+        "current": current,
+        "completed_segments": completed_sets,
+        "segments_won": {"a": sets_a, "b": sets_b},
+        "validation_errors": list(validation.errors),
+        "match_score_complete": validation.is_complete,
+        "winner_side": validation.winner_side,
+        "ready_to_finish": ready_to_finish,
+        "can_score": match.get("status") == "live" and not validation.is_complete,
+        "can_undo": latest_reversible is not None,
+        "latest_reversible_event": latest_reversible,
+        "next_segment": len(completed_sets) + 1,
+        "terms": terms,
+        "event_count": len(match.get("scorekeeper_events") or []),
+    }
+
+
+def _append_scorekeeper_event(
+    match, event_type, *, side=None, value=None, reversal_of=None, metadata=None
+):
+    events = match.setdefault("scorekeeper_events", [])
+    sequence = max(
+        (int(event.get("sequence") or 0) for event in events), default=0
+    ) + 1
+    event = {
+        "id": str(uuid.uuid4()),
+        "sequence": sequence,
+        "event_type": event_type,
+        "side": side,
+        "value": value,
+        "reversal_of": reversal_of,
+        "metadata": metadata or {},
+        "at": now_wib(match.get("_timezone")).isoformat(timespec="seconds"),
+    }
+    events.append(event)
+    return event
+
+
+def apply_scorekeeper_action(match, action, *, side=None, reason=None):
+    """Apply one event-sourced scorekeeper action to a locked match record."""
+    action = (action or "").strip().lower()
+    reason = (reason or "").strip()
+    status = match.get("status")
+
+    if action == "start":
+        if status not in {"scheduled", "check_in", "postponed"}:
+            raise ValueError("Pertandingan ini tidak dapat dimulai dari status saat ini.")
+        if not match.get("team_a") or not match.get("team_b"):
+            raise ValueError("Dua peserta harus ditentukan sebelum pertandingan dimulai.")
+        if not match.get("date") or not match.get("time") or not match.get("court"):
+            raise ValueError("Jadwal dan lapangan harus tersedia sebelum pertandingan dimulai.")
+        validation = validate_match_segments(match, match.get("sets") or [])
+        if validation.errors:
+            raise ValueError(
+                "Skor tersimpan harus dikoreksi sebelum pertandingan dimulai. "
+                + " ".join(validation.errors)
+            )
+        if validation.is_complete:
+            raise ValueError("Skor pertandingan sudah lengkap dan harus diselesaikan atau dikoreksi.")
+        match["status"] = "live"
+        match["winner"] = None
+        match["walkover"] = False
+        _append_scorekeeper_event(
+            match,
+            "score.match_started",
+            metadata={"sets_after": [list(item) for item in match.get("sets") or []]},
+        )
+
+    elif action == "point":
+        if side not in {"a", "b"}:
+            raise ValueError("Sisi peserta untuk penambahan skor tidak valid.")
+        if status != "live":
+            raise ValueError("Mulai pertandingan sebelum menambahkan skor.")
+        state = scorekeeper_state(match)
+        if state["match_score_complete"]:
+            raise ValueError("Skor akhir sudah lengkap. Konfirmasikan selesai atau undo skor terakhir.")
+        if state["validation_errors"]:
+            raise ValueError("Skor pertandingan perlu dikoreksi sebelum dilanjutkan.")
+        before_current = list(state["current"])
+        after_current = list(before_current)
+        after_current[0 if side == "a" else 1] += 1
+        sets_before = [list(item) for item in match.get("sets") or []]
+        candidate_sets = sets_before + [after_current]
+        validation = validate_match_segments(match, candidate_sets)
+        completed_segment = not validation.errors
+        if completed_segment:
+            match["sets"] = candidate_sets
+            next_current = [0, 0]
+        else:
+            next_current = after_current
+        match["winner"] = None
+        match["walkover"] = False
+        _append_scorekeeper_event(
+            match,
+            "score.point_awarded",
+            side=side,
+            value=1,
+            metadata={
+                "before_current": before_current,
+                "after_current": next_current,
+                "sets_before": sets_before,
+                "sets_after": [list(item) for item in match.get("sets") or []],
+                "completed_segment": after_current if completed_segment else None,
+            },
+        )
+
+    elif action == "undo":
+        state = scorekeeper_state(match)
+        event = state.get("latest_reversible_event")
+        if event is None:
+            raise ValueError("Belum ada penambahan skor yang dapat di-undo.")
+        if status == "completed" and not reason:
+            raise ValueError("Alasan koreksi wajib diisi untuk mengubah hasil selesai.")
+        metadata = event.get("metadata") or {}
+        sets_before_action = [list(item) for item in match.get("sets") or []]
+        if metadata.get("sets_after") != sets_before_action:
+            raise ValueError("Riwayat skor tidak lagi sesuai. Muat ulang pertandingan.")
+        match["sets"] = [list(item) for item in metadata.get("sets_before") or []]
+        if status == "completed":
+            match.setdefault("score_corrections", []).append(
+                {
+                    "before": sets_before_action,
+                    "after": [list(item) for item in match["sets"]],
+                    "reason": reason,
+                    "actor": "scorekeeper",
+                    "at": now_wib(match.get("_timezone")).isoformat(timespec="seconds"),
+                }
+            )
+            match["status"] = "live"
+        match["winner"] = None
+        match["walkover"] = False
+        _append_scorekeeper_event(
+            match,
+            "score.undo",
+            reversal_of=event.get("id"),
+            metadata={
+                "reason": reason,
+                "before_current": metadata.get("after_current", [0, 0]),
+                "after_current": metadata.get("before_current", [0, 0]),
+                "sets_before": sets_before_action,
+                "sets_after": [list(item) for item in match["sets"]],
+            },
+        )
+
+    elif action == "finish":
+        if status != "live":
+            raise ValueError("Hanya pertandingan Live yang dapat diselesaikan.")
+        state = scorekeeper_state(match)
+        if state["current"] != [0, 0] or not state["match_score_complete"]:
+            raise ValueError("Skor akhir pertandingan belum lengkap.")
+        winner_side = state["winner_side"]
+        match["winner"] = match.get("team_a") if winner_side == "a" else match.get("team_b")
+        match["status"] = "completed"
+        match["walkover"] = False
+        _append_scorekeeper_event(
+            match,
+            "score.match_finished",
+            side=winner_side,
+            metadata={
+                "sets_after": [list(item) for item in match.get("sets") or []],
+                "after_current": [0, 0],
+            },
+        )
+
+    elif action == "open_correction":
+        if status != "completed" or match.get("walkover"):
+            raise ValueError("Hanya hasil skor selesai non-WO yang dapat dibuka untuk koreksi.")
+        if not reason:
+            raise ValueError("Alasan koreksi wajib diisi.")
+        validation = validate_match_segments(match, match.get("sets") or [])
+        if not validation.is_complete or not match.get("sets"):
+            raise ValueError("Hasil selesai tidak memiliki skor akhir sah yang dapat dikoreksi.")
+        sets_before = [list(item) for item in match.get("sets") or []]
+        final_segment = list(sets_before[-1])
+        winning_index = 0 if final_segment[0] > final_segment[1] else 1
+        if final_segment[winning_index] < 1:
+            raise ValueError("Segmen terakhir tidak dapat dibuka untuk koreksi.")
+        restored_current = list(final_segment)
+        restored_current[winning_index] -= 1
+        match["sets"] = sets_before[:-1]
+        match["status"] = "live"
+        match["winner"] = None
+        match["walkover"] = False
+        match.setdefault("score_corrections", []).append(
+            {
+                "before": sets_before,
+                "after": [list(item) for item in match["sets"]],
+                "reason": reason,
+                "actor": "scorekeeper",
+                "at": now_wib(match.get("_timezone")).isoformat(timespec="seconds"),
+            }
+        )
+        _append_scorekeeper_event(
+            match,
+            "score.correction_opened",
+            side="a" if winning_index == 0 else "b",
+            metadata={
+                "reason": reason,
+                "before_current": [0, 0],
+                "after_current": restored_current,
+                "sets_before": sets_before,
+                "sets_after": [list(item) for item in match["sets"]],
+            },
+        )
+
+    else:
+        raise ValueError("Aksi scorekeeper tidak dikenal.")
+
+    return scorekeeper_state(match)
+
+
+def compute_standings(matches, teams, category, group, policy_config=None):
     """Round robin standings for a category+group.
     Poin sesuai Pedoman Aturan Mini Round Interport 2026 bagian 10:
     menang=2, kalah setelah bertanding=1, kalah W.O.=0."""
-    codes = [c for c, t in teams.items() if t["category"] == category and t["group"] == group]
+    policy = {**DEFAULT_STANDING_POLICY, **(policy_config or {})}
+    group_matches = [
+        match for match in matches
+        if match.get("category") == category and match.get("group") == group
+    ]
+    codes = {
+        code for code, team in teams.items()
+        if team.get("category") == category and team.get("group") == group
+    }
+    codes.update(
+        code for match in group_matches
+        for code in (match.get("team_a"), match.get("team_b"))
+        if code
+    )
+    codes = sorted(codes)
     table = {
         c: {
             "code": c, "team": team_label(teams, c),
@@ -310,15 +1427,18 @@ def compute_standings(matches, teams, category, group):
             "points": 0,
         } for c in codes
     }
-    relevant = [
-        m for m in matches
-        if m["category"] == category and m["group"] == group and m["status"] == "completed"
-    ]
+    relevant = [m for m in group_matches if is_valid_completed_match(m)]
     for m in relevant:
         a, b = m["team_a"], m["team_b"]
         if a not in table or b not in table:
             continue
         sa, sb = compute_sets_won(m["sets"])
+        if m.get("walkover") and not m.get("sets"):
+            needed = sets_needed_to_win(m)
+            if m.get("winner") == a:
+                sa, sb = needed, 0
+            elif m.get("winner") == b:
+                sa, sb = 0, needed
         pa = sum(s[0] for s in m["sets"])
         pb = sum(s[1] for s in m["sets"])
         table[a]["played"] += 1
@@ -333,29 +1453,277 @@ def compute_standings(matches, teams, category, group):
         table[b]["point_loss"] += pa
         if m["winner"] == a:
             table[a]["win"] += 1
-            table[a]["points"] += 2
+            table[a]["points"] += int(policy["win_points"])
             table[b]["loss"] += 1
-            table[b]["points"] += 0 if m.get("walkover") else 1
+            table[b]["points"] += int(
+                policy["walkover_loss_points"]
+                if m.get("walkover") else policy["played_loss_points"]
+            )
         elif m["winner"] == b:
             table[b]["win"] += 1
-            table[b]["points"] += 2
+            table[b]["points"] += int(policy["win_points"])
             table[a]["loss"] += 1
-            table[a]["points"] += 0 if m.get("walkover") else 1
+            table[a]["points"] += int(
+                policy["walkover_loss_points"]
+                if m.get("walkover") else policy["played_loss_points"]
+            )
 
     rows = list(table.values())
     for r in rows:
         r["set_diff"] = r["set_win"] - r["set_loss"]
         r["point_diff"] = r["point_win"] - r["point_loss"]
-    rows.sort(key=lambda r: (-r["points"], -r["set_diff"], -r["point_diff"]))
+
+    # Rank equal competition points by the published head-to-head policy.
+    # For 3+ tied entrants, the head-to-head comparison is a mini-table made
+    # only from matches between those entrants.
+    by_points = {}
+    for row in rows:
+        by_points.setdefault(row["points"], []).append(row)
+
+    ranked = []
+    for points in sorted(by_points, reverse=True):
+        tied = by_points[points]
+        tied_codes = {row["code"] for row in tied}
+        if len(tied) == 1:
+            tied[0]["tie_break"] = None
+        elif len(tied) == 2 and "head_to_head" in policy["tie_break_order"]:
+            direct = next(
+                (
+                    match for match in relevant
+                    if {match.get("team_a"), match.get("team_b")} == tied_codes
+                    and match.get("winner") in tied_codes
+                ),
+                None,
+            )
+            if direct:
+                winner = direct["winner"]
+                tied.sort(
+                    key=lambda row: (
+                        row["code"] != winner,
+                        -row["set_diff"],
+                        -row["point_diff"],
+                        row["code"],
+                    )
+                )
+                for row in tied:
+                    row["tie_break"] = "Head-to-head"
+            else:
+                tied.sort(
+                    key=lambda row: (-row["set_diff"], -row["point_diff"], row["code"])
+                )
+                for row in tied:
+                    row["tie_break"] = "Selisih game/poin"
+        elif len(tied) >= 3 and "mini_table" in policy["tie_break_order"]:
+            mini = {
+                code: {"points": 0, "set_diff": 0, "point_diff": 0}
+                for code in tied_codes
+            }
+            for match in relevant:
+                a, b = match.get("team_a"), match.get("team_b")
+                if a not in tied_codes or b not in tied_codes:
+                    continue
+                sa, sb = compute_sets_won(match.get("sets") or [])
+                if match.get("walkover") and not match.get("sets"):
+                    needed = sets_needed_to_win(match)
+                    sa, sb = (needed, 0) if match.get("winner") == a else (0, needed)
+                pa = sum(segment[0] for segment in match.get("sets") or [])
+                pb = sum(segment[1] for segment in match.get("sets") or [])
+                mini[a]["set_diff"] += sa - sb
+                mini[b]["set_diff"] += sb - sa
+                mini[a]["point_diff"] += pa - pb
+                mini[b]["point_diff"] += pb - pa
+                if match.get("winner") == a:
+                    mini[a]["points"] += int(policy["win_points"])
+                    mini[b]["points"] += int(
+                        policy["walkover_loss_points"]
+                        if match.get("walkover") else policy["played_loss_points"]
+                    )
+                elif match.get("winner") == b:
+                    mini[b]["points"] += int(policy["win_points"])
+                    mini[a]["points"] += int(
+                        policy["walkover_loss_points"]
+                        if match.get("walkover") else policy["played_loss_points"]
+                    )
+            tied.sort(
+                key=lambda row: (
+                    -mini[row["code"]]["points"],
+                    -mini[row["code"]]["set_diff"],
+                    -mini[row["code"]]["point_diff"],
+                    -row["set_diff"],
+                    -row["point_diff"],
+                    row["code"],
+                )
+            )
+            for row in tied:
+                row["tie_break"] = "Mini-table head-to-head"
+        else:
+            tied.sort(
+                key=lambda row: (-row["set_diff"], -row["point_diff"], row["code"])
+            )
+            for row in tied:
+                row["tie_break"] = "Selisih game/poin"
+        ranked.extend(tied)
+
+    rows = ranked
     for i, r in enumerate(rows, start=1):
         r["rank"] = i
     return rows
 
 
-def group_champion(matches, teams, category, group):
-    played = [m for m in matches if m["category"] == category and m["group"] == group]
-    completed = [m for m in played if m["status"] == "completed"]
-    standings = compute_standings(matches, teams, category, group)
-    if len(completed) < len(played) or not standings:
+def group_champion(matches, teams, category, group, policy_config=None):
+    played = [
+        m for m in matches
+        if m["category"] == category and m["group"] == group
+        and m.get("status") != "cancelled"
+    ]
+    completed = [m for m in played if is_valid_completed_match(m)]
+    standings = compute_standings(
+        matches, teams, category, group, policy_config=policy_config
+    )
+    if not played or len(completed) < len(played) or not standings:
         return None
     return standings[0]["code"]
+
+
+def _matches_for_stage(matches, division_key, stage):
+    division_matches = [
+        match for match in matches if match.get("category") == division_key
+    ]
+    stage_key = stage.get("key")
+    explicit = [
+        match for match in division_matches
+        if match.get("stage_key") == stage_key
+    ]
+    if explicit:
+        return explicit
+    if stage.get("type") in {"group", "round_robin"}:
+        return [
+            match for match in division_matches
+            if match.get("group") and match.get("group") != "FINAL"
+        ]
+    if stage.get("type") == "final":
+        return [match for match in division_matches if match.get("group") == "FINAL"]
+    return []
+
+
+def _terminal_stage_champion(stage_matches):
+    active = [
+        match for match in stage_matches if match.get("status") != "cancelled"
+    ]
+    if not active or any(not is_valid_completed_match(match) for match in active):
+        return None
+    final_match = max(
+        active,
+        key=lambda match: (
+            int(match.get("round") or 0), match.get("date") or "",
+            match.get("time") or "", match.get("id") or "",
+        ),
+    )
+    return final_match.get("winner")
+
+
+def build_competition_view(matches, teams, config, sport_key=None):
+    """Build a stage-driven view used by standings, brackets, and champions."""
+    structure = load_competition_structure()
+    champions = config.get("champions", {})
+    divisions = []
+    for definition in structure.get("divisions", []):
+        if not definition.get("enabled", True):
+            continue
+        if sport_key and sport_key != "all" and definition["sport_key"] != sport_key:
+            continue
+        division = dict(definition)
+        division_matches = [
+            match for match in matches
+            if match.get("category") == division["key"]
+            and match.get("sport_key", "table-tennis") == division["sport_key"]
+        ]
+        policy = (division.get("standing_policy") or {}).get("config") or {}
+        stage_views = []
+        group_winners = {}
+        for stage in sorted(
+            division.get("stages", []), key=lambda item: item.get("sequence", 0)
+        ):
+            stage_view = dict(stage)
+            stage_matches = _matches_for_stage(division_matches, division["key"], stage)
+            stage_view["matches"] = stage_matches
+            stage_view["groups_view"] = []
+            if stage.get("type") in {"group", "round_robin"}:
+                for group in stage.get("groups", []):
+                    group_key = group["key"]
+                    rows = compute_standings(
+                        division_matches, teams, division["key"], group_key,
+                        policy_config=policy,
+                    )
+                    champion = group_champion(
+                        division_matches, teams, division["key"], group_key,
+                        policy_config=policy,
+                    )
+                    if champion:
+                        group_winners[group_key] = champion
+                    photo_key = f"{division['key']}_{group_key}"
+                    group_matches = [
+                        match for match in stage_matches
+                        if match.get("group") == group_key
+                    ]
+                    stage_view["groups_view"].append(
+                        {
+                            **group,
+                            "rows": rows,
+                            "matches": group_matches,
+                            "champion": champion,
+                            "champion_target": group_key,
+                            "champion_photo": champions.get(photo_key, {}).get(
+                                "photo_url"
+                            ),
+                            "complete": bool(group_matches) and all(
+                                match.get("status") == "cancelled"
+                                or is_valid_completed_match(match)
+                                for match in group_matches
+                            ),
+                        }
+                    )
+            stage_views.append(stage_view)
+
+        terminal_stage = max(
+            stage_views, key=lambda item: item.get("sequence", 0), default=None
+        )
+        champion = None
+        champion_target = None
+        if terminal_stage:
+            if terminal_stage.get("type") in {"group", "round_robin"}:
+                groups_view = terminal_stage.get("groups_view", [])
+                if (
+                    terminal_stage.get("qualification_policy", {}).get(
+                        "champion_from_standings"
+                    )
+                    and len(groups_view) == 1
+                ):
+                    champion = groups_view[0].get("champion")
+                    champion_target = groups_view[0].get("key")
+            else:
+                champion = _terminal_stage_champion(
+                    terminal_stage.get("matches", [])
+                )
+                champion_target = (
+                    "FINAL" if terminal_stage.get("type") == "final"
+                    else terminal_stage.get("key")
+                )
+        photo_key = (
+            f"{division['key']}_{champion_target}" if champion_target else None
+        )
+        division.update(
+            {
+                "matches": division_matches,
+                "stages_view": stage_views,
+                "group_winners": group_winners,
+                "champion": champion,
+                "champion_target": champion_target,
+                "champion_photo": (
+                    champions.get(photo_key, {}).get("photo_url")
+                    if photo_key else None
+                ),
+            }
+        )
+        divisions.append(division)
+    return {**structure, "divisions": divisions}

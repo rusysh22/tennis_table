@@ -1,0 +1,1780 @@
+[
+  {
+    "id": "M01",
+    "category": "ganda_campuran",
+    "category_label": "Ganda Campuran",
+    "group": "A",
+    "round": 1,
+    "round_label": "Babak 1",
+    "team_a": "MM",
+    "team_b": "NG",
+    "date": "2026-07-20",
+    "time": "18:00",
+    "court": "Meja 1",
+    "status": "completed",
+    "sets": [
+      [
+        21,
+        10
+      ],
+      [
+        21,
+        11
+      ],
+      [
+        12,
+        10
+      ]
+    ],
+    "winner": "MM",
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": [],
+    "comments": [
+      {
+        "name": "Semangat ya lombanya",
+        "comment": "Dani",
+        "at": "2026-07-20T12:36:48+07:00"
+      }
+    ],
+    "votes": {
+      "a": {
+        "🔥": 1,
+        "👏": 0,
+        "❤️": 0,
+        "😲": 0,
+        "💪": 1
+      },
+      "b": {
+        "🔥": 0,
+        "👏": 0,
+        "❤️": 0,
+        "😲": 0,
+        "💪": 0
+      }
+    }
+  },
+  {
+    "id": "M02",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "A",
+    "round": 1,
+    "round_label": "Babak 1",
+    "team_a": "GS",
+    "team_b": "AD",
+    "date": "2026-07-20",
+    "time": "18:30",
+    "court": "Meja 1",
+    "status": "completed",
+    "sets": [
+      [
+        8,
+        11
+      ],
+      [
+        12,
+        14
+      ]
+    ],
+    "winner": "AD",
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": [],
+    "comments": [
+      {
+        "name": "Kamunya aku",
+        "comment": "Semangat terus",
+        "at": "2026-07-20T12:41:21+07:00"
+      }
+    ],
+    "votes": {
+      "a": {
+        "🔥": 0,
+        "👏": 1,
+        "❤️": 0,
+        "😲": 0,
+        "💪": 0
+      },
+      "b": {
+        "🔥": 0,
+        "👏": 0,
+        "❤️": 0,
+        "😲": 1,
+        "💪": 0
+      }
+    },
+    "scorekeeper_events": [
+      {
+        "id": "abb0a2d0-6a75-40dc-8ceb-23d6a4c20f60",
+        "sequence": 1,
+        "event_type": "score.match_started",
+        "side": null,
+        "value": null,
+        "reversal_of": null,
+        "metadata": {
+          "sets_after": []
+        },
+        "at": "2026-08-02T13:04:43+07:00"
+      },
+      {
+        "id": "731c5a16-e827-442a-9619-739c447ebbca",
+        "sequence": 2,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            0
+          ],
+          "after_current": [
+            0,
+            1
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:04:45+07:00"
+      },
+      {
+        "id": "9fc86244-3647-45f5-bde0-ca338a080faf",
+        "sequence": 3,
+        "event_type": "score.undo",
+        "side": null,
+        "value": null,
+        "reversal_of": "731c5a16-e827-442a-9619-739c447ebbca",
+        "metadata": {
+          "reason": "",
+          "before_current": [
+            0,
+            1
+          ],
+          "after_current": [
+            0,
+            0
+          ],
+          "sets_before": [],
+          "sets_after": []
+        },
+        "at": "2026-08-02T13:04:52+07:00"
+      },
+      {
+        "id": "d2a4f81c-ee82-4be7-9084-23b6d34de9c7",
+        "sequence": 4,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            0
+          ],
+          "after_current": [
+            0,
+            1
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:04:58+07:00"
+      },
+      {
+        "id": "8ad3b535-f821-4bac-8e11-7ab4403d8bd5",
+        "sequence": 5,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            1
+          ],
+          "after_current": [
+            0,
+            2
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:00+07:00"
+      },
+      {
+        "id": "054be24a-d520-4496-b9aa-fc92e1f02028",
+        "sequence": 6,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            2
+          ],
+          "after_current": [
+            0,
+            3
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:01+07:00"
+      },
+      {
+        "id": "c237e498-6a3a-4f08-a6ba-8afc47b8b34c",
+        "sequence": 7,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            3
+          ],
+          "after_current": [
+            0,
+            4
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:03+07:00"
+      },
+      {
+        "id": "e95401cb-c41c-4c31-a752-92b60b0a6cb3",
+        "sequence": 8,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            4
+          ],
+          "after_current": [
+            0,
+            5
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:04+07:00"
+      },
+      {
+        "id": "884b4198-744a-4796-a6d2-7300a0fc987a",
+        "sequence": 9,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            5
+          ],
+          "after_current": [
+            0,
+            6
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:06+07:00"
+      },
+      {
+        "id": "2d9c0973-78e7-4467-864c-fe78570832f2",
+        "sequence": 10,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            6
+          ],
+          "after_current": [
+            0,
+            7
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:07+07:00"
+      },
+      {
+        "id": "383aebaa-c3a5-4a30-9f72-20723d4e327f",
+        "sequence": 11,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            7
+          ],
+          "after_current": [
+            0,
+            8
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:09+07:00"
+      },
+      {
+        "id": "b1cfda2b-8b14-499d-ae64-688c4f92fc11",
+        "sequence": 12,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            8
+          ],
+          "after_current": [
+            1,
+            8
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:30+07:00"
+      },
+      {
+        "id": "03ee8d43-41c9-4442-a9e5-e8125c3ff891",
+        "sequence": 13,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            1,
+            8
+          ],
+          "after_current": [
+            2,
+            8
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:31+07:00"
+      },
+      {
+        "id": "1fe4bb6b-f30d-4fce-8764-90bab2b37df1",
+        "sequence": 14,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            2,
+            8
+          ],
+          "after_current": [
+            3,
+            8
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:32+07:00"
+      },
+      {
+        "id": "298740b5-f4b7-44fa-8bbb-3ed86af72960",
+        "sequence": 15,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            3,
+            8
+          ],
+          "after_current": [
+            4,
+            8
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:33+07:00"
+      },
+      {
+        "id": "f2673de3-55b7-4b1a-ab77-571ef5ea964b",
+        "sequence": 16,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            4,
+            8
+          ],
+          "after_current": [
+            5,
+            8
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:34+07:00"
+      },
+      {
+        "id": "708dc90d-d55a-49f0-91f8-ee9eba5b842f",
+        "sequence": 17,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            5,
+            8
+          ],
+          "after_current": [
+            6,
+            8
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:34+07:00"
+      },
+      {
+        "id": "7274e247-21d6-4319-a02d-514645495361",
+        "sequence": 18,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            6,
+            8
+          ],
+          "after_current": [
+            6,
+            9
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:36+07:00"
+      },
+      {
+        "id": "6d5fac5f-762f-41bf-8c72-fd19d2d84e64",
+        "sequence": 19,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            6,
+            9
+          ],
+          "after_current": [
+            7,
+            9
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:37+07:00"
+      },
+      {
+        "id": "d31f5e3d-d5b2-470a-8229-a0f9f122a080",
+        "sequence": 20,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            7,
+            9
+          ],
+          "after_current": [
+            7,
+            10
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:38+07:00"
+      },
+      {
+        "id": "c955c51b-afda-4f54-820a-27f2fc616e3e",
+        "sequence": 21,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            7,
+            10
+          ],
+          "after_current": [
+            8,
+            10
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:41+07:00"
+      },
+      {
+        "id": "f12d6401-a3ce-4d72-81e8-10fd301c90b1",
+        "sequence": 22,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            8,
+            10
+          ],
+          "after_current": [
+            0,
+            0
+          ],
+          "sets_before": [],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": [
+            8,
+            11
+          ]
+        },
+        "at": "2026-08-02T13:05:42+07:00"
+      },
+      {
+        "id": "bc2846e8-186d-4dfe-909e-65838e9afc18",
+        "sequence": 23,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            0
+          ],
+          "after_current": [
+            0,
+            1
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:46+07:00"
+      },
+      {
+        "id": "53fb3606-6227-4655-b5ad-5a7be57dcf6e",
+        "sequence": 24,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            1
+          ],
+          "after_current": [
+            0,
+            2
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:47+07:00"
+      },
+      {
+        "id": "d51e432b-3137-411d-a62f-9ebcc8e1c111",
+        "sequence": 25,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            2
+          ],
+          "after_current": [
+            0,
+            3
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:47+07:00"
+      },
+      {
+        "id": "2a4abea2-e783-4d7b-a96f-a0ee0293c567",
+        "sequence": 26,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            3
+          ],
+          "after_current": [
+            0,
+            4
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:48+07:00"
+      },
+      {
+        "id": "3e0cf707-34ae-4e21-90c7-2fa5f701f1b1",
+        "sequence": 27,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            4
+          ],
+          "after_current": [
+            0,
+            5
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:48+07:00"
+      },
+      {
+        "id": "2a203c1c-9eb8-4731-9037-54b68a252e3a",
+        "sequence": 28,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            5
+          ],
+          "after_current": [
+            1,
+            5
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:49+07:00"
+      },
+      {
+        "id": "4c841c0f-2d02-4b52-9bb1-878ba5154fb8",
+        "sequence": 29,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            1,
+            5
+          ],
+          "after_current": [
+            2,
+            5
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:49+07:00"
+      },
+      {
+        "id": "118fc319-d875-49ac-8dd2-a9534c389a4e",
+        "sequence": 30,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            2,
+            5
+          ],
+          "after_current": [
+            3,
+            5
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:49+07:00"
+      },
+      {
+        "id": "45bf1773-cc67-4cbe-bd75-f59c6eeae3cc",
+        "sequence": 31,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            3,
+            5
+          ],
+          "after_current": [
+            4,
+            5
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:50+07:00"
+      },
+      {
+        "id": "54b4b7ac-9181-4e92-a03d-71f742a5a786",
+        "sequence": 32,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            4,
+            5
+          ],
+          "after_current": [
+            5,
+            5
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:50+07:00"
+      },
+      {
+        "id": "2bc91a79-cdc1-4696-843b-96797de714b6",
+        "sequence": 33,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            5,
+            5
+          ],
+          "after_current": [
+            6,
+            5
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:50+07:00"
+      },
+      {
+        "id": "eef1d291-8fb3-4e5b-96b4-f936ab003fcb",
+        "sequence": 34,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            6,
+            5
+          ],
+          "after_current": [
+            7,
+            5
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:51+07:00"
+      },
+      {
+        "id": "5046864b-7b8f-4bc6-9e03-208d6de27727",
+        "sequence": 35,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            7,
+            5
+          ],
+          "after_current": [
+            8,
+            5
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:51+07:00"
+      },
+      {
+        "id": "3159e2d7-9130-4af7-9a1e-316eb0d31f04",
+        "sequence": 36,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            8,
+            5
+          ],
+          "after_current": [
+            9,
+            5
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:52+07:00"
+      },
+      {
+        "id": "8363fa2f-7c75-435d-84f0-2617cdd3db3a",
+        "sequence": 37,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            9,
+            5
+          ],
+          "after_current": [
+            10,
+            5
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:52+07:00"
+      },
+      {
+        "id": "0180a7a3-2b5e-4746-9e97-ef44f8a2d95a",
+        "sequence": 38,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            10,
+            5
+          ],
+          "after_current": [
+            10,
+            6
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:54+07:00"
+      },
+      {
+        "id": "21510925-2aa1-4658-9a89-3778f5cef6b7",
+        "sequence": 39,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            10,
+            6
+          ],
+          "after_current": [
+            10,
+            7
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:54+07:00"
+      },
+      {
+        "id": "60db0438-d311-4b97-8ea9-a638a072b8cb",
+        "sequence": 40,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            10,
+            7
+          ],
+          "after_current": [
+            10,
+            8
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:54+07:00"
+      },
+      {
+        "id": "c48cf305-71de-4ef5-87b8-5fb2865b110a",
+        "sequence": 41,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            10,
+            8
+          ],
+          "after_current": [
+            10,
+            9
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:55+07:00"
+      },
+      {
+        "id": "d913c19a-732f-4a2b-98bb-4cb14557cfb8",
+        "sequence": 42,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            10,
+            9
+          ],
+          "after_current": [
+            10,
+            10
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:55+07:00"
+      },
+      {
+        "id": "f25d3814-7b9b-4d86-92f1-78aa3de11d9b",
+        "sequence": 43,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            10,
+            10
+          ],
+          "after_current": [
+            10,
+            11
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:57+07:00"
+      },
+      {
+        "id": "37e853a3-444b-43ef-a272-dfd2d49a5bc6",
+        "sequence": 44,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            10,
+            11
+          ],
+          "after_current": [
+            11,
+            11
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:05:59+07:00"
+      },
+      {
+        "id": "d20fa052-26d0-4153-82a5-4a69a92235c0",
+        "sequence": 45,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            11,
+            11
+          ],
+          "after_current": [
+            11,
+            12
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:06:00+07:00"
+      },
+      {
+        "id": "af21f90a-5bac-47b8-9fdc-04db0ad9f43a",
+        "sequence": 46,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            11,
+            12
+          ],
+          "after_current": [
+            12,
+            12
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:06:01+07:00"
+      },
+      {
+        "id": "a3bf54ae-108a-4d31-a9a7-b55cb2d9073b",
+        "sequence": 47,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            12,
+            12
+          ],
+          "after_current": [
+            12,
+            13
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T13:06:02+07:00"
+      },
+      {
+        "id": "709e04f5-2682-48e0-9b3b-7f6c2b822ab5",
+        "sequence": 48,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            12,
+            13
+          ],
+          "after_current": [
+            0,
+            0
+          ],
+          "sets_before": [
+            [
+              8,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              8,
+              11
+            ],
+            [
+              12,
+              14
+            ]
+          ],
+          "completed_segment": [
+            12,
+            14
+          ]
+        },
+        "at": "2026-08-02T13:06:02+07:00"
+      },
+      {
+        "id": "ce525e8e-5b0b-44df-989e-e3c6be0f7a62",
+        "sequence": 49,
+        "event_type": "score.match_finished",
+        "side": "b",
+        "value": null,
+        "reversal_of": null,
+        "metadata": {
+          "sets_after": [
+            [
+              8,
+              11
+            ],
+            [
+              12,
+              14
+            ]
+          ],
+          "after_current": [
+            0,
+            0
+          ]
+        },
+        "at": "2026-08-02T13:06:12+07:00"
+      }
+    ],
+    "version": 49
+  },
+  {
+    "id": "M03",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "A",
+    "round": 1,
+    "round_label": "Babak 1",
+    "team_a": "RR",
+    "team_b": "NH",
+    "date": "2026-07-20",
+    "time": "19:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M04",
+    "category": "ganda_campuran",
+    "category_label": "Ganda Campuran",
+    "group": "A",
+    "round": 1,
+    "round_label": "Babak 1",
+    "team_a": "TL",
+    "team_b": "PA",
+    "date": "2026-07-21",
+    "time": "18:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M05",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "B",
+    "round": 1,
+    "round_label": "Babak 1",
+    "team_a": "AJ",
+    "team_b": "DJ",
+    "date": "2026-07-21",
+    "time": "18:30",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M06",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "B",
+    "round": 1,
+    "round_label": "Babak 1",
+    "team_a": "TP",
+    "team_b": "MW",
+    "date": "2026-07-21",
+    "time": "19:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M07",
+    "category": "ganda_campuran",
+    "category_label": "Ganda Campuran",
+    "group": "A",
+    "round": 2,
+    "round_label": "Babak 2",
+    "team_a": "MM",
+    "team_b": "PA",
+    "date": "2026-07-22",
+    "time": "18:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M08",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "A",
+    "round": 2,
+    "round_label": "Babak 2",
+    "team_a": "GS",
+    "team_b": "NH",
+    "date": "2026-07-22",
+    "time": "18:30",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M09",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "A",
+    "round": 2,
+    "round_label": "Babak 2",
+    "team_a": "AD",
+    "team_b": "RR",
+    "date": "2026-07-22",
+    "time": "19:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M10",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "B",
+    "round": 2,
+    "round_label": "Babak 2",
+    "team_a": "AJ",
+    "team_b": "MW",
+    "date": "2026-07-23",
+    "time": "18:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M11",
+    "category": "ganda_campuran",
+    "category_label": "Ganda Campuran",
+    "group": "A",
+    "round": 2,
+    "round_label": "Babak 2",
+    "team_a": "NG",
+    "team_b": "TL",
+    "date": "2026-07-25",
+    "time": "18:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M12",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "B",
+    "round": 2,
+    "round_label": "Babak 2",
+    "team_a": "DJ",
+    "team_b": "TP",
+    "date": "2026-07-25",
+    "time": "18:30",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M13",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "A",
+    "round": 3,
+    "round_label": "Babak 3",
+    "team_a": "GS",
+    "team_b": "RR",
+    "date": "2026-07-25",
+    "time": "19:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M14",
+    "category": "ganda_campuran",
+    "category_label": "Ganda Campuran",
+    "group": "A",
+    "round": 3,
+    "round_label": "Babak 3",
+    "team_a": "MM",
+    "team_b": "TL",
+    "date": "2026-07-26",
+    "time": "18:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M15",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "A",
+    "round": 3,
+    "round_label": "Babak 3",
+    "team_a": "NH",
+    "team_b": "AD",
+    "date": "2026-07-26",
+    "time": "18:30",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M16",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "B",
+    "round": 3,
+    "round_label": "Babak 3",
+    "team_a": "AJ",
+    "team_b": "TP",
+    "date": "2026-07-26",
+    "time": "19:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M17",
+    "category": "ganda_campuran",
+    "category_label": "Ganda Campuran",
+    "group": "A",
+    "round": 3,
+    "round_label": "Babak 3",
+    "team_a": "PA",
+    "team_b": "NG",
+    "date": "2026-07-27",
+    "time": "18:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M18",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "B",
+    "round": 3,
+    "round_label": "Babak 3",
+    "team_a": "MW",
+    "team_b": "DJ",
+    "date": "2026-07-27",
+    "time": "18:30",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  },
+  {
+    "id": "M19",
+    "category": "ganda_putra",
+    "category_label": "Ganda Putra",
+    "group": "FINAL",
+    "round": 4,
+    "round_label": "Final",
+    "team_a": null,
+    "team_b": null,
+    "date": "2026-07-28",
+    "time": "18:00",
+    "court": "Meja 1",
+    "status": "scheduled",
+    "sets": [],
+    "winner": null,
+    "walkover": false,
+    "notes": "",
+    "reschedule_history": []
+  }
+]

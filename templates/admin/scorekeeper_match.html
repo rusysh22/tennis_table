@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Scorekeeper {{ match.id }} — {{ config.tournament_short_name }}{% endblock %}
+{% block bodyclass %}scorekeeper-body{% endblock %}
+{% block content %}
+
+<div class="scorekeeper-console" id="scorekeeperConsole"
+     data-action-url="{{ url_for('scorekeeper_action', match_id=match.id) }}"
+     data-version="{{ version }}" data-status="{{ match.status }}">
+  <div class="scorekeeper-console-nav">
+    <a href="{{ url_for('scorekeeper_index') }}">← Daftar pertandingan</a>
+    <a href="{{ url_for('admin_edit_match', match_id=match.id) }}">Kelola lengkap</a>
+  </div>
+
+  <header class="scorekeeper-console-head">
+    <div>
+      <span class="scorekeeper-kicker">{{ match.sport_key|replace('-', ' ') }} · {{ match.category_label }}</span>
+      <h1>{{ match.id }} · {{ match.stage_label }}</h1>
+      <p>{{ match.date }} · {{ match.time }} · {{ match.court }} · {{ match.best_of_label }}</p>
+    </div>
+    <span class="badge badge-status badge-{{ match.status }}" data-field="status-label">{{ match.status_label }}</span>
+  </header>
+
+  <div class="scorekeeper-save-state" id="scorekeeperSaveState" role="status" aria-live="polite">
+    Siap · setiap aksi disimpan otomatis
+  </div>
+  <div class="scorekeeper-error" id="scorekeeperError" role="alert" hidden></div>
+
+  <section class="scorekeeper-scoreboard" aria-label="Papan skor {{ match.id }}">
+    <div class="scorekeeper-team team-a">
+      <span class="team-chip" style="background:{{ match.team_a_color }};color:{{ match.team_a_text }}">{{ match.team_a_code }}</span>
+      <strong>{{ match.team_a_player1 }}</strong>
+      {% if match.team_a_player2 %}<small>{{ match.team_a_player2 }}</small>{% endif %}
+      <button type="button" class="scorekeeper-add" data-score-action="point" data-side="a"
+              aria-label="Tambah satu {{ state.terms.unit_label_lower }} untuk {{ match.team_a_code }}"
+              {{ 'disabled' if not state.can_score }}>
+        <span>+1</span><small>{{ state.terms.unit_label }}</small>
+      </button>
+    </div>
+
+    <div class="scorekeeper-center-score">
+      <span data-field="segment-number">{{ state.terms.segment_label }} {{ state.next_segment }}</span>
+      <div><strong data-field="current-a">{{ state.current[0] }}</strong><b>:</b><strong data-field="current-b">{{ state.current[1] }}</strong></div>
+      <small data-field="score-hint">Target {{ state.terms.target }}, selisih {{ state.terms.win_by }}{% if state.terms.cap %}, batas {{ state.terms.cap }}{% endif %}</small>
+    </div>
+
+    <div class="scorekeeper-team team-b">
+      <span class="team-chip" style="background:{{ match.team_b_color }};color:{{ match.team_b_text }}">{{ match.team_b_code }}</span>
+      <strong>{{ match.team_b_player1 }}</strong>
+      {% if match.team_b_player2 %}<small>{{ match.team_b_player2 }}</small>{% endif %}
+      <button type="button" class="scorekeeper-add" data-score-action="point" data-side="b"
+              aria-label="Tambah satu {{ state.terms.unit_label_lower }} untuk {{ match.team_b_code }}"
+              {{ 'disabled' if not state.can_score }}>
+        <span>+1</span><small>{{ state.terms.unit_label }}</small>
+      </button>
+    </div>
+  </section>
+
+  <section class="scorekeeper-segments" aria-label="Skor segmen selesai">
+    <div class="scorekeeper-section-title">
+      <h2 data-field="completed-heading">{{ state.terms.segment_label }} selesai</h2>
+      <strong><span data-field="segments-a">{{ state.segments_won.a }}</span> : <span data-field="segments-b">{{ state.segments_won.b }}</span></strong>
+    </div>
+    <div class="scorekeeper-segment-list" id="scorekeeperSegmentList">
+      {% for scores in state.completed_segments %}
+      <span>{{ state.terms.segment_label }} {{ loop.index }} <strong>{{ scores[0] }}–{{ scores[1] }}</strong></span>
+      {% else %}<span class="muted">Belum ada {{ state.terms.segment_label_lower }} selesai.</span>{% endfor %}
+    </div>
+  </section>
+
+  <section class="scorekeeper-actions" aria-label="Aksi pertandingan">
+    <button type="button" class="btn btn-primary btn-block scorekeeper-start" data-score-action="start" {{ 'hidden' if not can_start }}>Mulai Pertandingan</button>
+
+    <div class="scorekeeper-ready" data-panel="ready" {{ 'hidden' if not state.ready_to_finish }}>
+      <strong>Skor akhir sudah lengkap</strong>
+      <p>Periksa skor, lalu konfirmasikan hasil agar klasemen dan bracket diperbarui.</p>
+      <button type="button" class="btn btn-primary btn-block" data-score-action="finish">Konfirmasi Selesai</button>
+    </div>
+
+    <label class="scorekeeper-reason" data-panel="correction-reason" {{ 'hidden' if match.status != 'completed' }}>
+      Alasan koreksi
+      <input id="scorekeeperCorrectionReason" type="text" maxlength="200" placeholder="Wajib untuk mengubah hasil selesai">
+    </label>
+
+    <button type="button" class="btn btn-outline btn-block" data-score-action="undo" {{ 'hidden' if not state.can_undo }}>
+      Undo Skor Terakhir
+    </button>
+    <button type="button" class="btn btn-dark btn-block" data-score-action="open_correction" {{ 'hidden' if not can_open_correction or state.can_undo }}>
+      Buka Hasil untuk Koreksi
+    </button>
+  </section>
+
+  <details class="scorekeeper-history" {% if match.status == 'completed' %}open{% endif %}>
+    <summary>Riwayat scorekeeper ({{ state.event_count }})</summary>
+    <ol id="scorekeeperHistory">
+      {% for event in history %}
+      <li><strong>{{ event.label }}</strong>{% if event.side_code %} · {{ event.side_code }}{% endif %}{% if event.reason %}<small>{{ event.reason }}</small>{% endif %}</li>
+      {% else %}<li class="muted">Belum ada aktivitas scorekeeper.</li>{% endfor %}
+    </ol>
+  </details>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/scorekeeper.js') }}"></script>
+{% endblock %}

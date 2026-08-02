@@ -1,113 +1,362 @@
 [
   {
     "id": "M01",
-    "category": "ganda_campuran",
-    "category_label": "Ganda Campuran",
+    "category": "padel_ganda_putra",
+    "category_label": "Padel — Ganda Putra",
+    "sport_key": "padel",
     "group": "A",
     "round": 1,
     "round_label": "Babak 1",
-    "team_a": "MM",
-    "team_b": "NG",
-    "date": "2026-07-20",
+    "stage_type": "group",
+    "team_a": "JKT_PGP",
+    "team_b": "PSR_PGP",
+    "date": "2026-08-12",
     "time": "18:00",
-    "court": "Meja 1",
-    "status": "completed",
+    "court": "Padeloom - Court 1",
+    "status": "live",
     "sets": [
       [
-        21,
-        10
-      ],
-      [
-        21,
+        0,
         11
-      ],
-      [
-        12,
-        10
       ]
     ],
-    "winner": "MM",
+    "winner": null,
     "walkover": false,
     "notes": "",
     "reschedule_history": [],
-    "comments": [
+    "scorekeeper_events": [
       {
-        "name": "Semangat ya lombanya",
-        "comment": "Dani",
-        "at": "2026-07-20T12:36:48+07:00"
+        "id": "fdf93554-a507-4372-a180-f1400daa1901",
+        "sequence": 1,
+        "event_type": "score.match_started",
+        "side": null,
+        "value": null,
+        "reversal_of": null,
+        "metadata": {
+          "sets_after": []
+        },
+        "at": "2026-08-02T20:34:50+07:00"
+      },
+      {
+        "id": "27e947f2-657c-401d-98c2-0062e5d1e147",
+        "sequence": 2,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            0
+          ],
+          "after_current": [
+            0,
+            1
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T20:34:51+07:00"
+      },
+      {
+        "id": "57af430a-2ba7-4110-9de0-ee5f55b4460d",
+        "sequence": 3,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            1
+          ],
+          "after_current": [
+            0,
+            2
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T20:34:52+07:00"
+      },
+      {
+        "id": "00570f7c-a967-4d15-b9bf-5cbca95836b2",
+        "sequence": 4,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            2
+          ],
+          "after_current": [
+            0,
+            3
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T20:34:52+07:00"
+      },
+      {
+        "id": "2097a24e-5f4c-4701-b8ff-72cdef841e53",
+        "sequence": 5,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            3
+          ],
+          "after_current": [
+            0,
+            4
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T20:34:53+07:00"
+      },
+      {
+        "id": "0232d013-002e-4176-971a-3ee37270783c",
+        "sequence": 6,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            4
+          ],
+          "after_current": [
+            0,
+            5
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T20:34:54+07:00"
+      },
+      {
+        "id": "8c91e3f3-d663-4ae7-a281-1edc112aaf3a",
+        "sequence": 7,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            5
+          ],
+          "after_current": [
+            0,
+            6
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T20:34:54+07:00"
+      },
+      {
+        "id": "d06e5da2-6236-47e2-a42b-46037df3da61",
+        "sequence": 8,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            6
+          ],
+          "after_current": [
+            0,
+            7
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T20:34:55+07:00"
+      },
+      {
+        "id": "63b29d12-cb58-4478-920d-89d4a4b1499a",
+        "sequence": 9,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            7
+          ],
+          "after_current": [
+            0,
+            8
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T20:34:55+07:00"
+      },
+      {
+        "id": "6cae2a80-41cd-45a8-b72b-e46f360de91c",
+        "sequence": 10,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            8
+          ],
+          "after_current": [
+            0,
+            9
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T20:34:56+07:00"
+      },
+      {
+        "id": "c0d8b945-e2de-4fd6-8996-13305710770f",
+        "sequence": 11,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            9
+          ],
+          "after_current": [
+            0,
+            10
+          ],
+          "sets_before": [],
+          "sets_after": [],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T20:34:56+07:00"
+      },
+      {
+        "id": "53fdc9b0-2774-46f8-bca7-af4c38249199",
+        "sequence": 12,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            10
+          ],
+          "after_current": [
+            0,
+            0
+          ],
+          "sets_before": [],
+          "sets_after": [
+            [
+              0,
+              11
+            ]
+          ],
+          "completed_segment": [
+            0,
+            11
+          ]
+        },
+        "at": "2026-08-02T20:34:57+07:00"
+      },
+      {
+        "id": "a0bcc2fe-b1cd-4e6a-afcc-3cdb8f587acb",
+        "sequence": 13,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            0
+          ],
+          "after_current": [
+            0,
+            1
+          ],
+          "sets_before": [
+            [
+              0,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              0,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-02T20:34:57+07:00"
       }
     ],
-    "votes": {
-      "a": {
-        "🔥": 1,
-        "👏": 0,
-        "❤️": 0,
-        "😲": 0,
-        "💪": 1
-      },
-      "b": {
-        "🔥": 0,
-        "👏": 0,
-        "❤️": 0,
-        "😲": 0,
-        "💪": 0
-      }
-    }
+    "version": 13
   },
   {
     "id": "M02",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
+    "category": "padel_ganda_putra",
+    "category_label": "Padel — Ganda Putra",
+    "sport_key": "padel",
     "group": "A",
-    "round": 1,
-    "round_label": "Babak 1",
-    "team_a": "GS",
-    "team_b": "AD",
-    "date": "2026-07-20",
+    "round": 2,
+    "round_label": "Babak 2",
+    "stage_type": "group",
+    "team_a": "BBL_PGP",
+    "team_b": "PSR_PGP",
+    "date": "2026-08-12",
     "time": "18:30",
-    "court": "Meja 1",
+    "court": "Padeloom - Court 1",
     "status": "scheduled",
     "sets": [],
     "winner": null,
     "walkover": false,
     "notes": "",
-    "reschedule_history": [],
-    "comments": [
-      {
-        "name": "Kamunya aku",
-        "comment": "Semangat terus",
-        "at": "2026-07-20T12:41:21+07:00"
-      }
-    ],
-    "votes": {
-      "a": {
-        "🔥": 0,
-        "👏": 1,
-        "❤️": 0,
-        "😲": 0,
-        "💪": 0
-      },
-      "b": {
-        "🔥": 0,
-        "👏": 0,
-        "❤️": 0,
-        "😲": 1,
-        "💪": 0
-      }
-    }
+    "reschedule_history": []
   },
   {
     "id": "M03",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
+    "category": "padel_ganda_putra",
+    "category_label": "Padel — Ganda Putra",
+    "sport_key": "padel",
     "group": "A",
-    "round": 1,
-    "round_label": "Babak 1",
-    "team_a": "RR",
-    "team_b": "NH",
-    "date": "2026-07-20",
+    "round": 3,
+    "round_label": "Babak 3",
+    "stage_type": "group",
+    "team_a": "BBL_PGP",
+    "team_b": "JKT_PGP",
+    "date": "2026-08-12",
     "time": "19:00",
-    "court": "Meja 1",
+    "court": "Padeloom - Court 1",
     "status": "scheduled",
     "sets": [],
     "winner": null,
@@ -117,16 +366,18 @@
   },
   {
     "id": "M04",
-    "category": "ganda_campuran",
-    "category_label": "Ganda Campuran",
-    "group": "A",
+    "category": "padel_ganda_putra",
+    "category_label": "Padel — Ganda Putra",
+    "sport_key": "padel",
+    "group": "B",
     "round": 1,
     "round_label": "Babak 1",
-    "team_a": "TL",
-    "team_b": "PA",
-    "date": "2026-07-21",
-    "time": "18:00",
-    "court": "Meja 1",
+    "stage_type": "group",
+    "team_a": "SBY_PGP",
+    "team_b": "MRW_PGP",
+    "date": "2026-08-12",
+    "time": "19:30",
+    "court": "Padeloom - Court 1",
     "status": "scheduled",
     "sets": [],
     "winner": null,
@@ -136,16 +387,18 @@
   },
   {
     "id": "M05",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
+    "category": "padel_ganda_putra",
+    "category_label": "Padel — Ganda Putra",
+    "sport_key": "padel",
     "group": "B",
-    "round": 1,
-    "round_label": "Babak 1",
-    "team_a": "AJ",
-    "team_b": "DJ",
-    "date": "2026-07-21",
-    "time": "18:30",
-    "court": "Meja 1",
+    "round": 2,
+    "round_label": "Babak 2",
+    "stage_type": "group",
+    "team_a": "BPN_PGP",
+    "team_b": "MRW_PGP",
+    "date": "2026-08-13",
+    "time": "18:00",
+    "court": "Padeloom - Court 1",
     "status": "scheduled",
     "sets": [],
     "winner": null,
@@ -155,16 +408,18 @@
   },
   {
     "id": "M06",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
+    "category": "padel_ganda_putra",
+    "category_label": "Padel — Ganda Putra",
+    "sport_key": "padel",
     "group": "B",
-    "round": 1,
-    "round_label": "Babak 1",
-    "team_a": "TP",
-    "team_b": "MW",
-    "date": "2026-07-21",
-    "time": "19:00",
-    "court": "Meja 1",
+    "round": 3,
+    "round_label": "Babak 3",
+    "stage_type": "group",
+    "team_a": "BPN_PGP",
+    "team_b": "SBY_PGP",
+    "date": "2026-08-13",
+    "time": "18:30",
+    "court": "Padeloom - Court 1",
     "status": "scheduled",
     "sets": [],
     "winner": null,
@@ -174,249 +429,23 @@
   },
   {
     "id": "M07",
-    "category": "ganda_campuran",
-    "category_label": "Ganda Campuran",
-    "group": "A",
-    "round": 2,
-    "round_label": "Babak 2",
-    "team_a": "MM",
-    "team_b": "PA",
-    "date": "2026-07-22",
-    "time": "18:00",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M08",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
-    "group": "A",
-    "round": 2,
-    "round_label": "Babak 2",
-    "team_a": "GS",
-    "team_b": "NH",
-    "date": "2026-07-22",
-    "time": "18:30",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M09",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
-    "group": "A",
-    "round": 2,
-    "round_label": "Babak 2",
-    "team_a": "AD",
-    "team_b": "RR",
-    "date": "2026-07-22",
-    "time": "19:00",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M10",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
-    "group": "B",
-    "round": 2,
-    "round_label": "Babak 2",
-    "team_a": "AJ",
-    "team_b": "MW",
-    "date": "2026-07-23",
-    "time": "18:00",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M11",
-    "category": "ganda_campuran",
-    "category_label": "Ganda Campuran",
-    "group": "A",
-    "round": 2,
-    "round_label": "Babak 2",
-    "team_a": "NG",
-    "team_b": "TL",
-    "date": "2026-07-25",
-    "time": "18:00",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M12",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
-    "group": "B",
-    "round": 2,
-    "round_label": "Babak 2",
-    "team_a": "DJ",
-    "team_b": "TP",
-    "date": "2026-07-25",
-    "time": "18:30",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M13",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
-    "group": "A",
-    "round": 3,
-    "round_label": "Babak 3",
-    "team_a": "GS",
-    "team_b": "RR",
-    "date": "2026-07-25",
-    "time": "19:00",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M14",
-    "category": "ganda_campuran",
-    "category_label": "Ganda Campuran",
-    "group": "A",
-    "round": 3,
-    "round_label": "Babak 3",
-    "team_a": "MM",
-    "team_b": "TL",
-    "date": "2026-07-26",
-    "time": "18:00",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M15",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
-    "group": "A",
-    "round": 3,
-    "round_label": "Babak 3",
-    "team_a": "NH",
-    "team_b": "AD",
-    "date": "2026-07-26",
-    "time": "18:30",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M16",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
-    "group": "B",
-    "round": 3,
-    "round_label": "Babak 3",
-    "team_a": "AJ",
-    "team_b": "TP",
-    "date": "2026-07-26",
-    "time": "19:00",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M17",
-    "category": "ganda_campuran",
-    "category_label": "Ganda Campuran",
-    "group": "A",
-    "round": 3,
-    "round_label": "Babak 3",
-    "team_a": "PA",
-    "team_b": "NG",
-    "date": "2026-07-27",
-    "time": "18:00",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M18",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
-    "group": "B",
-    "round": 3,
-    "round_label": "Babak 3",
-    "team_a": "MW",
-    "team_b": "DJ",
-    "date": "2026-07-27",
-    "time": "18:30",
-    "court": "Meja 1",
-    "status": "scheduled",
-    "sets": [],
-    "winner": null,
-    "walkover": false,
-    "notes": "",
-    "reschedule_history": []
-  },
-  {
-    "id": "M19",
-    "category": "ganda_putra",
-    "category_label": "Ganda Putra",
+    "category": "padel_ganda_putra",
+    "category_label": "Padel — Ganda Putra",
+    "sport_key": "padel",
     "group": "FINAL",
     "round": 4,
     "round_label": "Final",
+    "stage_type": "final",
     "team_a": null,
     "team_b": null,
-    "date": "2026-07-28",
+    "date": "2026-08-23",
     "time": "18:00",
-    "court": "Meja 1",
+    "court": "Padeloom - Court 1",
     "status": "scheduled",
     "sets": [],
     "winner": null,
     "walkover": false,
-    "notes": "",
+    "notes": "Final Padel — Ganda Putra: Juara Group A vs Juara Group B",
     "reschedule_history": []
   }
 ]

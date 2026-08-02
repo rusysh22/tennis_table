@@ -1,98 +1,331 @@
 {
-  "GS": {
-    "category": "ganda_putra",
+  "BBL_PGP": {
+    "code": "BBL",
+    "category": "padel_ganda_putra",
     "group": "A",
-    "player1": "Gede Surya Atmaja",
-    "player2": "Satwika Indramantanu",
-    "color": "#2a78d6",
-    "text": "#ffffff"
-  },
-  "RR": {
-    "category": "ganda_putra",
-    "group": "A",
-    "player1": "Rafli Ananta Zikri",
-    "player2": "Rizki Amrizal",
-    "color": "#008300",
-    "text": "#ffffff"
-  },
-  "NH": {
-    "category": "ganda_putra",
-    "group": "A",
-    "player1": "Novandi Nasty Sandya",
+    "player1": "Rizal Firmansyah",
     "player2": "Hendra Gunawan",
-    "color": "#e87ba4",
-    "text": "#000000"
-  },
-  "AD": {
-    "category": "ganda_putra",
-    "group": "A",
-    "player1": "Adhitya Syafta",
-    "player2": "Dea Aditya Trimukti",
-    "color": "#eda100",
-    "text": "#000000"
-  },
-  "AJ": {
-    "category": "ganda_putra",
-    "group": "B",
-    "player1": "Aji Darmadi",
-    "player2": "Julyzar Iskandar",
-    "color": "#1baf7a",
-    "text": "#000000"
-  },
-  "TP": {
-    "category": "ganda_putra",
-    "group": "B",
-    "player1": "Tito Alfani",
-    "player2": "Prayogi Akbar Putra",
-    "color": "#eb6834",
-    "text": "#000000"
-  },
-  "MW": {
-    "category": "ganda_putra",
-    "group": "B",
-    "player1": "Mohammad Saifur Rahman",
-    "player2": "Wahyu Harja Saputra",
-    "color": "#4a3aa7",
+    "color": "#1e3a5f",
     "text": "#ffffff"
   },
-  "DJ": {
-    "category": "ganda_putra",
-    "group": "B",
-    "player1": "Daffa Indrasta R",
-    "player2": "Joko Santoso",
-    "color": "#e34948",
-    "text": "#000000"
-  },
-  "MM": {
-    "category": "ganda_campuran",
+  "JKT_PGP": {
+    "code": "JKT",
+    "category": "padel_ganda_putra",
     "group": "A",
-    "player1": "Muhammad Rusydani Shubkhi",
-    "player2": "Mia R Mancani P",
-    "color": "#7ca329",
-    "text": "#000000"
-  },
-  "TL": {
-    "category": "ganda_campuran",
-    "group": "A",
-    "player1": "Tegar Perkasa Darmawan",
-    "player2": "Linda Astriyani",
-    "color": "#aa3bb0",
+    "player1": "Budi Santoso",
+    "player2": "Andi Prasetyo",
+    "color": "#c0392b",
     "text": "#ffffff"
   },
-  "PA": {
-    "category": "ganda_campuran",
+  "PSR_PGP": {
+    "code": "PSR",
+    "category": "padel_ganda_putra",
     "group": "A",
-    "player1": "Pawestri Wulan Ramadani",
-    "player2": "Abraham Kaawoan",
-    "color": "#169882",
-    "text": "#000000"
+    "player1": "Dedi Kurniawan",
+    "player2": "Fajar Hidayat",
+    "color": "#27ae60",
+    "text": "#ffffff"
   },
-  "NG": {
-    "category": "ganda_campuran",
+  "BPN_PGP": {
+    "code": "BPN",
+    "category": "padel_ganda_putra",
+    "group": "B",
+    "player1": "Yoga Pratama",
+    "player2": "Rendi Saputra",
+    "color": "#8e44ad",
+    "text": "#ffffff"
+  },
+  "SBY_PGP": {
+    "code": "SBY",
+    "category": "padel_ganda_putra",
+    "group": "B",
+    "player1": "Wahyu Nugroho",
+    "player2": "Eko Susanto",
+    "color": "#e67e22",
+    "text": "#ffffff"
+  },
+  "MRW_PGP": {
+    "code": "MRW",
+    "category": "padel_ganda_putra",
+    "group": "B",
+    "player1": "Iman Setiawan",
+    "player2": "Doni Prasetya",
+    "color": "#16a085",
+    "text": "#ffffff"
+  },
+
+  "BBL_PGC": {
+    "code": "BBL",
+    "category": "padel_ganda_campuran",
     "group": "A",
-    "player1": "Nevi Setyasih",
-    "player2": "Gomfie Sidabutar",
-    "color": "#b15425",
+    "player1": "Teguh Wibowo",
+    "player2": "Sari Rahayu",
+    "color": "#1e3a5f",
+    "text": "#ffffff"
+  },
+  "JKT_PGC": {
+    "code": "JKT",
+    "category": "padel_ganda_campuran",
+    "group": "A",
+    "player1": "Arif Maulana",
+    "player2": "Dewi Kusumawati",
+    "color": "#c0392b",
+    "text": "#ffffff"
+  },
+  "PSR_PGC": {
+    "code": "PSR",
+    "category": "padel_ganda_campuran",
+    "group": "A",
+    "player1": "Irfan Hakim",
+    "player2": "Nurul Hidayah",
+    "color": "#27ae60",
+    "text": "#ffffff"
+  },
+  "BPN_PGC": {
+    "code": "BPN",
+    "category": "padel_ganda_campuran",
+    "group": "B",
+    "player1": "Faisal Rahman",
+    "player2": "Ayu Lestari",
+    "color": "#8e44ad",
+    "text": "#ffffff"
+  },
+  "SBY_PGC": {
+    "code": "SBY",
+    "category": "padel_ganda_campuran",
+    "group": "B",
+    "player1": "Rudi Hartono",
+    "player2": "Rina Wulandari",
+    "color": "#e67e22",
+    "text": "#ffffff"
+  },
+  "MRW_PGC": {
+    "code": "MRW",
+    "category": "padel_ganda_campuran",
+    "group": "B",
+    "player1": "Surya Kusuma",
+    "player2": "Fitri Handayani",
+    "color": "#16a085",
+    "text": "#ffffff"
+  },
+
+  "BBL_TGP": {
+    "code": "BBL",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "player1": "Agus Setiawan",
+    "player2": "Bagas Ramadhan",
+    "color": "#1e3a5f",
+    "text": "#ffffff"
+  },
+  "JKT_TGP": {
+    "code": "JKT",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "player1": "Chandra Wijaya",
+    "player2": "Dian Permana",
+    "color": "#c0392b",
+    "text": "#ffffff"
+  },
+  "PSR_TGP": {
+    "code": "PSR",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "player1": "Eko Prabowo",
+    "player2": "Galih Santosa",
+    "color": "#27ae60",
+    "text": "#ffffff"
+  },
+  "BPN_TGP": {
+    "code": "BPN",
+    "category": "tenis_meja_ganda_putra",
+    "group": "B",
+    "player1": "Hendri Setiawan",
+    "player2": "Ivan Kurniawan",
+    "color": "#8e44ad",
+    "text": "#ffffff"
+  },
+  "SBY_TGP": {
+    "code": "SBY",
+    "category": "tenis_meja_ganda_putra",
+    "group": "B",
+    "player1": "Joko Santoso",
+    "player2": "Kresna Aditya",
+    "color": "#e67e22",
+    "text": "#ffffff"
+  },
+  "MRW_TGP": {
+    "code": "MRW",
+    "category": "tenis_meja_ganda_putra",
+    "group": "B",
+    "player1": "Lukman Hakim",
+    "player2": "Mirza Fauzan",
+    "color": "#16a085",
+    "text": "#ffffff"
+  },
+
+  "BBL_TGC": {
+    "code": "BBL",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "A",
+    "player1": "Noval Pratama",
+    "player2": "Oktaviani Sari",
+    "color": "#1e3a5f",
+    "text": "#ffffff"
+  },
+  "JKT_TGC": {
+    "code": "JKT",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "A",
+    "player1": "Pandu Wirawan",
+    "player2": "Qoriyah Dewi",
+    "color": "#c0392b",
+    "text": "#ffffff"
+  },
+  "PSR_TGC": {
+    "code": "PSR",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "A",
+    "player1": "Rifaldi Basuki",
+    "player2": "Sri Mulyani",
+    "color": "#27ae60",
+    "text": "#ffffff"
+  },
+  "BPN_TGC": {
+    "code": "BPN",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "B",
+    "player1": "Tommy Setiawan",
+    "player2": "Ulfa Rahmawati",
+    "color": "#8e44ad",
+    "text": "#ffffff"
+  },
+  "SBY_TGC": {
+    "code": "SBY",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "B",
+    "player1": "Vino Kusuma",
+    "player2": "Winda Puspita",
+    "color": "#e67e22",
+    "text": "#ffffff"
+  },
+  "MRW_TGC": {
+    "code": "MRW",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "B",
+    "player1": "Xander Haryanto",
+    "player2": "Yani Fitriani",
+    "color": "#16a085",
+    "text": "#ffffff"
+  },
+
+  "BBL_BGP": {
+    "code": "BBL",
+    "category": "badminton_ganda_putra",
+    "group": "A",
+    "player1": "Zulkifli Anwar",
+    "player2": "Akbar Maulana",
+    "color": "#1e3a5f",
+    "text": "#ffffff"
+  },
+  "JKT_BGP": {
+    "code": "JKT",
+    "category": "badminton_ganda_putra",
+    "group": "A",
+    "player1": "Baharudin Saleh",
+    "player2": "Cahyo Nugroho",
+    "color": "#c0392b",
+    "text": "#ffffff"
+  },
+  "PSR_BGP": {
+    "code": "PSR",
+    "category": "badminton_ganda_putra",
+    "group": "A",
+    "player1": "Dadang Suhendi",
+    "player2": "Erlan Syaputra",
+    "color": "#27ae60",
+    "text": "#ffffff"
+  },
+  "BPN_BGP": {
+    "code": "BPN",
+    "category": "badminton_ganda_putra",
+    "group": "B",
+    "player1": "Fuad Hamzah",
+    "player2": "Gerry Kusuma",
+    "color": "#8e44ad",
+    "text": "#ffffff"
+  },
+  "SBY_BGP": {
+    "code": "SBY",
+    "category": "badminton_ganda_putra",
+    "group": "B",
+    "player1": "Hady Saputra",
+    "player2": "Ilham Basri",
+    "color": "#e67e22",
+    "text": "#ffffff"
+  },
+  "MRW_BGP": {
+    "code": "MRW",
+    "category": "badminton_ganda_putra",
+    "group": "B",
+    "player1": "Jefri Ananda",
+    "player2": "Karim Nurdiyanto",
+    "color": "#16a085",
+    "text": "#ffffff"
+  },
+
+  "BBL_BGC": {
+    "code": "BBL",
+    "category": "badminton_ganda_campuran",
+    "group": "A",
+    "player1": "Lutfi Hamdani",
+    "player2": "Maya Anggraini",
+    "color": "#1e3a5f",
+    "text": "#ffffff"
+  },
+  "JKT_BGC": {
+    "code": "JKT",
+    "category": "badminton_ganda_campuran",
+    "group": "A",
+    "player1": "Nanda Pratiwi",
+    "player2": "Ovi Setiawati",
+    "color": "#c0392b",
+    "text": "#ffffff"
+  },
+  "PSR_BGC": {
+    "code": "PSR",
+    "category": "badminton_ganda_campuran",
+    "group": "A",
+    "player1": "Prasetyo Wijaya",
+    "player2": "Putri Rahardjo",
+    "color": "#27ae60",
+    "text": "#ffffff"
+  },
+  "BPN_BGC": {
+    "code": "BPN",
+    "category": "badminton_ganda_campuran",
+    "group": "B",
+    "player1": "Robby Kusuma",
+    "player2": "Sinta Dewi",
+    "color": "#8e44ad",
+    "text": "#ffffff"
+  },
+  "SBY_BGC": {
+    "code": "SBY",
+    "category": "badminton_ganda_campuran",
+    "group": "B",
+    "player1": "Taufik Hidayatullah",
+    "player2": "Uji Rahayu",
+    "color": "#e67e22",
+    "text": "#ffffff"
+  },
+  "MRW_BGC": {
+    "code": "MRW",
+    "category": "badminton_ganda_campuran",
+    "group": "B",
+    "player1": "Victor Sianipar",
+    "player2": "Wulan Sari",
+    "color": "#16a085",
     "text": "#ffffff"
   }
 }

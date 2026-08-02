@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="csrf-token" content="{{ csrf_token }}">
 <title>{% block title %}{{ config.tournament_short_name }}{% endblock %}</title>
-<meta name="description" content="{{ config.tournament_name }} — jadwal, live score, klasemen, dan bracket turnamen tenis meja round robin.">
-<meta name="theme-color" content="#5c0011">
+<meta name="description" content="{{ config.tournament_name }} — pusat jadwal, live score, klasemen, dan bracket turnamen multi-olahraga.">
+<meta name="theme-color" content="#075985">
 
 <!-- Open Graph / Twitter Card -- share card dinamis (og:image) supaya link yang
      di-share ke WhatsApp/Facebook/Teams menampilkan preview berisi info pertandingan,
@@ -27,6 +28,8 @@
 <link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='img/favicon-48.png') }}">
 <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/favicon-180.png') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/redesign.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_console.css') }}">
 
 {% if config.ga_measurement_id %}
 <!-- Google tag (gtag.js) -- hanya dimuat kalau ga_measurement_id diisi di config,
@@ -42,47 +45,96 @@
 </head>
 <body class="{% block bodyclass %}{% endblock %}">
 
+<a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+
+{% block site_bg %}
 <div class="bg-fx" aria-hidden="true">
   <span class="ball ball-1"></span>
   <span class="ball ball-2"></span>
   <span class="ball ball-3"></span>
   <span class="ball ball-4"></span>
 </div>
+{% endblock %}
 
+{% block site_header %}
 <header class="site-header">
-  <div class="header-inner">
-    <a class="brand" href="{{ url_for('index') }}">
-      <img class="brand-logo" src="{{ url_for('static', filename='img/favicon-48.png') }}" alt="{{ config.tournament_short_name }}" width="32" height="32">
-      <span class="brand-text">
-        <strong>{{ config.tournament_short_name }}</strong>
-        <small>{{ config.venue }} · {{ config.time_window }}</small>
+  <div class="header-rail">
+    <div class="header-rail-inner">
+      <span class="header-system-mark"><i aria-hidden="true"></i>Sistem Kompetisi InterSport</span>
+      <span class="header-rail-context">
+        <span class="header-online"><i aria-hidden="true"></i>Arena terhubung</span>
+        <span>{{ config.venue }}</span>
+        <span>{{ config.time_window }}</span>
       </span>
-    </a>
-    <button class="nav-toggle" id="navToggle" aria-label="Buka menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <nav class="main-nav" id="mainNav">
-      <a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' }}">Beranda</a>
-      <a href="{{ url_for('jadwal') }}" class="{{ 'active' if request.endpoint in ('jadwal','kalender','rekap') }}">Jadwal</a>
-      <a href="{{ url_for('live') }}" class="{{ 'active' if request.endpoint == 'live' }}">
-        Live <span class="live-dot" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <div class="header-deck">
+    <div class="header-inner">
+      <a class="brand" href="{{ sport_url('index') }}" aria-label="{{ config.tournament_short_name }} — kembali ke beranda">
+        <span class="brand-emblem">
+          <img class="brand-logo" src="{{ url_for('static', filename='img/favicon-48.png') }}" alt="" width="48" height="48">
+          <span class="brand-edition" aria-hidden="true">26</span>
+        </span>
+        <span class="brand-text">
+          <span class="brand-kicker">Tournament Series</span>
+          <strong>{{ config.tournament_short_name }}</strong>
+          <small><span>{{ config.venue }}</span><i aria-hidden="true"></i><span>{{ config.time_window }}</span></small>
+        </span>
       </a>
-      <a href="{{ url_for('klasemen') }}" class="{{ 'active' if request.endpoint in ('klasemen','bracket') }}">Klasemen</a>
-      <a href="{{ url_for('galeri') }}" class="{{ 'active' if request.endpoint == 'galeri' }}">Galeri</a>
-      <a href="{{ url_for('aturan') }}" class="{{ 'active' if request.endpoint == 'aturan' }}">Aturan</a>
-      {% if is_admin %}
-      <a href="{{ url_for('admin_dashboard') }}" class="nav-admin">Admin</a>
-      <a href="{{ url_for('admin_logout') }}" class="nav-admin">Keluar</a>
-      {% else %}
-      <a href="{{ url_for('admin_login') }}" class="nav-admin">Admin</a>
-      {% endif %}
-      <button class="nav-bell bell-trigger" aria-label="Pengumuman" title="Lihat Pengumuman">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        <span class="bell-badge">1</span>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Buka menu" aria-expanded="false" aria-controls="mainNav">
+        <span></span><span></span><span></span>
+        <small>Menu</small>
       </button>
-    </nav>
+
+      <nav class="main-nav" id="mainNav" aria-label="Navigasi utama">
+        <a href="{{ sport_url('index') }}" data-nav="01" class="{{ 'active' if request.endpoint == 'index' }}" aria-current="{{ 'page' if request.endpoint == 'index' else 'false' }}"><span>Beranda</span></a>
+        <a href="{{ sport_url('jadwal') }}" data-nav="02" class="{{ 'active' if request.endpoint in ('jadwal','kalender','rekap') }}" aria-current="{{ 'page' if request.endpoint in ('jadwal','kalender','rekap') else 'false' }}"><span>Jadwal</span></a>
+        <a href="{{ sport_url('live') }}" data-nav="03" class="{{ 'active' if request.endpoint == 'live' }}" aria-current="{{ 'page' if request.endpoint == 'live' else 'false' }}">
+          <span>Live</span><span class="live-dot" aria-hidden="true"></span>
+        </a>
+        <a href="{{ sport_url('klasemen') }}" data-nav="04" class="{{ 'active' if request.endpoint in ('klasemen','bracket') }}" aria-current="{{ 'page' if request.endpoint in ('klasemen','bracket') else 'false' }}"><span>Klasemen</span></a>
+        <a href="{{ sport_url('galeri') }}" data-nav="05" class="{{ 'active' if request.endpoint == 'galeri' }}" aria-current="{{ 'page' if request.endpoint == 'galeri' else 'false' }}"><span>Galeri</span></a>
+        <a href="{{ sport_url('aturan') }}" data-nav="06" class="{{ 'active' if request.endpoint == 'aturan' }}" aria-current="{{ 'page' if request.endpoint == 'aturan' else 'false' }}"><span>Aturan</span></a>
+        {% if is_admin %}
+        <a href="{{ url_for('admin_dashboard') }}" data-nav="07" class="nav-admin"><span>Admin</span></a>
+        <form method="post" action="{{ url_for('admin_logout') }}" class="nav-logout-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="nav-admin nav-logout-button" data-nav="08"><span>Keluar</span></button>
+        </form>
+        {% endif %}
+        <button class="nav-bell bell-trigger" aria-label="Buka pusat pengumuman" title="Pusat pengumuman">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span class="bell-badge">1</span>
+        </button>
+      </nav>
+    </div>
   </div>
 </header>
+{% endblock %}
+
+{% if sports|length > 1 and request.endpoint and not request.endpoint.startswith('admin') and request.endpoint not in ('scorekeeper_index', 'scorekeeper_match', 'scorekeeper_action') %}
+<nav class="sport-switcher" aria-label="Pilih cabang olahraga">
+  <div class="sport-switcher-inner">
+    <a href="{{ switch_sport_url('all') }}"
+       class="sport-pill {{ 'active' if selected_sport == 'all' }}">Semua Cabang</a>
+    {% for sport in sports %}
+      {% if sport.enabled %}
+      <a href="{{ switch_sport_url(sport.key) }}"
+         class="sport-pill {{ 'active' if selected_sport == sport.key }}"
+         aria-current="{{ 'page' if selected_sport == sport.key else 'false' }}">
+        <span aria-hidden="true">{{ sport.icon }}</span> {{ sport.name }}
+      </a>
+      {% else %}
+      <span class="sport-pill disabled" title="Cabang ini belum diaktifkan">
+        <span aria-hidden="true">{{ sport.icon }}</span> {{ sport.name }} <small>Segera</small>
+      </span>
+      {% endif %}
+    {% endfor %}
+  </div>
+</nav>
+{% endif %}
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -94,35 +146,84 @@
   {% endif %}
 {% endwith %}
 
-<main class="site-main">
+<main class="site-main" id="main-content">
 {% block content %}{% endblock %}
 </main>
 
+{% block site_footer %}
 <footer class="site-footer">
-  <div class="footer-ball-wrap">
-    <div class="footer-ball-x">
-      <div class="footer-ball-y"></div>
-    </div>
-  </div>
+  <div class="footer-grid-fx" aria-hidden="true"></div>
+  <div class="footer-beam" aria-hidden="true"><span></span></div>
+
   <div class="footer-inner">
-    <img class="footer-logo" src="{{ url_for('static', filename='img/logo-interport.png') }}" alt="Interport">
-    <p><strong>{{ config.tournament_name }}</strong></p>
-    <p>{{ config.start_date }} &mdash; {{ config.end_date }} · {{ config.time_window }} ({{ config.time_window_note }}) · {{ config.venue }}</p>
-    <p class="muted">{{ config.final_note }}</p>
-    <p class="footer-disclaimer">
-      Website ini adalah sistem informasi internal yang dikelola oleh panitia
-      {{ config.tournament_name }} untuk keperluan dokumentasi jadwal dan hasil pertandingan,
-      bukan situs resmi maupun media komersial. Nama event, logo, dan identitas visual yang
-      ditampilkan sepenuhnya milik panitia dan tidak untuk digunakan di luar konteks ini.
+    <section class="footer-brand-zone" aria-labelledby="footerTournamentName">
+      <span class="footer-kicker"><i aria-hidden="true"></i>InterSport Tournament System</span>
+      <div class="footer-brand-lockup">
+        <span class="footer-logo-frame">
+          <img class="footer-logo" src="{{ url_for('static', filename='img/logo-interport.png') }}" alt="Interport">
+        </span>
+        <div>
+          <h2 id="footerTournamentName">{{ config.tournament_short_name }}</h2>
+          <p>{{ config.tournament_name }}</p>
+        </div>
+      </div>
+      <p class="footer-intro">Satu pusat informasi untuk jadwal, skor, klasemen, dan perjalanan setiap pertandingan.</p>
+      <div class="footer-event-meta">
+        <span><small>Periode</small><strong>{{ config.start_date }} — {{ config.end_date }}</strong></span>
+        <span><small>Arena</small><strong>{{ config.venue }}</strong></span>
+        <span><small>Sesi</small><strong>{{ config.time_window }}</strong></span>
+      </div>
+    </section>
+    <nav class="footer-navigation" aria-label="Navigasi footer">
+      <div class="footer-link-group">
+        <span>Kompetisi</span>
+        <a href="{{ sport_url('jadwal') }}">Jadwal pertandingan</a>
+        <a href="{{ sport_url('live') }}">Live arena</a>
+        <a href="{{ sport_url('klasemen') }}">Klasemen</a>
+        <a href="{{ sport_url('bracket') }}">Bracket</a>
+      </div>
+      <div class="footer-link-group">
+        <span>Eksplorasi</span>
+        <a href="{{ sport_url('kalender') }}">Kalender</a>
+        <a href="{{ sport_url('rekap') }}">Rekap hasil</a>
+        <a href="{{ sport_url('galeri') }}">Galeri</a>
+        <a href="{{ sport_url('aturan') }}">Aturan bermain</a>
+      </div>
+    </nav>
+    <aside class="footer-operations" aria-labelledby="footerOpsTitle">
+      <span class="footer-ops-label"><i aria-hidden="true"></i>Akses khusus panitia</span>
+      <h2 id="footerOpsTitle">Tournament Command Center</h2>
+      <p>Kelola pertandingan, jadwal, skor, pengumuman, dan konsol scorekeeper dari satu ruang operasional.</p>
+      {% if is_admin %}
+      <a class="footer-admin-access" href="{{ url_for('admin_dashboard') }}">
+        <span><small>Sesi admin aktif</small><strong>Buka dashboard</strong></span><i aria-hidden="true">→</i>
+      </a>
+      <a class="footer-scorekeeper-link" href="{{ url_for('scorekeeper_index') }}">Masuk ke mode scorekeeper</a>
+      {% else %}
+      <div class="footer-admin-access footer-admin-locked">
+        <span><small>Panitia turnamen</small><strong>Jalur admin terpisah</strong></span><i aria-hidden="true">••</i>
+      </div>
+      <small class="footer-security-note">Alamat akses diberikan langsung kepada panitia dan tidak ditampilkan pada halaman publik.</small>
+      {% endif %}
+    </aside>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© {{ now.year }} {{ config.tournament_short_name }}</span>
+    <span class="footer-system-state"><i aria-hidden="true"></i>Sistem informasi turnamen aktif</span>
+    <p>
+      Dikelola panitia untuk dokumentasi jadwal dan hasil pertandingan. Nama event, logo, dan identitas
+      visual tetap menjadi milik penyelenggara dan tidak digunakan sebagai media komersial.
     </p>
   </div>
 </footer>
+{% endblock %}
 
 <div class="modal-overlay" id="matchModal" hidden>
-  <div class="modal-box" role="dialog" aria-modal="true" aria-label="Detail pertandingan">
-    <button class="modal-close" id="matchModalClose" type="button" aria-label="Tutup"></button>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-label="Match center" tabindex="-1">
+    <button class="modal-close" id="matchModalClose" type="button" aria-label="Tutup detail pertandingan"></button>
     <div class="modal-body" id="matchModalBody">
-      <div class="modal-loading">Memuat…</div>
+      <div class="modal-loading"><i aria-hidden="true"></i><strong>Menyiapkan match center</strong><span>Memuat skor dan detail pertandingan…</span></div>
     </div>
   </div>
 </div>

@@ -218,6 +218,9 @@ def main():
     config = {
         "tournament_name": "Mini-Round Table Tennis InterSport 2026",
         "tournament_short_name": "InterSport 2026",
+        "status": "active",
+        "timezone": "Asia/Jakarta",
+        "locale": "id-ID",
         "start_date": "2026-07-20",
         "end_date": "2026-07-29",
         "buffer_dates": ["2026-07-24"],

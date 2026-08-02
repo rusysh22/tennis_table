@@ -4,6 +4,58 @@
 {% block og_image %}{{ url_for('og_default_image', title='Pedoman Aturan', subtitle='Aturan resmi Mini Round Ping Pong', tag='PEDOMAN', _external=True) }}{% endblock %}
 {% block content %}
 
+<div class="section-head"><h2>📚 Aturan dan Format Kompetisi</h2></div>
+
+<div class="rules-overview-grid">
+  {% for sport in rule_sports %}
+  <section class="rule-profile-card">
+    <div class="rule-profile-head">
+      <span class="sport-hub-icon" aria-hidden="true">{{ sport.icon }}</span>
+      <div>
+        <h3>{{ sport.name }}</h3>
+        <span>{{ 'Aktif' if sport.enabled else 'Belum diaktifkan untuk turnamen ini' }}</span>
+      </div>
+    </div>
+    {% for profile in sport.profiles %}
+    <details class="rule-profile" {{ 'open' if loop.first }}>
+      <summary>{{ profile.name }} · v{{ profile.version }}</summary>
+      <p>Istilah segmen: <strong>{{ profile.segment_term }}</strong>. Profil ini versioned dan immutable setelah dibuat.</p>
+      <dl class="rule-config-list">
+        {% for key, value in profile.config|dictsort %}
+        <div><dt>{{ key|replace('_', ' ') }}</dt><dd>{{ value }}</dd></div>
+        {% endfor %}
+      </dl>
+    </details>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div>
+
+{% if rule_divisions %}
+<div class="admin-shell rules-format-summary">
+  <h3>Format per Divisi</h3>
+  <div class="table-wrap">
+    <table class="standings rules-table">
+      <thead><tr><th>Cabang</th><th>Divisi</th><th>Peserta</th><th>Stage</th><th>Profil Default</th></tr></thead>
+      <tbody>
+        {% for division in rule_divisions %}
+        <tr>
+          <td>{{ division.sport_icon }} {{ division.sport_name }}</td>
+          <td>{{ division.name }}</td>
+          <td>{{ division.entrant_type }} · {{ division.min_team_size }}–{{ division.max_team_size }} anggota</td>
+          <td>{{ division.stages|map(attribute='name')|join(' → ') }}</td>
+          <td>{{ division.default_rule_profile.name }} · v{{ division.default_rule_profile.version }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state compact">Belum ada divisi aktif untuk cabang ini.</div>
+{% endif %}
+
+{% if selected_sport in ('all', 'table-tennis') %}
 <div class="section-head"><h2>📖 Pedoman Aturan Mini Round</h2></div>
 
 <div class="admin-shell" style="margin-bottom:1.6rem;">
@@ -253,5 +305,6 @@
   </fieldset>
 
 </div>
+{% endif %}
 
 {% endblock %}

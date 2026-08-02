@@ -1,6 +1,14 @@
 import os
-from datetime import datetime, timedelta, timezone
+import secrets
+import threading
+import time
+import hashlib
+import json
+from collections import Counter, deque
+from datetime import datetime, timedelta
 from functools import wraps
+from urllib.parse import unquote, urlsplit
+from zoneinfo import ZoneInfo
 
 from flask import (
     Flask, render_template, request, redirect, url_for, session, jsonify, abort, flash, send_file
@@ -10,11 +18,22 @@ import io
 import uuid
 from PIL import Image, ImageOps
 import requests
+from werkzeug.security import check_password_hash
+from dotenv import load_dotenv
 
 import og_image
 import utils
 
+load_dotenv()
+
 app = Flask(__name__)
+
+
+def _env_flag(name, default=False):
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
 
 SECRET_PATH = os.path.join(os.path.dirname(__file__), ".secret_key")
 app.secret_key = os.environ.get("SECRET_KEY")
@@ -35,18 +54,46 @@ if not app.secret_key:
                # ke disk sehingga bisa beda tiap cold start (sesi admin akan ter-logout).
                # Set env var SECRET_KEY di hosting supaya key konsisten antar-instance.
 
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "pingpong2026")
+app.config.update(
+    ADMIN_PASSWORD=os.environ.get("ADMIN_PASSWORD"),
+    ADMIN_PASSWORD_HASH=os.environ.get("ADMIN_PASSWORD_HASH"),
+    MAX_CONTENT_LENGTH=int(os.environ.get("MAX_UPLOAD_BYTES", 8 * 1024 * 1024)),
+    PERMANENT_SESSION_LIFETIME=timedelta(
+        hours=int(os.environ.get("ADMIN_SESSION_HOURS", "8"))
+    ),
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=_env_flag("SESSION_COOKIE_SECURE", default=True),
+)
 
-SUPABASE_S3_ENDPOINT = os.environ.get("SUPABASE_S3_ENDPOINT", "https://jfutygknyhqfqfyhqhvy.storage.supabase.co/storage/v1/s3")
+SUPABASE_S3_ENDPOINT = os.environ.get("SUPABASE_S3_ENDPOINT")
+PUBLIC_ASSET_BASE_URL = os.environ.get("PUBLIC_ASSET_BASE_URL")
 SUPABASE_REGION = os.environ.get("SUPABASE_REGION", "ap-northeast-1")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME", "media")
 
+Image.MAX_IMAGE_PIXELS = int(os.environ.get("MAX_IMAGE_PIXELS", "25000000"))
+
+
+def _storage_is_configured():
+    return all(
+        (
+            SUPABASE_S3_ENDPOINT,
+            PUBLIC_ASSET_BASE_URL,
+            AWS_ACCESS_KEY_ID,
+            AWS_SECRET_ACCESS_KEY,
+            S3_BUCKET_NAME,
+        )
+    )
+
 def compress_and_upload_image(file, match_id):
-    if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
-        return None, "Konfigurasi S3 (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY) belum diset di environment."
+    if not _storage_is_configured():
+        return None, "Konfigurasi penyimpanan S3 belum lengkap di environment."
     try:
+        img = Image.open(file)
+        img.verify()
+        file.seek(0)
         img = Image.open(file)
         img = ImageOps.exif_transpose(img)
         if img.mode in ("RGBA", "P"):
@@ -74,16 +121,16 @@ def compress_and_upload_image(file, match_id):
             ExtraArgs={'ContentType': 'image/jpeg'}
         )
         
-        file_url = f"https://jfutygknyhqfqfyhqhvy.supabase.co/storage/v1/object/public/{S3_BUCKET_NAME}/{filename}"
+        file_url = f"{PUBLIC_ASSET_BASE_URL.rstrip('/')}/{S3_BUCKET_NAME}/{filename}"
         return file_url, None
     except Exception as e:
         return None, str(e)
 
 def delete_from_supabase(file_url):
-    if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
+    if not _storage_is_configured():
         return
     try:
-        prefix = f"https://jfutygknyhqfqfyhqhvy.supabase.co/storage/v1/object/public/{S3_BUCKET_NAME}/"
+        prefix = f"{PUBLIC_ASSET_BASE_URL.rstrip('/')}/{S3_BUCKET_NAME}/"
         if file_url.startswith(prefix):
             filename = file_url[len(prefix):]
             s3_client = boto3.client(
@@ -99,10 +146,14 @@ def delete_from_supabase(file_url):
 
 ROUND_LABELS = {1: "Babak 1", 2: "Babak 2", 3: "Babak 3", 4: "Final"}
 STATUS_LABELS = {
+    "draft": "Draf",
     "scheduled": "Terjadwal",
+    "check_in": "Check-in",
     "live": "Live",
     "completed": "Selesai",
     "postponed": "Ditunda",
+    "suspended": "Ditangguhkan",
+    "cancelled": "Dibatalkan",
 }
 
 
@@ -110,6 +161,122 @@ STATUS_LABELS = {
 
 TBD_COLOR = "#9c9c9c"
 TBD_TEXT = "#ffffff"
+CSRF_SESSION_KEY = "_csrf_token"
+_LOGIN_ATTEMPTS = {}
+_LOGIN_LOCKED_UNTIL = {}
+_LOGIN_RATE_LOCK = threading.Lock()
+
+app.config.setdefault("LOGIN_MAX_ATTEMPTS", 5)
+app.config.setdefault("LOGIN_WINDOW_SECONDS", 15 * 60)
+app.config.setdefault("LOGIN_LOCK_SECONDS", 15 * 60)
+
+
+def get_csrf_token():
+    token = session.get(CSRF_SESSION_KEY)
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session[CSRF_SESSION_KEY] = token
+    return token
+
+
+def _safe_internal_next(value):
+    if not value:
+        return None
+    parsed = urlsplit(value)
+    if parsed.scheme or parsed.netloc or not value.startswith("/"):
+        return None
+    decoded = unquote(value)
+    if (
+        value.startswith("//")
+        or "\\" in decoded
+        or "\r" in decoded
+        or "\n" in decoded
+    ):
+        return None
+    return value
+
+
+def _verify_admin_password(candidate):
+    password_hash = app.config.get("ADMIN_PASSWORD_HASH")
+    if password_hash:
+        try:
+            return check_password_hash(password_hash, candidate)
+        except ValueError:
+            return False
+    password = app.config.get("ADMIN_PASSWORD")
+    return bool(password) and secrets.compare_digest(password, candidate)
+
+
+def _login_client_key():
+    return request.remote_addr or "unknown"
+
+
+def _login_lock_remaining(client_key):
+    now = time.monotonic()
+    with _LOGIN_RATE_LOCK:
+        locked_until = _LOGIN_LOCKED_UNTIL.get(client_key, 0)
+        if locked_until <= now:
+            _LOGIN_LOCKED_UNTIL.pop(client_key, None)
+            return 0
+        return int(locked_until - now) + 1
+
+
+def _record_login_failure(client_key):
+    now = time.monotonic()
+    window = app.config["LOGIN_WINDOW_SECONDS"]
+    with _LOGIN_RATE_LOCK:
+        attempts = _LOGIN_ATTEMPTS.setdefault(client_key, deque())
+        while attempts and attempts[0] <= now - window:
+            attempts.popleft()
+        attempts.append(now)
+        if len(attempts) >= app.config["LOGIN_MAX_ATTEMPTS"]:
+            _LOGIN_LOCKED_UNTIL[client_key] = now + app.config["LOGIN_LOCK_SECONDS"]
+            attempts.clear()
+
+
+def _clear_login_failures(client_key):
+    with _LOGIN_RATE_LOCK:
+        _LOGIN_ATTEMPTS.pop(client_key, None)
+        _LOGIN_LOCKED_UNTIL.pop(client_key, None)
+
+
+@app.before_request
+def protect_against_csrf():
+    if request.method not in {"POST", "PUT", "PATCH", "DELETE"}:
+        return None
+    expected = session.get(CSRF_SESSION_KEY)
+    supplied = request.form.get("csrf_token") or request.headers.get("X-CSRF-Token")
+    if not expected or not supplied or not secrets.compare_digest(expected, supplied):
+        abort(400, description="Token CSRF tidak valid atau sudah kedaluwarsa.")
+    return None
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault(
+        "Permissions-Policy",
+        "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+    )
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; "
+        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com; "
+        "form-action 'self'; img-src 'self' data: https://*.supabase.co https://*.ytimg.com https://*.youtube.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; "
+        "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com",
+    )
+    if request.is_secure:
+        response.headers.setdefault(
+            "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+        )
+    if request.path.startswith("/admin"):
+        response.headers.setdefault("Cache-Control", "no-store")
+    return response
 
 
 def champion_display(teams, code):
@@ -118,7 +285,7 @@ def champion_display(teams, code):
         return None
     t = teams.get(code, {})
     return {
-        "code": code,
+        "code": t.get("code", code),
         "player1": t.get("player1", ""),
         "player2": t.get("player2", ""),
         "color": t.get("color", TBD_COLOR),
@@ -128,12 +295,20 @@ def champion_display(teams, code):
 
 def enrich_match(m, teams):
     m = dict(m)
+    m.setdefault("sport_key", "table-tennis")
+    m.setdefault(
+        "stage_type", "final" if m.get("group") == "FINAL" else "group"
+    )
+    m.setdefault(
+        "stage_key", "final" if m.get("group") == "FINAL" else "group-stage"
+    )
+    m.setdefault("stage_label", m.get("round_label", "Pertandingan"))
     m["team_a_label"] = utils.team_label(teams, m["team_a"])
     m["team_b_label"] = utils.team_label(teams, m["team_b"])
-    m["team_a_code"] = m["team_a"] or "TBD"
-    m["team_b_code"] = m["team_b"] or "TBD"
     ta = teams.get(m["team_a"], {})
     tb = teams.get(m["team_b"], {})
+    m["team_a_code"] = ta.get("code", m["team_a"]) or "TBD"
+    m["team_b_code"] = tb.get("code", m["team_b"]) or "TBD"
     m["team_a_color"] = ta.get("color", TBD_COLOR)
     m["team_a_text"] = ta.get("text", TBD_TEXT)
     m["team_b_color"] = tb.get("color", TBD_COLOR)
@@ -142,27 +317,46 @@ def enrich_match(m, teams):
     m["team_a_player2"] = ta.get("player2", "")
     m["team_b_player1"] = tb.get("player1", "TBD")
     m["team_b_player2"] = tb.get("player2", "")
-    m["date_label"] = utils.format_date_id(m["date"])
+    m["date_label"] = (
+        utils.format_date_id(m["date"]) if m.get("date") else "Belum dijadwalkan"
+    )
     m["status_label"] = STATUS_LABELS.get(m["status"], m["status"])
     m["is_walkover"] = bool(m.get("walkover"))
     sa, sb = utils.compute_sets_won(m["sets"]) if m["sets"] else (0, 0)
     m["sets_a"] = sa
     m["sets_b"] = sb
     m["sets_needed"] = utils.sets_needed_to_win(m)
-    m["best_of_label"] = "Best of 5" if m["sets_needed"] == 3 else "Best of 3"
+    m["best_of_label"] = f"Best of {m['sets_needed'] * 2 - 1}"
+    score_terms = utils.scorekeeper_terms(m)
+    m["segment_term"] = score_terms["segment_term"]
+    m["segment_label"] = score_terms["segment_label"]
+    m["scoring_unit_label"] = score_terms["unit_label"]
+    _, score_errors = utils.validate_recorded_result(m)
+    m["score_errors"] = score_errors
+    m["score_is_valid"] = not score_errors
     
+    stored_winner = m.get("winner")
     m["winner"] = None
     if m["status"] == "completed":
-        if sa > sb: m["winner"] = "a"
-        elif sb > sa: m["winner"] = "b"
+        if stored_winner == m.get("team_a") or sa > sb:
+            m["winner"] = "a"
+        elif stored_winner == m.get("team_b") or sb > sa:
+            m["winner"] = "b"
         
     m["comments"] = m.get("comments", [])
     
     # Voting logic
-    match_dt_str = f"{m['date']} {m['time']}"
+    match_dt_str = f"{m.get('date', '')} {m.get('time', '')}"
     try:
-        match_dt = datetime.strptime(match_dt_str, "%Y-%m-%d %H:%M").replace(tzinfo=timezone(timedelta(hours=7)))
-        m["is_voting_open"] = utils.now_wib() < match_dt - timedelta(hours=1)
+        match_dt = datetime.strptime(match_dt_str, "%Y-%m-%d %H:%M").replace(
+            tzinfo=ZoneInfo(
+                m.get("_timezone")
+                or os.environ.get("TOURNAMENT_TIMEZONE", "Asia/Jakarta")
+            )
+        )
+        m["is_voting_open"] = utils.now_wib(
+            m.get("_timezone")
+        ) < match_dt - timedelta(hours=1)
     except:
         m["is_voting_open"] = False
         
@@ -186,6 +380,127 @@ def enrich_match(m, teams):
     return m
 
 
+def competition_context(matches, teams, config, sport_key=None):
+    competition = utils.build_competition_view(
+        matches, teams, config, sport_key=sport_key
+    )
+    for division in competition.get("divisions", []):
+        division["champion_team"] = champion_display(
+            teams, division.get("champion")
+        )
+        division["has_elimination_stage"] = any(
+            stage.get("type") not in {"group", "round_robin"}
+            for stage in division.get("stages_view", [])
+        )
+        policy_config = (
+            division.get("standing_policy") or {}
+        ).get("config") or utils.DEFAULT_STANDING_POLICY
+        division["standing_summary"] = (
+            f"Menang {policy_config.get('win_points', 2)} poin · "
+            f"kalah bertanding {policy_config.get('played_loss_points', 1)} poin · "
+            f"kalah W.O. {policy_config.get('walkover_loss_points', 0)} poin"
+        )
+        for stage in division.get("stages_view", []):
+            stage["matches_enriched"] = [
+                enrich_match(match, teams) for match in stage.get("matches", [])
+            ]
+            stage["qualifiers"] = [
+                {
+                    "group": group_key,
+                    "code": code,
+                    "team": champion_display(teams, code),
+                }
+                for group_key, code in sorted(
+                    division.get("group_winners", {}).items()
+                )
+            ]
+            for group in stage.get("groups_view", []):
+                group["champion_team"] = champion_display(
+                    teams, group.get("champion")
+                )
+                for row in group.get("rows", []):
+                    row["display_code"] = utils.team_short(teams, row["code"])
+    return competition
+
+
+def qualification_context(match, matches, teams, config):
+    competition = competition_context(matches, teams, config)
+    division = next(
+        (
+            item for item in competition.get("divisions", [])
+            if item.get("key") == match.get("category")
+            and item.get("sport_key") == match.get("sport_key", "table-tennis")
+        ),
+        None,
+    )
+    qualifiers = []
+    if division:
+        qualifiers = [
+            {
+                "group": group_key,
+                "code": utils.team_short(teams, code),
+                "value": code,
+            }
+            for group_key, code in sorted(division.get("group_winners", {}).items())
+        ]
+    eligible_teams = {
+        code: team for code, team in teams.items()
+        if team.get("category") == match.get("category")
+        and team.get("sport_key", "table-tennis")
+        == match.get("sport_key", "table-tennis")
+    }
+    return {
+        "qualifiers": qualifiers,
+        "eligible_teams": eligible_teams,
+        "is_elimination": match.get("stage_type") not in {
+            None, "group", "round_robin"
+        } or match.get("group") == "FINAL",
+    }
+
+
+def scorekeeper_document(match, teams):
+    enriched = enrich_match(match, teams)
+    state = utils.scorekeeper_state(match)
+    event_labels = {
+        "score.match_started": "Pertandingan dimulai",
+        "score.point_awarded": "Skor ditambahkan",
+        "score.undo": "Skor terakhir di-undo",
+        "score.match_finished": "Hasil dikonfirmasi selesai",
+        "score.correction_opened": "Hasil dibuka untuk koreksi",
+    }
+    history = []
+    for event in reversed(match.get("scorekeeper_events") or []):
+        side = event.get("side")
+        side_code = (
+            enriched.get("team_a_code") if side == "a"
+            else enriched.get("team_b_code") if side == "b"
+            else None
+        )
+        history.append(
+            {
+                "sequence": event.get("sequence"),
+                "label": event_labels.get(event.get("event_type"), event.get("event_type")),
+                "side_code": side_code,
+                "at": event.get("at"),
+                "reason": (event.get("metadata") or {}).get("reason"),
+            }
+        )
+        if len(history) >= 8:
+            break
+    return {
+        "match": enriched,
+        "state": state,
+        "history": history,
+        "version": int(match.get("version", 0)),
+        "can_start": match.get("status") in {"scheduled", "check_in", "postponed"},
+        "can_open_correction": (
+            match.get("status") == "completed"
+            and not match.get("walkover")
+            and bool(match.get("sets"))
+        ),
+    }
+
+
 @app.template_filter("truncate_words")
 def truncate_words(text, max_words=2):
     return utils.truncate_words(text, max_words)
@@ -205,6 +520,61 @@ def login_required(view):
     return wrapped
 
 
+def _expected_match_version():
+    raw_version = request.form.get("version")
+    if raw_version is None:
+        raise ValueError("Versi pertandingan tidak tersedia. Muat ulang halaman lalu coba lagi.")
+    try:
+        return int(raw_version)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Versi pertandingan tidak valid. Muat ulang halaman.") from exc
+
+
+def _update_match_or_flash(match_id, expected_version, updater, success_message):
+    try:
+        updated = utils.update_match(
+            match_id, updater, expected_version=expected_version
+        )
+    except utils.MatchVersionConflictError:
+        flash(
+            "Pertandingan telah diubah oleh pengguna lain. Muat ulang halaman dan periksa skor terbaru.",
+            "error",
+        )
+        return None
+    except (utils.MatchNotFoundError, ValueError) as exc:
+        flash(str(exc) or "Pertandingan tidak ditemukan.", "error")
+        return None
+    flash(success_message, "success")
+    return updated
+
+
+def _parse_score_form(max_games, segment_label="Game"):
+    games = []
+    errors = []
+    gap_found = False
+    for index in range(1, max_games + 1):
+        raw_a = request.form.get(f"set{index}_a", "").strip()
+        raw_b = request.form.get(f"set{index}_b", "").strip()
+        if not raw_a and not raw_b:
+            gap_found = True
+            continue
+        if not raw_a or not raw_b:
+            errors.append(f"Skor {segment_label} {index} harus diisi untuk kedua tim.")
+            continue
+        if gap_found:
+            errors.append(
+                f"{segment_label} harus diisi berurutan tanpa melewati "
+                f"{segment_label.lower()} kosong."
+            )
+        try:
+            games.append([int(raw_a), int(raw_b)])
+        except ValueError:
+            errors.append(
+                f"Skor {segment_label} {index} harus berupa bilangan bulat."
+            )
+    return games, errors
+
+
 def data_context():
     teams = utils.load_teams()
     matches = utils.load_matches()
@@ -212,20 +582,60 @@ def data_context():
     return teams, matches, config
 
 
+def _selected_sport():
+    requested = request.args.get("sport", "").strip()
+    known = {sport["key"] for sport in utils.list_sports()}
+    return requested if requested in known else "all"
+
+
+def _filter_matches_by_selected_sport(matches):
+    selected = _selected_sport()
+    if selected == "all":
+        return matches
+    return [
+        match for match in matches
+        if match.get("sport_key", "table-tennis") == selected
+    ]
+
+
+def _sport_url(endpoint, **values):
+    selected = _selected_sport()
+    if selected != "all" and "sport" not in values:
+        values["sport"] = selected
+    return url_for(endpoint, **values)
+
+
+def _switch_sport_url(sport_key):
+    values = dict(request.view_args or {})
+    values.update(request.args.to_dict(flat=True))
+    if sport_key == "all":
+        values.pop("sport", None)
+    else:
+        values["sport"] = sport_key
+    return url_for(request.endpoint or "index", **values)
+
+
 @app.context_processor
 def inject_globals():
     config = utils.load_config()
+    sports = utils.list_sports()
+    selected_sport = _selected_sport()
     return {
         "config": config,
+        "sports": sports,
+        "selected_sport": selected_sport,
+        "sport_url": _sport_url,
+        "switch_sport_url": _switch_sport_url,
+        "storage_backend": utils.STORAGE_BACKEND,
         "is_admin": bool(session.get("is_admin")),
-        "now": utils.now_wib(),
+        "now": utils.now_wib(config.get("timezone")),
+        "csrf_token": get_csrf_token(),
     }
 
 
 @app.teardown_appcontext
 def _close_db_connection(exception=None):
-    if utils.USE_DB:
-        utils.close_request_connection()
+    utils.close_request_connection()
 
 
 # ---------- public routes ----------
@@ -233,8 +643,14 @@ def _close_db_connection(exception=None):
 @app.route("/")
 def index():
     teams, matches, config = data_context()
+    all_matches = matches
+    matches = _filter_matches_by_selected_sport(matches)
     enriched = [enrich_match(m, teams) for m in matches]
-    today = utils.now_wib().strftime("%Y-%m-%d")
+    today = utils.now_wib(config.get("timezone")).strftime("%Y-%m-%d")
+    selected_sport = _selected_sport()
+    competition = competition_context(
+        matches, teams, config, sport_key=selected_sport
+    )
 
     upcoming = sorted(
         [m for m in enriched if m["status"] in ("scheduled", "live") and m["date"] >= today],
@@ -248,6 +664,9 @@ def index():
 
     total_matches = len(matches)
     completed_count = sum(1 for m in matches if m["status"] == "completed")
+    incomplete_count = sum(
+        1 for m in matches if m["status"] not in ("completed", "cancelled")
+    )
 
     all_comments = []
     for m in enriched:
@@ -271,18 +690,21 @@ def index():
             break
             
     is_live = len(live_now) > 0
-    tournament_ended = not is_live and not next_match
+    tournament_ended = (
+        config.get("status") == "completed"
+        and all(
+            match.get("status") in {"completed", "cancelled"}
+            for match in all_matches
+        )
+    )
 
-    gc_champion = None
-    gc_champion_photo = None
-    putra_champion = None
-    putra_champion_photo = None
+    champion_divisions = []
     hero_gallery_photos = []
     if tournament_ended:
-        gc_champion = utils.group_champion(matches, teams, "ganda_campuran", "A")
-        gc_champion_photo = config.get("champions", {}).get("ganda_campuran_A", {}).get("photo_url")
-        putra_champion = final_champion(matches, "ganda_putra")
-        putra_champion_photo = config.get("champions", {}).get("ganda_putra_FINAL", {}).get("photo_url")
+        champion_divisions = [
+            division for division in competition.get("divisions", [])
+            if division.get("champion_team")
+        ]
 
         doc_photos = []
         for m in enriched:
@@ -291,17 +713,58 @@ def index():
         doc_photos.sort(key=lambda p: p["uploaded_at"], reverse=True)
         hero_gallery_photos = doc_photos[:16]
 
+    full_structure = utils.load_competition_structure()
+    sport_cards = []
+    for sport in utils.list_sports():
+        sport_matches = [
+            match for match in all_matches
+            if match.get("sport_key", "table-tennis") == sport["key"]
+        ]
+        sport_enriched = [enrich_match(match, teams) for match in sport_matches]
+        sport_upcoming = sorted(
+            [
+                match for match in sport_enriched
+                if match.get("status") in {"scheduled", "live"}
+                and (match.get("date") or "") >= today
+            ],
+            key=lambda match: (match.get("date") or "", match.get("time") or ""),
+        )
+        sport_cards.append(
+            {
+                **sport,
+                "match_count": len(sport_matches),
+                "live_count": sum(
+                    1 for match in sport_matches if match.get("status") == "live"
+                ),
+                "completed_count": sum(
+                    1 for match in sport_matches
+                    if match.get("status") == "completed"
+                ),
+                "next_match": sport_upcoming[0] if sport_upcoming else None,
+                "division_count": sum(
+                    1 for division in full_structure.get("divisions", [])
+                    if division.get("sport_key") == sport["key"]
+                    and division.get("enabled", True)
+                ),
+            }
+        )
+
+    visible_team_codes = {
+        code for match in matches
+        for code in (match.get("team_a"), match.get("team_b")) if code
+    }
+
     return render_template(
         "index.html",
         upcoming=upcoming, live_now=live_now, recent=recent,
         total_matches=total_matches, completed_count=completed_count,
-        team_count=len(teams), recent_comments=recent_comments,
+        incomplete_count=incomplete_count,
+        team_count=len(visible_team_codes), division_count=len(competition["divisions"]),
+        recent_comments=recent_comments,
         next_match=next_match, is_live=is_live,
         tournament_ended=tournament_ended,
-        gc_champion_team=champion_display(teams, gc_champion),
-        gc_champion_photo=gc_champion_photo,
-        putra_champion_team=champion_display(teams, putra_champion),
-        putra_champion_photo=putra_champion_photo,
+        champion_divisions=champion_divisions,
+        sport_cards=sport_cards,
         hero_gallery_photos=hero_gallery_photos,
     )
 
@@ -309,6 +772,7 @@ def index():
 @app.route("/jadwal")
 def jadwal():
     teams, matches, config = data_context()
+    matches = _filter_matches_by_selected_sport(matches)
     enriched = [enrich_match(m, teams) for m in matches]
 
     kategori = request.args.get("kategori", "")
@@ -340,16 +804,48 @@ def jadwal():
 
     filtered.sort(key=lambda m: (m["date"], m["time"], m["court"]))
     dates = sorted({m["date"] for m in enriched})
+    categories = [
+        category for category in config.get("categories", [])
+        if _selected_sport() == "all"
+        or category.get("sport_key", "table-tennis") == _selected_sport()
+    ]
+    groups = sorted({m["group"] for m in enriched if m.get("group")})
+
+    status_counts = Counter(m["status"] for m in enriched)
+    schedule_stats = {
+        "total": len(enriched),
+        "scheduled": status_counts.get("scheduled", 0),
+        "live": status_counts.get("live", 0),
+        "completed": status_counts.get("completed", 0),
+        "postponed": status_counts.get("postponed", 0),
+    }
+    schedule_stats["progress"] = round(
+        (schedule_stats["completed"] / schedule_stats["total"]) * 100
+    ) if schedule_stats["total"] else 0
+
+    schedule_days = []
+    for match in filtered:
+        if not schedule_days or schedule_days[-1]["date"] != match["date"]:
+            schedule_days.append({
+                "date": match["date"],
+                "date_label": match["date_label"],
+                "matches": [],
+            })
+        schedule_days[-1]["matches"].append(match)
 
     return render_template(
-        "jadwal.html", matches=filtered, dates=dates,
+        "jadwal.html", matches=filtered, schedule_days=schedule_days,
+        schedule_stats=schedule_stats,
+        categories=categories, groups=groups, dates=dates,
         kategori=kategori, grup=grup, tanggal=tanggal, status=status, q=q,
+        active_filter_count=sum(bool(value) for value in (kategori, grup, tanggal, status, q)),
     )
 
 
 @app.route("/kalender")
 def kalender():
     teams, matches, config = data_context()
+    matches = _filter_matches_by_selected_sport(matches)
     enriched = [enrich_match(m, teams) for m in matches]
 
     by_date = {}
@@ -381,44 +877,35 @@ def kalender():
 
 @app.route("/aturan")
 def aturan():
-    return render_template("aturan.html")
+    structure = utils.load_competition_structure()
+    selected = _selected_sport()
+    sports_by_key = {sport["key"]: sport for sport in utils.list_sports()}
+    rule_sports = []
+    for sport_key, profiles in structure.get("rule_profiles_by_sport", {}).items():
+        if selected != "all" and sport_key != selected:
+            continue
+        sport = sports_by_key.get(
+            sport_key,
+            {"key": sport_key, "name": sport_key, "icon": "🏟️", "enabled": False},
+        )
+        rule_sports.append({**sport, "profiles": profiles})
+    divisions = [
+        division for division in structure.get("divisions", [])
+        if selected == "all" or division.get("sport_key") == selected
+    ]
+    return render_template(
+        "aturan.html", rule_sports=rule_sports, rule_divisions=divisions
+    )
 
 
 @app.route("/klasemen")
 def klasemen():
     teams, matches, config = data_context()
-    champions = config.get("champions", {})
-    groups = []
-    for cat in config["categories"]:
-        for g in cat["groups"]:
-            rows = utils.compute_standings(matches, teams, cat["key"], g)
-            champion = utils.group_champion(matches, teams, cat["key"], g)
-            champ_info = champions.get(f"{cat['key']}_{g}", {})
-            groups.append({
-                "category": cat["key"], "category_label": cat["label"],
-                "group": g, "rows": rows,
-                "champion": champion,
-                "champion_team": champion_display(teams, champion),
-                "champion_photo": champ_info.get("photo_url"),
-            })
-
-    putra_champion = final_champion(matches, "ganda_putra")
-    putra_champion_team = champion_display(teams, putra_champion)
-    putra_champion_photo = champions.get("ganda_putra_FINAL", {}).get("photo_url")
-
-    return render_template(
-        "klasemen.html", groups=groups,
-        putra_champion_team=putra_champion_team,
-        putra_champion_photo=putra_champion_photo,
+    matches = _filter_matches_by_selected_sport(matches)
+    competition = competition_context(
+        matches, teams, config, sport_key=_selected_sport()
     )
-
-
-def final_champion(matches, category):
-    """Pemenang laga FINAL (juara turnamen keseluruhan), beda dengan juara grup fase round-robin."""
-    final_match = next((m for m in matches if m["group"] == "FINAL" and m["category"] == category), None)
-    if final_match and final_match.get("status") == "completed":
-        return final_match.get("winner")
-    return None
+    return render_template("klasemen.html", competition=competition)
 
 
 @app.route("/admin/juara/<category>/<group>", methods=["POST"])
@@ -428,10 +915,28 @@ def admin_upload_champion_photo(category, group):
     redirect_to = request.form.get("redirect_to", "klasemen")
     redirect_endpoint = "bracket" if redirect_to == "bracket" else "klasemen"
 
-    if group == "FINAL":
-        champion = final_champion(matches, category)
-    else:
-        champion = utils.group_champion(matches, teams, category, group)
+    competition = competition_context(matches, teams, config)
+    division = next(
+        (
+            item for item in competition.get("divisions", [])
+            if item.get("key") == category
+        ),
+        None,
+    )
+    champion = None
+    if division:
+        if division.get("champion_target") == group:
+            champion = division.get("champion")
+        if not champion:
+            champion = next(
+                (
+                    group_view.get("champion")
+                    for stage in division.get("stages_view", [])
+                    for group_view in stage.get("groups_view", [])
+                    if group_view.get("key") == group
+                ),
+                None,
+            )
     if not champion:
         flash("Kategori/grup ini belum punya juara (belum semua pertandingan selesai).", "error")
         return redirect(url_for(redirect_endpoint))
@@ -444,8 +949,7 @@ def admin_upload_champion_photo(category, group):
         old = champions.get(key, {}).get("photo_url")
         if old:
             delete_from_supabase(old)
-            champions.pop(key, None)
-            utils.save_json("config.json", config)
+            utils.set_champion_photo(key)
             flash("Foto juara berhasil dihapus.", "success")
         return redirect(url_for(redirect_endpoint))
 
@@ -463,11 +967,11 @@ def admin_upload_champion_photo(category, group):
     if old:
         delete_from_supabase(old)
 
-    champions[key] = {
-        "photo_url": file_url,
-        "uploaded_at": utils.now_wib().isoformat(timespec="seconds"),
-    }
-    utils.save_json("config.json", config)
+    utils.set_champion_photo(
+        key,
+        file_url,
+        utils.now_wib(config.get("timezone")).isoformat(timespec="seconds"),
+    )
     flash("Foto juara berhasil diunggah.", "success")
     return redirect(url_for(redirect_endpoint))
 
@@ -475,49 +979,20 @@ def admin_upload_champion_photo(category, group):
 @app.route("/bracket")
 def bracket():
     teams, matches, config = data_context()
-    champ_a = utils.group_champion(matches, teams, "ganda_putra", "A")
-    champ_b = utils.group_champion(matches, teams, "ganda_putra", "B")
-    final_match = next((m for m in matches if m["group"] == "FINAL" and m["category"] == "ganda_putra"), None)
-    final_enriched = enrich_match(final_match, teams) if final_match else None
-
-    standings_a = utils.compute_standings(matches, teams, "ganda_putra", "A")
-    standings_b = utils.compute_standings(matches, teams, "ganda_putra", "B")
-
-    gc_standings = utils.compute_standings(matches, teams, "ganda_campuran", "A")
-    gc_champion = utils.group_champion(matches, teams, "ganda_campuran", "A")
-
-    putra_champion = final_champion(matches, "ganda_putra")
-    putra_champion_photo = config.get("champions", {}).get("ganda_putra_FINAL", {}).get("photo_url")
-
-    return render_template(
-        "bracket.html",
-        champ_a=champ_a, champ_b=champ_b,
-        champ_a_label=utils.team_label(teams, champ_a),
-        champ_b_label=utils.team_label(teams, champ_b),
-        champ_a_color=teams.get(champ_a, {}).get("color", TBD_COLOR),
-        champ_b_color=teams.get(champ_b, {}).get("color", TBD_COLOR),
-        champ_a_text=teams.get(champ_a, {}).get("text", TBD_TEXT),
-        champ_b_text=teams.get(champ_b, {}).get("text", TBD_TEXT),
-        champ_a_player1=teams.get(champ_a, {}).get("player1", ""),
-        champ_a_player2=teams.get(champ_a, {}).get("player2", ""),
-        champ_b_player1=teams.get(champ_b, {}).get("player1", ""),
-        champ_b_player2=teams.get(champ_b, {}).get("player2", ""),
-        final_match=final_enriched,
-        standings_a=standings_a, standings_b=standings_b,
-        gc_standings=gc_standings, gc_champion=gc_champion,
-        gc_champion_label=utils.team_label(teams, gc_champion) if gc_champion else None,
-        putra_champion=putra_champion,
-        putra_champion_team=champion_display(teams, putra_champion),
-        putra_champion_photo=putra_champion_photo,
+    matches = _filter_matches_by_selected_sport(matches)
+    competition = competition_context(
+        matches, teams, config, sport_key=_selected_sport()
     )
+    return render_template("bracket.html", competition=competition)
 
 
 @app.route("/live")
 def live():
     teams, matches, config = data_context()
+    matches = _filter_matches_by_selected_sport(matches)
     enriched = [enrich_match(m, teams) for m in matches]
     live_now = [m for m in enriched if m["status"] == "live"]
-    today = utils.now_wib().strftime("%Y-%m-%d")
+    today = utils.now_wib(config.get("timezone")).strftime("%Y-%m-%d")
     today_matches = sorted(
         [m for m in enriched if m["date"] == today],
         key=lambda m: (m["time"], m["court"]),
@@ -528,6 +1003,7 @@ def live():
 @app.route("/rekap")
 def rekap():
     teams, matches, config = data_context()
+    matches = _filter_matches_by_selected_sport(matches)
     enriched = [enrich_match(m, teams) for m in matches]
     completed = sorted(
         [m for m in enriched if m["status"] == "completed"],
@@ -536,12 +1012,21 @@ def rekap():
     kategori = request.args.get("kategori", "")
     if kategori:
         completed = [m for m in completed if m["category"] == kategori]
-    return render_template("rekap.html", matches=completed, kategori=kategori)
+    categories = [
+        category for category in config.get("categories", [])
+        if _selected_sport() == "all"
+        or category.get("sport_key", "table-tennis") == _selected_sport()
+    ]
+    return render_template(
+        "rekap.html", matches=completed, kategori=kategori,
+        categories=categories,
+    )
 
 
 @app.route("/galeri")
 def galeri():
     teams, matches, config = data_context()
+    matches = _filter_matches_by_selected_sport(matches)
     enriched = [enrich_match(m, teams) for m in matches]
     photos = []
     for m in enriched:
@@ -576,8 +1061,7 @@ def _match_detail_context(match_id, is_modal):
     if session.get("is_admin"):
         ctx["raw"] = m
         ctx["teams"] = teams
-        ctx["champ_a"] = utils.group_champion(matches, teams, "ganda_putra", "A")
-        ctx["champ_b"] = utils.group_champion(matches, teams, "ganda_putra", "B")
+        ctx.update(qualification_context(m, matches, teams, config))
     return ctx
 
 
@@ -598,8 +1082,12 @@ def add_comment(match_id):
     if not m:
         abort(404)
 
-    target = url_for("match_fragment", match_id=match_id) if request.form.get("modal") \
-        else url_for("match_detail", match_id=match_id) + "#komentar"
+    sport = request.args.get("sport")
+    target = url_for(
+        "match_fragment", match_id=match_id, sport=sport
+    ) if request.form.get("modal") else url_for(
+        "match_detail", match_id=match_id, sport=sport
+    ) + "#komentar"
 
     session_key = f"comments_{match_id}"
     comments_made = session.get(session_key, 0)
@@ -617,18 +1105,28 @@ def add_comment(match_id):
         flash("Komentar terlalu panjang (maksimal 200 karakter).", "error")
         return redirect(target)
 
-    session[session_key] = comments_made + 1
-
     # Censor bad words
     clean_name = utils.censor_text(name[:60])
     clean_comment = utils.censor_text(comment[:200])
 
-    m.setdefault("comments", []).append({
+    new_comment = {
         "name": clean_name,
         "comment": clean_comment,
         "at": utils.now_wib().isoformat(timespec="seconds"),
-    })
-    utils.save_matches(matches)
+    }
+
+    def append_comment(current):
+        if current.get("status") == "completed":
+            raise ValueError("Komentar ditutup setelah pertandingan selesai.")
+        current.setdefault("comments", []).append(new_comment)
+
+    try:
+        utils.update_match(match_id, append_comment)
+    except (utils.MatchNotFoundError, ValueError) as exc:
+        flash(str(exc), "error")
+        return redirect(target)
+
+    session[session_key] = comments_made + 1
     flash("Komentar terkirim. Panitia akan meninjau permintaan Anda.", "success")
     return redirect(target)
 
@@ -656,21 +1154,30 @@ def vote_match(match_id):
     # Check time limit
     try:
         match_dt_str = f"{m['date']} {m['time']}"
-        match_dt = datetime.strptime(match_dt_str, "%Y-%m-%d %H:%M").replace(tzinfo=timezone(timedelta(hours=7)))
-        if utils.now_wib() >= match_dt - timedelta(hours=1):
+        match_dt = datetime.strptime(match_dt_str, "%Y-%m-%d %H:%M").replace(
+            tzinfo=ZoneInfo(config.get("timezone", "Asia/Jakarta"))
+        )
+        if utils.now_wib(config.get("timezone")) >= match_dt - timedelta(hours=1):
             return jsonify({"success": False, "message": "Voting ditutup 1 jam sebelum pertandingan."}), 403
     except:
         pass
         
-    if "votes" not in m:
-        m["votes"] = {"a": {e: 0 for e in valid_emojis}, "b": {e: 0 for e in valid_emojis}}
-        
-    if emoji not in m["votes"][team]:
-        m["votes"][team][emoji] = 0
-        
-    m["votes"][team][emoji] += 1
+    def add_vote(current):
+        if "votes" not in current:
+            current["votes"] = {
+                "a": {value: 0 for value in valid_emojis},
+                "b": {value: 0 for value in valid_emojis},
+            }
+        current["votes"].setdefault(team, {})
+        current["votes"][team].setdefault(emoji, 0)
+        current["votes"][team][emoji] += 1
+
+    try:
+        m = utils.update_match(match_id, add_vote)
+    except utils.MatchNotFoundError:
+        return jsonify({"success": False, "message": "Pertandingan tidak ditemukan"}), 404
+
     session[session_key] = vote_count + 1
-    utils.save_matches(matches)
     
     total_a = sum(m["votes"]["a"].values())
     total_b = sum(m["votes"]["b"].values())
@@ -733,23 +1240,321 @@ def api_match(match_id):
     return jsonify(enrich_match(m, teams))
 
 
+def _api_error(code, message, status=400, fields=None):
+    payload = {"error": {"code": code, "message": message}}
+    if fields:
+        payload["error"]["fields"] = fields
+    return jsonify(payload), status
+
+
+def _api_match_document(match, teams, timezone_name, detail=False):
+    team_a = teams.get(match.get("team_a"), {})
+    team_b = teams.get(match.get("team_b"), {})
+    winner = teams.get(match.get("winner"), {})
+    _, score_errors = utils.validate_recorded_result(match)
+    segments_a, segments_b = utils.compute_sets_won(match.get("sets") or [])
+    document = {
+        "id": match["id"],
+        "sport": {"key": match.get("sport_key", "table-tennis")},
+        "division": {
+            "key": match.get("category"),
+            "name": match.get("category_label"),
+        },
+        "stage": {
+            "type": match.get("stage_type") or (
+                "final" if match.get("group") == "FINAL" else "group"
+            ),
+            "name": match.get("stage_label") or match.get("round_label"),
+            "group": match.get("group"),
+            "round": match.get("round"),
+            "round_label": match.get("round_label"),
+        },
+        "entrants": {
+            "a": {
+                "code": team_a.get("code", match.get("team_a")),
+                "members": [
+                    name for name in (team_a.get("player1"), team_a.get("player2"))
+                    if name
+                ],
+            },
+            "b": {
+                "code": team_b.get("code", match.get("team_b")),
+                "members": [
+                    name for name in (team_b.get("player1"), team_b.get("player2"))
+                    if name
+                ],
+            },
+        },
+        "schedule": {
+            "date": match.get("date") or None,
+            "time": match.get("time") or None,
+            "timezone": timezone_name,
+            "court": match.get("court") or None,
+        },
+        "status": match.get("status"),
+        "status_label": STATUS_LABELS.get(match.get("status"), match.get("status")),
+        "score": {
+            "segments": match.get("sets") or [],
+            "segments_won": {"a": segments_a, "b": segments_b},
+            "segment_term": match.get("_segment_term", "game"),
+            "winner": winner.get("code", match.get("winner")),
+            "result_type": "walkover" if match.get("walkover") else "normal",
+            "valid": bool(match.get("_result_valid", True)) and not score_errors,
+        },
+        "version": int(match.get("version", 0)),
+        "links": {"self": url_for("api_v1_match", match_id=match["id"], _external=True)},
+    }
+    if detail:
+        document.update(
+            {
+                "notes": match.get("notes", ""),
+                "comments": [
+                    {
+                        "author": comment.get("name"),
+                        "body": comment.get("comment"),
+                        "created_at": comment.get("at"),
+                    }
+                    for comment in match.get("comments", [])
+                ],
+                "reactions": match.get("votes", {"a": {}, "b": {}}),
+                "media": [
+                    {
+                        "url": media.get("url"),
+                        "uploaded_at": media.get("uploaded_at"),
+                    }
+                    for media in match.get("docs", [])
+                ],
+            }
+        )
+    return document
+
+
+def _json_with_etag(payload, status=200):
+    canonical = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    etag = hashlib.sha256(canonical).hexdigest()
+    response = jsonify(payload)
+    response.status_code = status
+    response.set_etag(etag)
+    if request.if_none_match and request.if_none_match.contains(etag):
+        response.status_code = 304
+        response.set_data(b"")
+    return response
+
+
+@app.route("/api/v1/sports")
+def api_v1_sports():
+    payload = {
+        "data": utils.list_sports(),
+        "meta": {"storage_backend": utils.STORAGE_BACKEND},
+    }
+    return _json_with_etag(payload)
+
+
+@app.route("/api/v1/matches")
+def api_v1_matches():
+    try:
+        limit = int(request.args.get("limit", "25"))
+    except ValueError:
+        return _api_error(
+            "invalid_request", "limit must be an integer.",
+            fields={"limit": "invalid"},
+        )
+    if not 1 <= limit <= 100:
+        return _api_error(
+            "invalid_request", "limit must be between 1 and 100.",
+            fields={"limit": "out_of_range"},
+        )
+
+    status = request.args.get("status") or None
+    valid_statuses = {
+        "draft", "scheduled", "check_in", "live", "postponed",
+        "suspended", "cancelled", "completed",
+    }
+    if status and status not in valid_statuses:
+        return _api_error(
+            "invalid_request", "Unknown match status.",
+            fields={"status": "invalid"},
+        )
+    sport = request.args.get("sport") or None
+    known_sports = {item["key"] for item in utils.list_sports()}
+    if sport and sport not in known_sports:
+        return _api_error(
+            "invalid_request", "Unknown sport.", fields={"sport": "invalid"}
+        )
+    match_date = request.args.get("date") or None
+    if match_date:
+        try:
+            datetime.strptime(match_date, "%Y-%m-%d")
+        except ValueError:
+            return _api_error(
+                "invalid_request", "date must use YYYY-MM-DD.",
+                fields={"date": "invalid"},
+            )
+
+    try:
+        matches, next_cursor = utils.list_api_matches(
+            sport=sport,
+            division=request.args.get("division") or None,
+            status=status,
+            match_date=match_date,
+            limit=limit,
+            cursor_value=request.args.get("cursor") or None,
+        )
+    except ValueError as exc:
+        return _api_error(
+            "invalid_cursor", str(exc), fields={"cursor": "invalid"}
+        )
+
+    teams = utils.load_teams()
+    timezone_name = utils.load_config().get("timezone", "Asia/Jakarta")
+    data = [
+        _api_match_document(match, teams, timezone_name)
+        for match in matches
+    ]
+    next_url = None
+    if next_cursor:
+        query = request.args.to_dict(flat=True)
+        query["cursor"] = next_cursor
+        next_url = url_for("api_v1_matches", _external=True, **query)
+    payload = {
+        "data": data,
+        "meta": {
+            "count": len(data), "limit": limit,
+            "next_cursor": next_cursor,
+        },
+        "links": {"self": request.url, "next": next_url},
+    }
+    return _json_with_etag(payload)
+
+
+@app.route("/api/v1/matches/<match_id>")
+def api_v1_match(match_id):
+    match = utils.get_api_match(match_id)
+    if not match:
+        return _api_error("not_found", "Match not found.", status=404)
+    payload = {
+        "data": _api_match_document(
+            match,
+            utils.load_teams(),
+            utils.load_config().get("timezone", "Asia/Jakarta"),
+            detail=True,
+        )
+    }
+    return _json_with_etag(payload)
+
+
+@app.route("/api/v1/standings")
+def api_v1_standings():
+    sport = request.args.get("sport") or None
+    known_sports = {item["key"] for item in utils.list_sports()}
+    if sport and sport not in known_sports:
+        return _api_error(
+            "invalid_request", "Unknown sport.", fields={"sport": "invalid"}
+        )
+    teams, matches, config = data_context()
+    competition = competition_context(
+        matches, teams, config, sport_key=sport or "all"
+    )
+    division_filter = request.args.get("division") or None
+    stage_filter = request.args.get("stage") or None
+    group_filter = request.args.get("group") or None
+    data = []
+    for division in competition.get("divisions", []):
+        if division_filter and division["key"] != division_filter:
+            continue
+        for stage in division.get("stages_view", []):
+            if stage.get("type") not in {"group", "round_robin"}:
+                continue
+            if stage_filter and stage.get("key") != stage_filter:
+                continue
+            for group in stage.get("groups_view", []):
+                if group_filter and group.get("key") != group_filter:
+                    continue
+                data.append(
+                    {
+                        "sport": division["sport_key"],
+                        "division": {
+                            "key": division["key"], "name": division["name"]
+                        },
+                        "stage": {
+                            "key": stage["key"], "name": stage["name"],
+                            "type": stage["type"],
+                        },
+                        "group": {"key": group["key"], "name": group["name"]},
+                        "complete": group["complete"],
+                        "champion": utils.team_short(
+                            teams, group.get("champion")
+                        ) if group.get("champion") else None,
+                        "policy": division.get("standing_policy"),
+                        "rows": [
+                            {
+                                "rank": row["rank"],
+                                "entrant": {
+                                    "code": row["display_code"],
+                                    "members": [
+                                        name for name in (
+                                            row.get("player1"), row.get("player2")
+                                        ) if name
+                                    ],
+                                },
+                                "played": row["played"], "wins": row["win"],
+                                "losses": row["loss"], "points": row["points"],
+                                "segments_for": row["set_win"],
+                                "segments_against": row["set_loss"],
+                                "segment_difference": row["set_diff"],
+                                "points_for": row["point_win"],
+                                "points_against": row["point_loss"],
+                                "point_difference": row["point_diff"],
+                                "tie_break": row["tie_break"],
+                            }
+                            for row in group.get("rows", [])
+                        ],
+                    }
+                )
+    return _json_with_etag({"data": data, "meta": {"count": len(data)}})
+
+
 # ---------- admin ----------
 
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
+        client_key = _login_client_key()
+        remaining = _login_lock_remaining(client_key)
+        if remaining:
+            flash(
+                f"Terlalu banyak percobaan login. Coba lagi dalam {remaining} detik.",
+                "error",
+            )
+            return render_template("admin/login.html"), 429
+
         password = request.form.get("password", "")
-        if password == ADMIN_PASSWORD:
+        if not app.config.get("ADMIN_PASSWORD_HASH") and not app.config.get("ADMIN_PASSWORD"):
+            flash(
+                "Login admin belum dikonfigurasi. Set ADMIN_PASSWORD_HASH di environment.",
+                "error",
+            )
+            return render_template("admin/login.html"), 503
+
+        if _verify_admin_password(password):
+            _clear_login_failures(client_key)
+            session.clear()
             session["is_admin"] = True
-            nxt = request.args.get("next") or url_for("admin_dashboard")
+            session[CSRF_SESSION_KEY] = secrets.token_urlsafe(32)
+            session.permanent = True
+            nxt = _safe_internal_next(request.args.get("next")) or url_for("admin_dashboard")
             return redirect(nxt)
+        _record_login_failure(client_key)
         flash("Password salah.", "error")
     return render_template("admin/login.html")
 
 
-@app.route("/admin/logout")
+@app.route("/admin/logout", methods=["POST"])
+@login_required
 def admin_logout():
-    session.pop("is_admin", None)
+    session.clear()
     return redirect(url_for("index"))
 
 
@@ -768,9 +1573,175 @@ def admin_dashboard():
     return render_template("admin/dashboard.html", matches=enriched, counts=counts)
 
 
+@app.route("/admin/categories")
+@login_required
+def admin_categories():
+    teams = utils.load_teams()
+    config = utils.load_config()
+    sports = utils.list_sports()
+    categories = config.get("categories", [])
+    return render_template("admin/categories.html", teams=teams, config=config, sports=sports, categories=categories)
+
+
+@app.route("/admin/generator")
+@login_required
+def admin_schedule_generator():
+    teams = utils.load_teams()
+    config = utils.load_config()
+    categories = config.get("categories", [])
+    return render_template("admin/schedule_generator.html", teams=teams, config=config, categories=categories)
+
+
+@app.route("/admin/settings")
+@login_required
+def admin_settings():
+    config = utils.load_config()
+    return render_template("admin/settings.html", config=config)
+
+
+@app.route("/admin/utilities")
+@login_required
+def admin_utilities():
+    config = utils.load_config()
+    storage_backend = "legacy"
+    return render_template("admin/utilities.html", config=config, storage_backend=storage_backend)
+
+
+
+@app.route("/admin/scorekeeper")
+@login_required
+def scorekeeper_index():
+    teams, matches, config = data_context()
+    sport_filter = request.args.get("sport", "").strip()
+    date_filter = request.args.get("date", "").strip()
+    court_filter = request.args.get("court", "").strip()
+    status_filter = request.args.get("status", "").strip()
+    filtered = list(matches)
+    if sport_filter:
+        filtered = [
+            match for match in filtered
+            if match.get("sport_key", "table-tennis") == sport_filter
+        ]
+    if date_filter:
+        filtered = [match for match in filtered if match.get("date") == date_filter]
+    if court_filter:
+        filtered = [match for match in filtered if match.get("court") == court_filter]
+    if status_filter:
+        filtered = [match for match in filtered if match.get("status") == status_filter]
+
+    status_order = {
+        "live": 0, "check_in": 1, "scheduled": 2, "postponed": 3,
+        "suspended": 4, "completed": 5, "cancelled": 6,
+    }
+    filtered.sort(
+        key=lambda match: (
+            status_order.get(match.get("status"), 9),
+            match.get("date") or "", match.get("time") or "", match.get("court") or "",
+        )
+    )
+    cards = []
+    for match in filtered:
+        document = scorekeeper_document(match, teams)
+        cards.append(document)
+
+    counts = Counter(match.get("status") for match in matches)
+    sports = [sport for sport in utils.list_sports() if sport.get("enabled")]
+    dates = sorted({match.get("date") for match in matches if match.get("date")})
+    courts = sorted({match.get("court") for match in matches if match.get("court")})
+    return render_template(
+        "admin/scorekeeper_index.html",
+        cards=cards,
+        counts=counts,
+        filter_sports=sports,
+        dates=dates,
+        courts=courts,
+        sport_filter=sport_filter,
+        date_filter=date_filter,
+        court_filter=court_filter,
+        status_filter=status_filter,
+    )
+
+
+@app.route("/admin/scorekeeper/<match_id>")
+@login_required
+def scorekeeper_match(match_id):
+    teams, matches, config = data_context()
+    match = utils.get_match(matches, match_id)
+    if not match:
+        abort(404)
+    document = scorekeeper_document(match, teams)
+    return render_template("admin/scorekeeper_match.html", **document)
+
+
+@app.route("/admin/scorekeeper/<match_id>/action", methods=["POST"])
+@login_required
+def scorekeeper_action(match_id):
+    action = request.form.get("action", "")
+    side = request.form.get("side") or None
+    reason = request.form.get("reason", "")
+    try:
+        expected_version = _expected_match_version()
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc), "reload_required": True}), 400
+
+    def apply_action(current):
+        utils.apply_scorekeeper_action(
+            current, action, side=side, reason=reason
+        )
+
+    try:
+        updated = utils.update_match(
+            match_id, apply_action, expected_version=expected_version
+        )
+    except utils.MatchVersionConflictError:
+        teams, matches, _ = data_context()
+        current = utils.get_match(matches, match_id)
+        return jsonify(
+            {
+                "ok": False,
+                "error": "Skor berubah di perangkat lain. Data terbaru sudah dimuat; periksa sebelum melanjutkan.",
+                "reload_required": True,
+                "data": scorekeeper_document(current, teams) if current else None,
+            }
+        ), 409
+    except utils.MatchNotFoundError:
+        return jsonify({"ok": False, "error": "Pertandingan tidak ditemukan."}), 404
+    except ValueError as exc:
+        teams, matches, _ = data_context()
+        current = utils.get_match(matches, match_id)
+        return jsonify(
+            {
+                "ok": False,
+                "error": str(exc),
+                "data": scorekeeper_document(current, teams) if current else None,
+            }
+        ), 422
+
+    teams = utils.load_teams()
+    return jsonify(
+        {
+            "ok": True,
+            "message": {
+                "start": "Pertandingan dimulai dan skor Live aktif.",
+                "point": "Skor tersimpan.",
+                "undo": "Skor terakhir berhasil di-undo.",
+                "finish": "Hasil pertandingan dikonfirmasi selesai.",
+                "open_correction": "Hasil dibuka untuk koreksi.",
+            }.get(action, "Perubahan tersimpan."),
+            "data": scorekeeper_document(updated, teams),
+        }
+    )
+
+
 @app.route("/admin/reset", methods=["POST"])
 @login_required
 def admin_reset():
+    if utils.is_normalized_backend():
+        flash(
+            "Reset koleksi legacy dinonaktifkan pada backend normalized. Gunakan import terkontrol dengan backup database.",
+            "error",
+        )
+        return redirect(url_for("admin_dashboard"))
     import generate_data
     utils.backup_data_files("teams.json", "matches.json")
     utils.save_json("teams.json", generate_data.TEAMS)
@@ -782,6 +1753,11 @@ def admin_reset():
 @app.route("/admin/shuffle-putra", methods=["POST"])
 @login_required
 def admin_shuffle_putra():
+    if utils.is_normalized_backend():
+        flash(
+            "Pengundian ulang legacy dinonaktifkan pada backend normalized.", "error"
+        )
+        return redirect(url_for("admin_dashboard"))
     import generate_data
     utils.backup_data_files("teams.json", "matches.json")
     teams, matches, config = data_context()
@@ -795,6 +1771,11 @@ def admin_shuffle_putra():
 @app.route("/admin/shuffle-campuran", methods=["POST"])
 @login_required
 def admin_shuffle_campuran():
+    if utils.is_normalized_backend():
+        flash(
+            "Pengundian ulang legacy dinonaktifkan pada backend normalized.", "error"
+        )
+        return redirect(url_for("admin_dashboard"))
     import generate_data
     utils.backup_data_files("matches.json")
     _, matches, _ = data_context()
@@ -807,12 +1788,213 @@ def admin_shuffle_campuran():
 @app.route("/admin/announcement", methods=["POST"])
 @login_required
 def admin_announcement():
-    config = utils.load_config()
-    config["announcement_title"] = request.form.get("announcement_title", "").strip()
-    config["announcement_text"] = request.form.get("announcement_text", "").strip()
-    utils.save_json("config.json", config)
+    title = request.form.get("announcement_title", "").strip()
+    body = request.form.get("announcement_text", "").strip()
+    utils.update_announcement(title, body)
     flash("Pengumuman berhasil diperbarui.", "success")
     return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/live-stream", methods=["POST"])
+@login_required
+def admin_live_stream():
+    embed_url = request.form.get("youtube_embed_url", "").strip()
+    title = request.form.get("youtube_embed_title", "").strip()
+    utils.update_live_streaming_config(embed_url, title)
+    flash("Konfigurasi Live Streaming YouTube berhasil disimpan.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/participants", methods=["GET"])
+@login_required
+def admin_participants():
+    teams = utils.load_teams()
+    config = utils.load_config()
+    sports = utils.list_sports()
+    categories = config.get("categories", [])
+    return render_template("admin/participants.html", teams=teams, config=config, sports=sports, categories=categories)
+
+
+@app.route("/admin/participants/save", methods=["POST"])
+@login_required
+def admin_save_participant():
+    code = request.form.get("code", "").strip().upper()
+    category = request.form.get("category", "").strip()
+    group = request.form.get("group", "").strip()
+    player1 = request.form.get("player1", "").strip()
+    player2 = request.form.get("player2", "").strip()
+    color = request.form.get("color", "#2a78d6").strip()
+    text = request.form.get("text", "#ffffff").strip()
+    id_number1 = request.form.get("id_number1", "").strip()
+    email1 = request.form.get("email1", "").strip()
+    id_number2 = request.form.get("id_number2", "").strip()
+    email2 = request.form.get("email2", "").strip()
+
+    if not code or not category or not player1:
+        flash("Kode tim, kategori divisi, dan minimal Nama Pemain 1 wajib diisi.", "error")
+        return redirect(url_for("admin_participants"))
+
+    teams = utils.load_teams()
+    existing = teams.get(code, {})
+
+    # ── Photo upload helper (S3 → local fallback) ──────────────
+    def _upload_photo(file_field_name, slug):
+        photo_file = request.files.get(file_field_name)
+        if not photo_file or photo_file.filename == "":
+            return existing.get(slug)          # keep old photo if nothing uploaded
+        allowed = {"jpg", "jpeg", "png", "webp", "gif"}
+        ext = photo_file.filename.rsplit(".", 1)[-1].lower() if "." in photo_file.filename else ""
+        if ext not in allowed:
+            flash(f"Format foto tidak didukung: .{ext}. Gunakan JPG, PNG, atau WEBP.", "error")
+            return existing.get(slug)
+        if _storage_is_configured():
+            url, err = compress_and_upload_image(photo_file, f"participants/{code}_{slug}")
+            if err:
+                flash(f"Gagal upload foto ke cloud: {err}", "error")
+                return existing.get(slug)
+            return url
+        else:
+            # local filesystem fallback
+            upload_dir = os.path.join(app.root_path, "static", "uploads", "participants")
+            os.makedirs(upload_dir, exist_ok=True)
+            fname = f"{code}_{slug}_{uuid.uuid4().hex[:8]}.jpg"
+            save_path = os.path.join(upload_dir, fname)
+            try:
+                img = Image.open(photo_file)
+                img = ImageOps.exif_transpose(img)
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.thumbnail((800, 800))
+                img.save(save_path, format="JPEG", quality=80, optimize=True)
+                return url_for("static", filename=f"uploads/participants/{fname}", _external=False)
+            except Exception as exc:
+                flash(f"Gagal menyimpan foto: {exc}", "error")
+                return existing.get(slug)
+
+    photo1 = _upload_photo("photo1", "photo1")
+    photo2 = _upload_photo("photo2", "photo2")
+
+    teams[code] = {
+        "category": category,
+        "group": group or "A",
+        "player1": player1,
+        "player2": player2,
+        "color": color,
+        "text": text,
+        "id_number1": id_number1,
+        "email1": email1,
+        "photo1": photo1 or "",
+        "id_number2": id_number2,
+        "email2": email2,
+        "photo2": photo2 or "",
+    }
+    utils.save_teams(teams)
+    flash(f"Data tim/peserta '{code}' ({player1}) berhasil disimpan.", "success")
+    return redirect(url_for("admin_participants"))
+
+
+
+@app.route("/admin/participants/delete/<code>", methods=["POST"])
+@login_required
+def admin_delete_participant(code):
+    teams = utils.load_teams()
+    if code in teams:
+        del teams[code]
+        utils.save_teams(teams)
+        flash(f"Tim '{code}' berhasil dihapus dari daftar peserta.", "success")
+    else:
+        flash(f"Tim '{code}' tidak ditemukan.", "error")
+    return redirect(url_for("admin_participants"))
+
+
+@app.route("/admin/categories/save", methods=["POST"])
+@login_required
+def admin_save_category():
+    key = request.form.get("cat_key", "").strip().lower().replace(" ", "_")
+    label = request.form.get("cat_label", "").strip()
+    sport_key = request.form.get("sport_key", "table-tennis").strip()
+    groups_str = request.form.get("groups", "A,B").strip()
+    has_final = request.form.get("has_final") == "on"
+
+    if not key or not label:
+        flash("Kode Divisi (Key) dan Nama Divisi wajib diisi.", "error")
+        return redirect(url_for("admin_categories"))
+
+    groups = [g.strip().upper() for g in groups_str.split(",") if g.strip()]
+    if not groups:
+        groups = ["A"]
+
+    config = utils.load_config()
+    categories = config.setdefault("categories", [])
+    for cat in categories:
+        if cat.get("key") == key:
+            cat.update({"label": label, "sport_key": sport_key, "groups": groups, "has_final": has_final})
+            break
+    else:
+        categories.append({"key": key, "label": label, "sport_key": sport_key, "groups": groups, "has_final": has_final})
+
+    enabled_sports = config.setdefault("enabled_sports", ["table-tennis"])
+    if sport_key not in enabled_sports:
+        enabled_sports.append(sport_key)
+
+    utils.save_config(config)
+    flash(f"Divisi '{label}' ({sport_key.upper()}) berhasil disahkan & diaktifkan di sistem.", "success")
+    return redirect(url_for("admin_categories"))
+
+
+@app.route("/admin/generator/group-to-knockout", methods=["POST"])
+@login_required
+def admin_generate_group_to_knockout():
+    category_key = request.form.get("category_key", "").strip()
+    start_date = request.form.get("start_date", "").strip()
+    court = request.form.get("court", "Meja 1").strip()
+    try:
+        g_count, k_count = utils.generate_group_to_knockout_schedule(
+            category_key, start_date=start_date or None, court=court
+        )
+        flash(f"Berhasil meng-generate {g_count} laga babak grup dan {k_count} laga babak knockout untuk divisi '{category_key}'.", "success")
+    except Exception as exc:
+        flash(f"Gagal generate jadwal: {str(exc)}", "error")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/rules", methods=["GET"])
+@login_required
+def admin_rules():
+    rules_by_sport = utils.get_sport_rules()
+    sports = utils.list_sports()
+    return render_template("admin/rules.html", rules_by_sport=rules_by_sport, sports=sports)
+
+
+@app.route("/admin/rules/save", methods=["POST"])
+@login_required
+def admin_save_rules():
+    rules_by_sport = utils.get_sport_rules()
+    for sport_key in rules_by_sport.keys():
+        best_of = request.form.get(f"best_of_{sport_key}", type=int)
+        if best_of and best_of % 2 == 1:
+            rules_by_sport[sport_key]["best_of"] = best_of
+        points = request.form.get(f"points_to_win_{sport_key}", type=int)
+        if points is not None:
+            rules_by_sport[sport_key]["points_to_win"] = points
+        games = request.form.get(f"games_to_win_set_{sport_key}", type=int)
+        if games is not None:
+            rules_by_sport[sport_key]["games_to_win_set"] = games
+        win_by = request.form.get(f"win_by_{sport_key}", type=int)
+        if win_by is not None:
+            rules_by_sport[sport_key]["win_by"] = win_by
+        point_cap = request.form.get(f"point_cap_{sport_key}", type=int)
+        if point_cap is not None:
+            rules_by_sport[sport_key]["point_cap"] = point_cap
+        method = request.form.get(f"game_scoring_method_{sport_key}")
+        if method is not None and method != "":
+            rules_by_sport[sport_key]["game_scoring_method"] = method
+        notes = request.form.get(f"notes_{sport_key}", "").strip()
+        rules_by_sport[sport_key]["notes"] = notes
+
+    utils.save_sport_rules(rules_by_sport)
+    flash("Aturan dan format pertandingan untuk setiap cabang olahraga berhasil diperbarui.", "success")
+    return redirect(url_for("admin_rules"))
 
 
 @app.route("/admin/pertandingan/<match_id>", methods=["GET", "POST"])
@@ -825,105 +2007,226 @@ def admin_edit_match(match_id):
 
     if request.method == "POST":
         action = request.form.get("action")
+        try:
+            expected_version = _expected_match_version()
+        except ValueError as exc:
+            flash(str(exc), "error")
+            expected_version = None
+            action = None
 
         if action == "save_score":
-            sets = []
-            for i in range(1, 6):
-                sa = request.form.get(f"set{i}_a", "").strip()
-                sb = request.form.get(f"set{i}_b", "").strip()
-                if sa != "" and sb != "":
-                    try:
-                        sets.append([int(sa), int(sb)])
-                    except ValueError:
-                        pass
-            m["sets"] = sets
+            best_of = utils.sets_needed_to_win(m) * 2 - 1
+            segment_label = utils.scorekeeper_terms(m)["segment_label"]
+            sets, parse_errors = _parse_score_form(best_of, segment_label)
+            validation = utils.validate_match_segments(m, sets)
             requested_status = request.form.get("status", m["status"])
-            m["notes"] = request.form.get("notes", m.get("notes", ""))
-            m["walkover"] = False
-            utils.sync_winner(m)
-            if not m["winner"] and requested_status in ("live", "scheduled", "postponed"):
-                m["status"] = requested_status
-            utils.save_matches(matches)
-            flash("Skor pertandingan tersimpan.", "success")
+            errors = parse_errors + list(validation.errors)
+            if requested_status not in ("live", "scheduled", "postponed"):
+                errors.append("Status pertandingan tidak valid.")
+            correction_reason = request.form.get("correction_reason", "").strip()
+            if m.get("status") == "completed" and sets != (m.get("sets") or []) and not correction_reason:
+                errors.append("Alasan koreksi wajib diisi saat mengubah hasil pertandingan selesai.")
+
+            if errors:
+                for message in errors:
+                    flash(message, "error")
+            else:
+                notes = request.form.get("notes", "").strip()
+
+                def update_score(current):
+                    if not current.get("team_a") or not current.get("team_b"):
+                        raise ValueError("Kedua tim harus ditentukan sebelum skor disimpan.")
+                    before_sets = current.get("sets") or []
+                    if current.get("status") == "completed" and before_sets != sets:
+                        current.setdefault("score_corrections", []).append({
+                            "before": before_sets,
+                            "after": sets,
+                            "reason": correction_reason,
+                            "actor": "admin",
+                            "at": utils.now_wib().isoformat(timespec="seconds"),
+                        })
+                    current["sets"] = sets
+                    current["notes"] = notes
+                    current["walkover"] = False
+                    if validation.winner_side == "a":
+                        current["winner"] = current["team_a"]
+                    elif validation.winner_side == "b":
+                        current["winner"] = current["team_b"]
+                    else:
+                        current["winner"] = None
+                    current["status"] = "completed" if current["winner"] else requested_status
+
+                _update_match_or_flash(
+                    match_id, expected_version, update_score,
+                    "Skor pertandingan tersimpan.",
+                )
 
         elif action == "walkover":
             wo_winner = request.form.get("wo_winner")
             wo_reason = request.form.get("wo_reason", "").strip()
             if wo_winner in (m["team_a"], m["team_b"]):
-                m["winner"] = wo_winner
-                m["status"] = "completed"
-                m["walkover"] = True
-                m["notes"] = wo_reason or "Menang WO (walkover) — lawan tidak hadir/mengundurkan diri."
-                utils.save_matches(matches)
-                flash("Pertandingan ditandai selesai via WO.", "success")
+                def set_walkover(current):
+                    if wo_winner not in (current.get("team_a"), current.get("team_b")):
+                        raise ValueError("Pilih pemenang WO terlebih dahulu.")
+                    current["winner"] = wo_winner
+                    current["status"] = "completed"
+                    current["walkover"] = True
+                    current["sets"] = []
+                    current["notes"] = wo_reason or "Menang WO (walkover) — lawan tidak hadir/mengundurkan diri."
+
+                _update_match_or_flash(
+                    match_id, expected_version, set_walkover,
+                    "Pertandingan ditandai selesai via WO.",
+                )
             else:
                 flash("Pilih pemenang WO terlebih dahulu.", "error")
 
         elif action == "set_status":
-            m["status"] = request.form.get("status", m["status"])
-            utils.save_matches(matches)
-            flash("Status pertandingan diperbarui.", "success")
+            requested_status = request.form.get("status")
+
+            def set_status(current):
+                if requested_status not in ("scheduled", "live", "postponed"):
+                    raise ValueError("Status pertandingan tidak valid.")
+                if requested_status == "live" and (
+                    not current.get("team_a")
+                    or not current.get("team_b")
+                    or not current.get("court")
+                ):
+                    raise ValueError("Pertandingan Live memerlukan dua tim dan meja/lapangan.")
+                current["status"] = requested_status
+
+            _update_match_or_flash(
+                match_id, expected_version, set_status,
+                "Status pertandingan diperbarui.",
+            )
 
         elif action == "reschedule":
-            new_date = request.form.get("new_date")
-            new_time = request.form.get("new_time")
-            new_court = request.form.get("new_court")
-            reason = request.form.get("reason", "")
-            if new_date and new_time and new_court:
-                m.setdefault("reschedule_history", []).append({
-                    "from_date": m["date"], "from_time": m["time"], "from_court": m["court"],
-                    "to_date": new_date, "to_time": new_time, "to_court": new_court,
-                    "reason": reason,
-                    "at": utils.now_wib().isoformat(timespec="seconds"),
-                })
-                m["date"], m["time"], m["court"] = new_date, new_time, new_court
-                if m["status"] == "scheduled":
-                    m["status"] = "scheduled"
-                utils.save_matches(matches)
-                flash("Jadwal pertandingan berhasil diubah (reschedule).", "success")
+            new_date = request.form.get("new_date", "").strip()
+            new_time = request.form.get("new_time", "").strip()
+            new_court = request.form.get("new_court", "").strip()
+            reason = request.form.get("reason", "").strip()
+            try:
+                datetime.strptime(new_date, "%Y-%m-%d")
+                datetime.strptime(new_time, "%H:%M")
+            except ValueError:
+                flash("Tanggal atau jam baru tidak valid.", "error")
+            else:
+                if not new_court:
+                    flash("Meja/lapangan baru wajib diisi.", "error")
+                else:
+                    def reschedule_match(current):
+                        current.setdefault("reschedule_history", []).append({
+                            "from_date": current["date"],
+                            "from_time": current["time"],
+                            "from_court": current["court"],
+                            "to_date": new_date,
+                            "to_time": new_time,
+                            "to_court": new_court,
+                            "reason": reason,
+                            "at": utils.now_wib().isoformat(timespec="seconds"),
+                        })
+                        current["date"], current["time"], current["court"] = (
+                            new_date, new_time, new_court
+                        )
 
-        elif action == "set_teams" and m["group"] == "FINAL":
-            m["team_a"] = request.form.get("team_a") or None
-            m["team_b"] = request.form.get("team_b") or None
-            utils.save_matches(matches)
-            flash("Tim final diperbarui.", "success")
+                    _update_match_or_flash(
+                        match_id, expected_version, reschedule_match,
+                        "Jadwal pertandingan berhasil diubah (reschedule).",
+                    )
+
+        elif action == "set_teams":
+            team_a = request.form.get("team_a") or None
+            team_b = request.form.get("team_b") or None
+
+            def set_final_teams(current):
+                if current.get("stage_type") in {None, "group", "round_robin"} \
+                        and current.get("group") != "FINAL":
+                    raise ValueError(
+                        "Peserta hanya dapat diatur manual untuk stage eliminasi."
+                    )
+                if team_a and team_a == team_b:
+                    raise ValueError("Tim A dan Tim B harus berbeda.")
+                eligible = {
+                    code for code, team in teams.items()
+                    if team.get("category") == current.get("category")
+                    and team.get("sport_key", "table-tennis")
+                    == current.get("sport_key", "table-tennis")
+                }
+                if (team_a and team_a not in eligible) or (
+                    team_b and team_b not in eligible
+                ):
+                    raise ValueError(
+                        "Peserta stage eliminasi harus berasal dari divisi yang sama."
+                    )
+                current["team_a"], current["team_b"] = team_a, team_b
+
+            _update_match_or_flash(
+                match_id, expected_version, set_final_teams,
+                "Tim final diperbarui.",
+            )
             
         elif action == "upload_doc":
-            if len(m.get("docs", [])) >= 3:
-                flash("Maksimal 3 foto dokumentasi per pertandingan.", "error")
+            file = request.files.get("doc_file") or request.files.get("doc_file_cam")
+            if not file or not file.filename:
+                flash("Pilih file gambar terlebih dahulu.", "error")
             else:
-                file = request.files.get("doc_file") or request.files.get("doc_file_cam")
-                if file and file.filename:
-                    file_url, error = compress_and_upload_image(file, match_id)
-                    if error:
-                        flash(f"Gagal mengunggah dokumen: {error}", "error")
-                    elif file_url:
-                        m.setdefault("docs", []).append({
+                file_url, error = compress_and_upload_image(file, match_id)
+                if error:
+                    flash(f"Gagal mengunggah dokumen: {error}", "error")
+                elif file_url:
+                    def add_document(current):
+                        if len(current.get("docs", [])) >= 3:
+                            raise ValueError("Maksimal 3 foto dokumentasi per pertandingan.")
+                        current.setdefault("docs", []).append({
                             "url": file_url,
-                            "uploaded_at": utils.now_wib().isoformat(timespec="seconds")
+                            "uploaded_at": utils.now_wib().isoformat(timespec="seconds"),
                         })
-                        utils.save_matches(matches)
-                        flash("Dokumen berhasil diunggah dan dikompres.", "success")
-                else:
-                    flash("Pilih file gambar terlebih dahulu.", "error")
+
+                    updated = _update_match_or_flash(
+                        match_id, expected_version, add_document,
+                        "Dokumen berhasil diunggah dan dikompres.",
+                    )
+                    if updated is None:
+                        delete_from_supabase(file_url)
         
         elif action == "delete_doc":
-            doc_url = request.form.get("doc_url")
-            if doc_url and "docs" in m:
-                m["docs"] = [d for d in m["docs"] if d.get("url") != doc_url]
-                utils.save_matches(matches)
+            doc_url = request.form.get("doc_url", "").strip()
+
+            def remove_document(current):
+                old_docs = current.get("docs", [])
+                new_docs = [doc for doc in old_docs if doc.get("url") != doc_url]
+                if not doc_url or len(new_docs) == len(old_docs):
+                    raise ValueError("Dokumen tidak ditemukan.")
+                current["docs"] = new_docs
+
+            updated = _update_match_or_flash(
+                match_id, expected_version, remove_document,
+                "Dokumen berhasil dihapus beserta filenya di S3.",
+            )
+            if updated is not None:
                 delete_from_supabase(doc_url)
-                flash("Dokumen berhasil dihapus beserta filenya di S3.", "success")
                 
         elif action == "rotate_doc":
             doc_url = request.form.get("doc_url")
             if doc_url and "docs" in m:
                 try:
+                    if not _storage_is_configured():
+                        raise ValueError("Konfigurasi penyimpanan S3 belum lengkap.")
                     clean_url = doc_url.split("?")[0]
-                    resp = requests.get(doc_url)
-                    if resp.status_code == 200:
-                        img = Image.open(io.BytesIO(resp.content))
+                    with requests.get(doc_url, timeout=(3.05, 10), stream=True) as resp:
+                        if resp.status_code != 200:
+                            raise ValueError("Gagal mengunduh dokumen dari S3 untuk di-rotate.")
+                        body = bytearray()
+                        for chunk in resp.iter_content(64 * 1024):
+                            body.extend(chunk)
+                            if len(body) > app.config["MAX_CONTENT_LENGTH"]:
+                                raise ValueError("Ukuran dokumen melebihi batas unggahan.")
+                        img = Image.open(io.BytesIO(body))
+                        img.verify()
+                        img = Image.open(io.BytesIO(body))
                         img = img.rotate(-90, expand=True)
+                        if img.mode != "RGB":
+                            img = img.convert("RGB")
                         
                         output = io.BytesIO()
                         img.save(output, format="JPEG", quality=75, optimize=True)
@@ -937,27 +2240,34 @@ def admin_edit_match(match_id):
                         )
                         s3_client.upload_fileobj(output, S3_BUCKET_NAME, filename, ExtraArgs={'ContentType': 'image/jpeg', 'CacheControl': 'no-cache'})
                         
-                        for d in m["docs"]:
-                            if d.get("url", "").split("?")[0] == clean_url:
-                                d["url"] = clean_url + f"?v={utils.now_wib().timestamp()}"
-                                
-                        utils.save_matches(matches)
-                        flash("Dokumen berhasil di-rotate 90 derajat.", "success")
-                    else:
-                        flash("Gagal mengunduh dokumen dari S3 untuk di-rotate.", "error")
+                        rotated_url = clean_url + f"?v={utils.now_wib().timestamp()}"
+
+                        def rotate_document(current):
+                            for document in current.get("docs", []):
+                                if document.get("url", "").split("?")[0] == clean_url:
+                                    document["url"] = rotated_url
+                                    return
+                            raise ValueError("Dokumen tidak ditemukan.")
+
+                        _update_match_or_flash(
+                            match_id, expected_version, rotate_document,
+                            "Dokumen berhasil di-rotate 90 derajat.",
+                        )
                 except Exception as e:
                     flash(f"Gagal me-rotate dokumen: {e}", "error")
+
+        elif action is not None:
+            flash("Aksi admin tidak dikenal.", "error")
 
         if request.form.get("modal"):
             return redirect(url_for("match_fragment", match_id=match_id))
         return redirect(url_for("admin_edit_match", match_id=match_id))
 
-    champ_a = utils.group_champion(matches, teams, "ganda_putra", "A")
-    champ_b = utils.group_champion(matches, teams, "ganda_putra", "B")
+    qualification = qualification_context(m, matches, teams, config)
 
     return render_template(
         "admin/edit_match.html", m=enrich_match(m, teams), raw=m,
-        teams=teams, champ_a=champ_a, champ_b=champ_b,
+        teams=teams, **qualification,
     )
 
 

@@ -1,17 +1,31 @@
-<div class="detail-hero">
-  <span class="badge {{ 'badge-putra' if m.category == 'ganda_putra' else 'badge-campuran' }}">{{ m.category_label
-    }}</span>
-  <span class="badge badge-status badge-{{ m.status }}">{{ m.status_label }}</span>
-  {% if m.is_walkover %}<span class="badge badge-wo">WO</span>{% endif %}
-  <h1 style="margin-top:.6rem;">{% if m.group != 'FINAL' %}Group {{ m.group }} · {% endif %}{{ m.round_label }}</h1>
-  <p style="opacity:.8; font-size:.82rem; margin-top:.2rem;">{{ m.best_of_label }}</p>
+<div class="match-detail-shell">
+<section class="detail-hero match-arena">
+  <header class="match-arena-head">
+    <div class="match-arena-badges">
+      <span class="badge badge-sport sport-{{ m.sport_key }}">{{ m.category_label }}</span>
+      <span class="badge badge-status badge-{{ m.status }}">{{ m.status_label }}</span>
+      {% if m.is_walkover %}<span class="badge badge-wo">WO</span>{% endif %}
+      {% if m.status == 'completed' and not m.score_is_valid %}<span class="badge badge-status badge-postponed">Perlu koreksi</span>{% endif %}
+    </div>
+    <span class="match-serial">Match {{ m.id }}</span>
+  </header>
+
+  <div class="match-arena-title">
+    <span>Competition match</span>
+    <h1 id="matchDetailTitle">{% if m.stage_type in ('group', 'round_robin') and m.group %}{{ m.group }} · {% endif %}{{ m.round_label }}</h1>
+    <p>{{ m.best_of_label }}</p>
+  </div>
+
+  {% if m.status == 'completed' and m.score_errors %}
+  <div class="flash flash-error" role="alert">Hasil ini belum masuk klasemen karena skor tersimpan tidak sah.</div>
+  {% endif %}
 
   <div class="detail-vs">
-    <div class="detail-team {% if m.winner == 'a' %}team-winner{% elif m.winner == 'b' %}team-loser{% endif %}" style="position: relative;">
-      <div class="team-chip-wrapper" style="position: relative; display: inline-block;">
+    <article class="detail-team {% if m.winner == 'a' %}team-winner{% elif m.winner == 'b' %}team-loser{% endif %}">
+      <div class="team-chip-wrapper">
         <span class="team-chip lg" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
         {% if m.is_voting_open %}
-        <button class="vote-trigger-btn" onclick="toggleVotePopup('a', '{{ m.id }}')" title="Vote untuk {{ m.team_a_code }}">+vote</button>
+        <button class="vote-trigger-btn" type="button" onclick="toggleVotePopup('a', '{{ m.id }}')" title="Vote untuk {{ m.team_a_code }}">+ vote</button>
         <div class="vote-popup" id="vote-popup-a-{{ m.id }}" style="display: none;">
           {% for e in ['🔥', '👏', '❤️', '😲', '💪'] %}
           <button type="button" class="vp-btn" onclick="submitVote('{{ m.id }}', 'a', '{{ e }}')">{{ e }}</button>
@@ -30,25 +44,31 @@
           {% endfor %}
         </div>
       </div>
-      <small class="player-names" style="width:100%; margin-top:2px;">
+      <div class="detail-team-role">Team A</div>
+      <div class="player-names detail-player-names">
         <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
-        <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>
-      </small>
-    </div>
+        {% if m.team_a_player2 %}<span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>{% endif %}
+      </div>
+    </article>
+
+    <div class="match-arena-score">
     {% if m.status in ('completed','live') %}
-    <div class="score-row" style="margin:0;">
-      <span class="score-num" style="color:#fff;">{{ m.sets_a }}</span>
-      <span class="score-sep" style="color:#ffd6e0;">:</span>
-      <span class="score-num" style="color:#fff;">{{ m.sets_b }}</span>
+    <div class="score-row">
+      <span class="score-num">{{ m.sets_a }}</span>
+      <span class="score-sep">:</span>
+      <span class="score-num">{{ m.sets_b }}</span>
     </div>
     {% else %}
     <div class="x">VS</div>
     {% endif %}
-    <div class="detail-team {% if m.winner == 'b' %}team-winner{% elif m.winner == 'a' %}team-loser{% endif %}" style="position: relative;">
-      <div class="team-chip-wrapper" style="position: relative; display: inline-block;">
+      <small>{% if m.status == 'live' %}Live score{% elif m.status == 'completed' %}Final score{% else %}Head to head{% endif %}</small>
+    </div>
+
+    <article class="detail-team {% if m.winner == 'b' %}team-winner{% elif m.winner == 'a' %}team-loser{% endif %}">
+      <div class="team-chip-wrapper">
         <span class="team-chip lg" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
         {% if m.is_voting_open %}
-        <button class="vote-trigger-btn" onclick="toggleVotePopup('b', '{{ m.id }}')" title="Vote untuk {{ m.team_b_code }}">+vote</button>
+        <button class="vote-trigger-btn" type="button" onclick="toggleVotePopup('b', '{{ m.id }}')" title="Vote untuk {{ m.team_b_code }}">+ vote</button>
         <div class="vote-popup" id="vote-popup-b-{{ m.id }}" style="display: none;">
           {% for e in ['🔥', '👏', '❤️', '😲', '💪'] %}
           <button type="button" class="vp-btn" onclick="submitVote('{{ m.id }}', 'b', '{{ e }}')">{{ e }}</button>
@@ -67,27 +87,35 @@
           {% endfor %}
         </div>
       </div>
-      <small class="player-names" style="width:100%; margin-top:2px;">
+      <div class="detail-team-role">Team B</div>
+      <div class="player-names detail-player-names">
         <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
-        <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>
-      </small>
-    </div>
+        {% if m.team_b_player2 %}<span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>{% endif %}
+      </div>
+    </article>
   </div>
 
-  <p style="margin-top:1.2rem; opacity:.9;">📅 {{ m.date_label }} · ⏰ {{ m.time }} WIB · 🏓 {{ m.court }}</p>
-</div>
+  <footer class="match-arena-meta">
+    <span><small>Tanggal</small><strong>{{ m.date_label }}</strong></span>
+    <span><small>Waktu mulai</small><strong>{{ m.time }} WIB</strong></span>
+    <span><small>Arena</small><strong>{{ m.court }}</strong></span>
+  </footer>
+</section>
+
+<div class="match-detail-layout">
+<div class="match-detail-main">
 
 {% if m.sets %}
 <div class="sets-table">
-  <div class="section-head">
-    <h2>Detail Skor per Set</h2>
+  <div class="section-head detail-section-head">
+    <div><span>Score breakdown</span><h2>Detail skor per {{ m.segment_label|lower }}</h2></div>
   </div>
   <div class="table-wrap">
     <table class="standings">
       <thead>
         <tr>
-          <th>Set</th>
-          {% for s in m.sets %}<th>Set {{ loop.index }}</th>{% endfor %}
+          <th>Tim</th>
+          {% for s in m.sets %}<th>{{ m.segment_label }} {{ loop.index }}</th>{% endfor %}
         </tr>
       </thead>
       <tbody>
@@ -106,31 +134,29 @@
 {% endif %}
 
 {% if m.docs %}
-<div class="section-head">
-  <h2>📸 Dokumentasi</h2>
+<div class="section-head detail-section-head">
+  <div><span>Match media</span><h2>Dokumentasi</h2></div>
 </div>
-<div style="display:flex; flex-wrap:wrap; gap:.8rem;">
+<div class="match-documentation-grid">
   {% for doc in m.docs %}
-  <div
-    style="width:100px; height:100px; border-radius:10px; overflow:hidden; border:1px solid rgba(0,0,0,0.1); cursor:pointer; box-shadow:var(--shadow-sm); transition:transform .2s;"
-    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-    <img src="{{ doc.url }}" class="public-doc-img" alt="Dokumentasi" style="width:100%; height:100%; object-fit:cover;"
-      data-full-src="{{ doc.url }}">
+  <div class="match-documentation-item">
+    <img src="{{ doc.url }}" class="public-doc-img" alt="Dokumentasi {{ m.team_a_code }} melawan {{ m.team_b_code }}"
+         data-full-src="{{ doc.url }}">
   </div>
   {% endfor %}
 </div>
 {% endif %}
 
 {% if m.notes %}
-<div class="section-head">
-  <h2>Catatan</h2>
+<div class="section-head detail-section-head">
+  <div><span>Match note</span><h2>Catatan pertandingan</h2></div>
 </div>
-<p>{{ m.notes }}</p>
+<div class="match-note-panel">{{ m.notes }}</div>
 {% endif %}
 
 {% if m.reschedule_history %}
-<div class="section-head">
-  <h2>Riwayat Reschedule</h2>
+<div class="section-head detail-section-head">
+  <div><span>Timeline</span><h2>Riwayat reschedule</h2></div>
 </div>
 <div class="admin-shell">
   {% for h in m.reschedule_history %}
@@ -143,12 +169,23 @@
 </div>
 {% endif %}
 
-<div class="section-head" id="komentar">
-  <h2>💬 Komentar &amp; Request Reschedule</h2>
+{% if not m.sets and not m.docs and not m.notes and not m.reschedule_history %}
+<div class="match-waiting-panel">
+  <span>Pre-match briefing</span>
+  <h2>Pertandingan belum dimulai</h2>
+  <p>Skor per {{ m.segment_label|lower }} dan dokumentasi pertandingan akan muncul di area ini setelah laga berjalan.</p>
+  <div><strong>{{ m.time }} WIB</strong><small>Waktu mulai terjadwal</small></div>
 </div>
-<div class="admin-shell">
-  <p style="font-size:.82rem; color:#a0677a; margin-bottom:1rem;">
-    Berikan dukungan untuk tim jagoanmu atau request reschedule laga ini ke panitia. Tuliskan komentar positifmu di sini!
+{% endif %}
+
+</div>
+<aside class="match-detail-aside" id="komentar">
+<div class="section-head detail-section-head">
+  <div><span>Fan zone</span><h2>Komentar &amp; dukungan</h2></div>
+</div>
+<div class="admin-shell match-engagement-panel">
+  <p class="match-engagement-intro">
+    Dukung tim pilihanmu atau sampaikan permintaan perubahan jadwal kepada panitia.
   </p>
 
   {% if m.comments %}
@@ -162,12 +199,13 @@
     {% endfor %}
   </div>
   {% else %}
-  <p class="muted" style="font-size:.85rem;">Belum ada komentar untuk pertandingan ini.</p>
+  <div class="comment-empty"><strong>Belum ada komentar</strong><span>Jadilah yang pertama memberi dukungan.</span></div>
   {% endif %}
 
   {% if m.status != 'completed' %}
-  <form method="post" action="{{ url_for('add_comment', match_id=m.id) }}"
+  <form method="post" action="{{ sport_url('add_comment', match_id=m.id) }}"
     class="comment-form{{ ' js-ajax-form' if is_modal else '' }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
     <label>Nama <span class="req">*</span>
       <input type="text" name="name" required maxlength="60" placeholder="Nama Anda">
@@ -179,8 +217,10 @@
     <button class="btn btn-primary" type="submit">Kirim Komentar</button>
   </form>
   {% else %}
-  <p class="muted" style="font-size:.85rem; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 6px; text-align: center; margin-top: 1rem;">Pertandingan telah selesai. Fitur komentar dinonaktifkan.</p>
+  <p class="comment-closed">Pertandingan telah selesai. Komentar baru dinonaktifkan.</p>
   {% endif %}
+</div>
+</aside>
 </div>
 
 {% if is_admin and raw is defined %}
@@ -188,34 +228,37 @@
   <h2>✏️ Kelola Pertandingan</h2>
 </div>
 <div class="admin-shell">
-  {% if m.group == 'FINAL' %}
+  {% if is_elimination %}
   <fieldset>
-    <legend>Tim Final (otomatis dari juara grup)</legend>
-    <p style="font-size:.85rem; color:#a0677a;">Juara Group A: <strong>{{ champ_a or '-' }}</strong> · Juara Group B:
-      <strong>{{ champ_b or '-' }}</strong></p>
+    <legend>Peserta Stage Eliminasi</legend>
+    <p style="font-size:.85rem; color:#a0677a;">
+      {% for qualifier in qualifiers %}Juara Group {{ qualifier.group }}: <strong>{{ qualifier.code }}</strong>{{ ' · ' if not loop.last }}{% else %}Kualifikasi grup belum selesai.{% endfor %}
+    </p>
     <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
       class="{{ 'js-ajax-form' if is_modal else '' }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="version" value="{{ raw.version|default(0) }}">
       <input type="hidden" name="action" value="set_teams">
       {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
       <div class="form-grid">
         <label>Tim A
           <select name="team_a">
             <option value="">- Pilih -</option>
-            {% for code in teams %}<option value="{{ code }}" {{ 'selected' if raw.team_a==code }}>{{ code }} — {{
-              teams[code].player1 }}/{{ teams[code].player2 }}</option>{% endfor %}
+            {% for code, team in eligible_teams.items() %}<option value="{{ code }}" {{ 'selected' if raw.team_a==code }}>{{ team.code|default(code) }} — {{
+              team.player1 }}/{{ team.player2 }}</option>{% endfor %}
           </select>
         </label>
         <label>Tim B
           <select name="team_b">
             <option value="">- Pilih -</option>
-            {% for code in teams %}<option value="{{ code }}" {{ 'selected' if raw.team_b==code }}>{{ code }} — {{
-              teams[code].player1 }}/{{ teams[code].player2 }}</option>{% endfor %}
+            {% for code, team in eligible_teams.items() %}<option value="{{ code }}" {{ 'selected' if raw.team_b==code }}>{{ team.code|default(code) }} — {{
+              team.player1 }}/{{ team.player2 }}</option>{% endfor %}
           </select>
         </label>
       </div>
-      <button class="btn btn-primary btn-sm" type="submit">Simpan Tim Final</button>
-      {% if champ_a and champ_b and not raw.team_a %}
-      <span style="font-size:.78rem; color:#a0677a;">Tips: isi otomatis dengan juara grup di atas.</span>
+      <button class="btn btn-primary btn-sm" type="submit">Simpan Peserta</button>
+      {% if qualifiers|length >= 2 and not raw.team_a %}
+      <span style="font-size:.78rem; color:#a0677a;">Gunakan peserta hasil kualifikasi yang tercantum di atas.</span>
       {% endif %}
     </form>
   </fieldset>
@@ -223,11 +266,18 @@
 
   {% set max_sets = m.sets_needed * 2 - 1 %}
   <fieldset>
-    <legend>🔴 Live Score / Input Skor per Set <span
+    <legend>Live Score / Input Skor per {{ m.segment_label }} <span
         style="font-size:.7rem; font-weight:700; color:#a0677a; text-transform:none;">({{ m.best_of_label }})</span>
     </legend>
+    {% if m.score_errors %}
+    <div class="flash flash-error" role="alert">
+      Hasil tersimpan perlu dikoreksi: {{ m.score_errors|join(' ') }}
+    </div>
+    {% endif %}
     <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
       class="{{ 'js-ajax-form' if is_modal else '' }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="version" value="{{ raw.version|default(0) }}">
       <input type="hidden" name="action" value="save_score">
       {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
 
@@ -241,12 +291,14 @@
       </div>
       {% for i in range(1, max_sets + 1) %}
       <div class="score-input-row">
-        <span class="set-label">Set {{ i }}</span>
-        <input type="number" min="0" max="30" name="set{{ i }}_a"
-          value="{{ raw.sets[i-1][0] if raw.sets|length >= i else '' }}" inputmode="numeric">
+        <span class="set-label">{{ m.segment_label }} {{ i }}</span>
+        <input type="number" min="0" name="set{{ i }}_a"
+          value="{{ raw.sets[i-1][0] if raw.sets|length >= i else '' }}" inputmode="numeric"
+          aria-label="{{ m.segment_label }} {{ i }}, {{ m.team_a_code }}">
         <span class="score-input-sep">:</span>
-        <input type="number" min="0" max="30" name="set{{ i }}_b"
-          value="{{ raw.sets[i-1][1] if raw.sets|length >= i else '' }}" inputmode="numeric">
+        <input type="number" min="0" name="set{{ i }}_b"
+          value="{{ raw.sets[i-1][1] if raw.sets|length >= i else '' }}" inputmode="numeric"
+          aria-label="{{ m.segment_label }} {{ i }}, {{ m.team_b_code }}">
       </div>
       {% endfor %}
 
@@ -261,13 +313,19 @@
           </select>
         </label>
       </div>
+      {% if raw.status == 'completed' %}
+      <label>Alasan koreksi hasil
+        <input type="text" name="correction_reason" required maxlength="200"
+          placeholder="Jelaskan alasan perubahan skor pertandingan selesai">
+      </label>
+      {% endif %}
       <label>Catatan (opsional)
         <textarea name="notes" rows="2" style="width:100%;">{{ raw.notes }}</textarea>
       </label>
       <button class="btn btn-primary btn-block" type="submit" style="margin-top:.8rem;">💾 Simpan Skor</button>
       <p style="font-size:.78rem; color:#a0677a; margin-top:.6rem;">
         {{ m.best_of_label }} — status otomatis menjadi <strong>Selesai</strong> begitu salah satu tim mencapai
-        {{ m.sets_needed }} kemenangan set. Set kosong akan diabaikan.
+        {{ m.sets_needed }} kemenangan {{ m.segment_label|lower }}. {{ m.segment_label }} kosong akan diabaikan.
       </p>
     </form>
   </fieldset>
@@ -276,12 +334,14 @@
     <legend>🚩 Walkover (WO) / Mengundurkan Diri</legend>
     <p style="font-size:.82rem; color:#a0677a; margin-top:-.3rem;">
       Pakai ini kalau salah satu tim tidak hadir / mundur sebelum atau di tengah laga, sehingga pertandingan
-      langsung ditandai <strong>Selesai</strong> tanpa perlu skor lengkap 3 set.
+      langsung ditandai <strong>Selesai</strong> tanpa perlu skor game lengkap.
       {% if m.is_walkover %}<br><span class="badge badge-wo" style="margin-top:.4rem; display:inline-block;">Laga ini
         sudah ditandai WO</span>{% endif %}
     </p>
     <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
       class="{{ 'js-ajax-form' if is_modal else '' }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="version" value="{{ raw.version|default(0) }}">
       <input type="hidden" name="action" value="walkover">
       {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
       <div class="form-grid">
@@ -308,6 +368,8 @@
     <legend>🔁 Reschedule Pertandingan</legend>
     <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
       class="{{ 'js-ajax-form' if is_modal else '' }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="version" value="{{ raw.version|default(0) }}">
       <input type="hidden" name="action" value="reschedule">
       {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
       <div class="form-grid">
@@ -346,6 +408,8 @@
         
         <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
           class="{{ 'js-ajax-form' if is_modal else '' }}" style="position:absolute; top:2px; left:2px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="version" value="{{ raw.version|default(0) }}">
           <input type="hidden" name="action" value="rotate_doc">
           {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
           <input type="hidden" name="doc_url" value="{{ doc.url }}">
@@ -356,6 +420,8 @@
 
         <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
           class="{{ 'js-ajax-form' if is_modal else '' }}" style="position:absolute; top:2px; right:2px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="version" value="{{ raw.version|default(0) }}">
           <input type="hidden" name="action" value="delete_doc">
           {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
           <input type="hidden" name="doc_url" value="{{ doc.url }}">
@@ -370,6 +436,8 @@
 
     <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}" enctype="multipart/form-data"
       class="{{ 'js-ajax-form' if is_modal else '' }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="version" value="{{ raw.version|default(0) }}">
       <input type="hidden" name="action" value="upload_doc">
       {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
       <div style="display:flex; gap:.6rem; margin-top:.5rem; flex-wrap:wrap;">
@@ -395,8 +463,8 @@
 </div>
 {% endif %}
 
-{% set copy_text = m.team_a_code ~ " vs " ~ m.team_b_code ~ " — " ~ m.category_label ~ "\n" ~ (("Group " ~ m.group ~ " ·
-") if m.group != 'FINAL' else "") ~ m.round_label ~ "\n\n" ~ m.team_a_player1 ~ "/" ~ m.team_a_player2 ~ "\nvs\n" ~
+{% set copy_text = m.team_a_code ~ " vs " ~ m.team_b_code ~ " — " ~ m.category_label ~ "\n" ~ (((m.group ~ " · ")
+if m.stage_type in ('group', 'round_robin') and m.group else "")) ~ m.round_label ~ "\n\n" ~ m.team_a_player1 ~ "/" ~ m.team_a_player2 ~ "\nvs\n" ~
 m.team_b_player1 ~ "/" ~ m.team_b_player2 ~ "\n\n📅 " ~ m.date_label ~ "\n⏰ " ~ m.time ~ " WIB\n📍 " ~ m.court ~ "\n" ~
 url_for('match_detail', match_id=m.id, _external=True) %}
 
@@ -426,7 +494,7 @@ url_for('match_detail', match_id=m.id, _external=True) %}
 
 <div class="detail-actions">
   {% if not is_modal %}
-  <a class="btn btn-outline" href="{{ url_for('jadwal') }}">&larr; Kembali ke Jadwal</a>
+  <a class="btn btn-outline" href="{{ sport_url('jadwal') }}">&larr; Kembali ke Jadwal</a>
   <button class="btn btn-outline" id="shareBtn" type="button"
     data-share-title="{{ m.team_a_code }} vs {{ m.team_b_code }}{% if m.status in ('completed', 'live') %} ({{ m.sets_a }}-{{ m.sets_b }}){% endif %} — {{ m.category_label }}"
     data-share-text="{{ share_text }}" data-share-url="{{ url_for('match_detail', match_id=m.id, _external=True) }}">
@@ -453,4 +521,5 @@ url_for('match_detail', match_id=m.id, _external=True) %}
   <a class="btn btn-primary" href="{{ url_for('admin_edit_match', match_id=m.id) }}">✏️ Kelola Lengkap (Halaman
     Penuh)</a>
   {% endif %}
+</div>
 </div>

@@ -1,0 +1,84 @@
+{% extends "admin/_layout.html" %}
+{% set page_title = "Live & Pengumuman" %}
+{% set page_subtitle = "Kelola siaran langsung YouTube dan pesan pop-up untuk penonton web publik" %}
+
+{% block admin_content %}
+
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:1.4rem;">
+
+  {# ── YOUTUBE LIVE ── #}
+  <div class="ac-card">
+    <div class="ac-card-header">
+      <h2>🔴 Siaran Live YouTube</h2>
+      {% if config.youtube_embed_url %}
+      <span class="badge badge-live" style="font-size:.75rem;">Aktif</span>
+      {% endif %}
+    </div>
+    <div class="ac-card-body">
+      <p style="font-size:.88rem; color:var(--muted); margin:0 0 1.2rem; line-height:1.5;">
+        Tempel link YouTube di sini. Siaran langsung akan otomatis muncul di halaman <strong>Live Score</strong>
+        untuk penonton tanpa perlu reload halaman.
+      </p>
+      <form method="post" action="{{ url_for('admin_live_stream') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="ac-form-row" style="grid-template-columns:1fr;">
+          <div class="ac-form-field">
+            <label>Judul siaran</label>
+            <input type="text" name="youtube_embed_title"
+                   value="{{ config.youtube_embed_title|default('',true) }}"
+                   placeholder="mis. Final Padel — Court 1">
+          </div>
+          <div class="ac-form-field">
+            <label>Link YouTube</label>
+            <input type="text" name="youtube_embed_url"
+                   value="{{ config.youtube_embed_url|default('',true) }}"
+                   placeholder="https://www.youtube.com/watch?v=...">
+            <small>Tempel URL biasa, sistem akan mengubahnya menjadi embed secara otomatis.</small>
+          </div>
+        </div>
+        <div class="ac-form-actions">
+          <button type="submit" class="ac-btn ac-btn-primary">💾 Simpan Siaran</button>
+          {% if config.youtube_embed_url %}
+          <a href="{{ url_for('live') }}" target="_blank" class="ac-btn ac-btn-secondary">
+            🌐 Lihat di Web Publik
+          </a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {# ── ANNOUNCEMENT ── #}
+  <div class="ac-card">
+    <div class="ac-card-header">
+      <h2>📣 Pengumuman Pop-up</h2>
+    </div>
+    <div class="ac-card-body">
+      <p style="font-size:.88rem; color:var(--muted); margin:0 0 1.2rem; line-height:1.5;">
+        Pengumuman ini muncul otomatis kepada pengunjung baru ketika membuka halaman web untuk pertama kali.
+        Kosongkan isi pesan jika tidak ingin menampilkan pengumuman.
+      </p>
+      <form method="post" action="{{ url_for('admin_announcement') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="ac-form-row" style="grid-template-columns:1fr;">
+          <div class="ac-form-field">
+            <label>Judul pengumuman</label>
+            <input type="text" name="announcement_title"
+                   value="{{ config.announcement_title|default('',true) }}"
+                   placeholder="mis. Pengumuman Perubahan Jadwal">
+          </div>
+          <div class="ac-form-field">
+            <label>Isi pesan pengumuman</label>
+            <textarea name="announcement_text" rows="4"
+                      placeholder="Tulis pesan yang akan muncul kepada semua pengunjung…">{{ config.announcement_text|default('',true) }}</textarea>
+          </div>
+        </div>
+        <div class="ac-form-actions">
+          <button type="submit" class="ac-btn ac-btn-primary">💾 Simpan Pengumuman</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

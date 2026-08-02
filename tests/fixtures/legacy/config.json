@@ -1,0 +1,40 @@
+{
+  "tournament_name": "Mini-Round Table Tennis InterSport 2026",
+  "tournament_short_name": "InterSport 2026",
+  "status": "active",
+  "timezone": "Asia/Jakarta",
+  "locale": "id-ID",
+  "start_date": "2026-07-20",
+  "end_date": "2026-07-29",
+  "buffer_dates": [
+    "2026-07-24"
+  ],
+  "final_date": "2026-07-29",
+  "closing_date": "2026-07-29",
+  "time_window": "18.00 - 20.00 WIB",
+  "time_window_note": "After Office Hours",
+  "venue": "Synergy Room",
+  "final_note": "Final Ganda Putra mempertemukan Juara Group A vs Juara Group B",
+  "categories": [
+    {
+      "key": "ganda_putra",
+      "label": "Ganda Putra",
+      "groups": [
+        "A",
+        "B"
+      ],
+      "has_final": true
+    },
+    {
+      "key": "ganda_campuran",
+      "label": "Ganda Campuran",
+      "groups": [
+        "A"
+      ],
+      "has_final": false
+    }
+  ],
+  "announcement_title": "Pengumuman Pergantian Anggota Pemain",
+  "announcement_text": "Dikarenakan Mas Awan sedang mengalami cidera bahu, maka pemain penggantinya adalah Mas Novandi",
+  "ga_measurement_id": "G-SJ2JG9BVGS"
+}
