@@ -47,7 +47,7 @@
         <div class="ac-form-field">
           <label>1. Pilih Divisi *</label>
           <select name="category_key" required id="gen_cat" onchange="updateGroupInfo()">
-            {% for cat in categories %}
+            {% for cat in categories if cat.entrant_type != 'roster' %}
             <option value="{{ cat.key }}"
                     data-groups="{{ cat.groups|join(',') }}"
                     data-teams="{{ teams.values()|selectattr('category','eq',cat.key)|list|length }}">
@@ -56,6 +56,7 @@
             </option>
             {% endfor %}
           </select>
+          <small>Kategori Roster/Cadangan tidak muncul di sini — tidak dijadwalkan.</small>
           <div id="groupInfo" style="margin-top:.4rem; font-size:.8rem; color:var(--blue-700);"></div>
         </div>
         <div class="ac-form-field">
@@ -122,24 +123,35 @@
           <th>Grup</th>
           <th>Jumlah Tim Terdaftar</th>
           <th>Siap Generate?</th>
-          <th>Aksi Kualifikasi</th>
+          <th>Aksi</th>
         </tr>
       </thead>
       <tbody>
         {% for cat in categories %}
         {% set cat_teams = teams.values()|selectattr('category','eq',cat.key)|list %}
         <tr>
-          <td><strong>{{ cat.label }}</strong></td>
           <td>
+            <strong>{{ cat.label }}</strong>
+            {% if cat.entrant_type == 'roster' %}
+            <br><small style="color:var(--muted);">Roster cadangan — tidak dijadwalkan</small>
+            {% endif %}
+          </td>
+          <td>
+            {% if cat.entrant_type == 'roster' %}
+            <span style="color:var(--muted);">—</span>
+            {% else %}
             {% for g in cat.groups %}
             <span class="badge" style="background:var(--blue-100); color:var(--blue-800); font-size:.73rem; margin-right:.2rem;">
               Grup {{ g }}: {{ cat_teams|selectattr('group','eq',g)|list|length }} tim
             </span>
             {% endfor %}
+            {% endif %}
           </td>
           <td><strong>{{ cat_teams|length }}</strong> tim total</td>
           <td>
-            {% if cat_teams|length >= 2 %}
+            {% if cat.entrant_type == 'roster' %}
+            <span style="color:var(--muted);">—</span>
+            {% elif cat_teams|length >= 2 %}
             <span class="badge badge-completed">✅ Siap</span>
             {% else %}
             <span class="badge" style="background:#fee2e2; color:#dc2626; font-size:.78rem;">
@@ -147,7 +159,17 @@
             </span>
             {% endif %}
           </td>
-          <td>
+          <td style="display:flex; gap:.4rem; flex-wrap:wrap;">
+            {% if cat.entrant_type != 'roster' %}
+            <form method="post" action="{{ url_for('admin_shuffle_groups', category_key=cat.key) }}" style="display:inline;"
+                  onsubmit="return confirm('Acak & bagi ulang semua tim di divisi {{ cat.label }} ke {{ cat.groups|length }} grup? Grup tim saat ini akan ditimpa.');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="ac-btn ac-btn-sm ac-btn-secondary"
+                      {{ 'disabled' if cat_teams|length < 2 else '' }}
+                      title="Acak & bagi rata semua tim di divisi ini ke {{ cat.groups|length }} grup">
+                🎲 Acak &amp; Bagi Grup
+              </button>
+            </form>
             {% if cat.has_final is not defined or cat.has_final %}
             <form method="post" action="{{ url_for('admin_sync_knockout', category_key=cat.key) }}" style="display:inline;">
               <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -157,6 +179,9 @@
             </form>
             {% else %}
             <span style="font-size:0.75rem; color:#64748b; font-style:italic;">Tanpa Knockout</span>
+            {% endif %}
+            {% else %}
+            <span style="font-size:0.75rem; color:#64748b; font-style:italic;">{{ cat_teams|length }} entri roster</span>
             {% endif %}
           </td>
         </tr>

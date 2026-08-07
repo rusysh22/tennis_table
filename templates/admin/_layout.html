@@ -27,6 +27,11 @@
         <span>Dashboard & Jadwal</span>
         {% if counts is defined %}<span class="ac-badge">{{ counts.scheduled }}</span>{% endif %}
       </a>
+      <a href="{{ url_for('admin_sites') }}"
+         class="ac-nav-item {{ 'active' if request.endpoint == 'admin_sites' }}">
+        <span class="ac-nav-icon">📍</span>
+        <span>Sites</span>
+      </a>
       <a href="{{ url_for('admin_participants') }}"
          class="ac-nav-item {{ 'active' if request.endpoint in ('admin_participants',) }}">
         <span class="ac-nav-icon">👥</span>

@@ -1,0 +1,124 @@
+{% extends "admin/_layout.html" %}
+{% set page_title = "Sites" %}
+{% set page_subtitle = "Kelola daftar site/lokasi — nama site inilah yang tampil sebagai nama tim di seluruh halaman publik" %}
+
+{% block topbar_actions %}
+<button class="ac-btn ac-btn-primary" onclick="openForm()">➕ Tambah Site</button>
+{% endblock %}
+
+{% block admin_content %}
+
+{# ── ADD / EDIT FORM ── #}
+<div class="ac-card" id="siteFormCard" style="margin-bottom:1.4rem; display:none;">
+  <div class="ac-card-header">
+    <h2 id="siteFormTitle">➕ Tambah Site Baru</h2>
+    <button class="ac-btn ac-btn-ghost" onclick="closeForm()">✕ Batal</button>
+  </div>
+  <div class="ac-card-body">
+    <form method="post" action="{{ url_for('admin_save_site') }}" id="siteForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="ac-form-row">
+        <div class="ac-form-field">
+          <label>Kode Site (3–8 huruf) *</label>
+          <input type="text" name="code" id="s_code" required maxlength="8"
+                 placeholder="mis. BBL, JKT, SBY"
+                 style="text-transform:uppercase; font-weight:800; letter-spacing:.05em;">
+          <small>Dipakai sebagai awalan kode tim otomatis, mis. <code>BBL-PDL1</code></small>
+        </div>
+        <div class="ac-form-field" style="grid-column: span 2;">
+          <label>Nama Site *</label>
+          <input type="text" name="name" id="s_name" required
+                 placeholder="mis. Babelan Patriot">
+          <small>Nama ini tampil sebagai nama tim di jadwal, klasemen, dan seluruh halaman publik</small>
+        </div>
+      </div>
+      <div class="ac-form-actions">
+        <button type="submit" class="ac-btn ac-btn-primary">💾 Simpan Site</button>
+        <button type="button" class="ac-btn ac-btn-secondary" onclick="closeForm()">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ── SITES LIST ── #}
+<div class="ac-card">
+  <div class="ac-card-header">
+    <h2>📍 Daftar Site</h2>
+    <span class="badge" style="background:var(--blue-100); color:var(--blue-800); font-weight:800;">
+      {{ sites|length }} site
+    </span>
+  </div>
+
+  {% if sites %}
+  <div class="ac-table-wrap">
+    <table class="ac-table">
+      <thead>
+        <tr>
+          <th>Kode</th>
+          <th>Nama Site</th>
+          <th>Peserta Terdaftar</th>
+          <th style="text-align:right;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sites %}
+        <tr>
+          <td>
+            <code style="background:var(--surface-soft); padding:.15rem .45rem; border-radius:5px; font-size:.82rem; font-weight:800;">
+              {{ s.code }}
+            </code>
+          </td>
+          <td><strong>{{ s.name }}</strong></td>
+          <td>
+            <strong>{{ site_usage.get(s.code, 0) }}</strong>
+            <small style="color:var(--muted);"> tim</small>
+          </td>
+          <td class="ac-td-actions">
+            <button class="ac-btn ac-btn-secondary ac-btn-sm"
+              data-code="{{ s.code }}" data-name="{{ s.name }}"
+              onclick="editSiteFromBtn(this)">✏️ Edit</button>
+            <form method="post"
+                  action="{{ url_for('admin_delete_site', code=s.code) }}"
+                  onsubmit="return confirm('Hapus site {{ s.code }} ({{ s.name }})? Tidak bisa dibatalkan.');"
+                  style="display:inline; margin:0;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="ac-btn ac-btn-danger ac-btn-sm"
+                      {{ 'disabled title="Site masih dipakai oleh tim terdaftar — hapus/pindahkan tim itu dulu."' if site_usage.get(s.code, 0) > 0 else '' }}>
+                🗑️ Hapus
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="ac-empty">
+    <span class="ac-empty-icon">📍</span>
+    <h3>Belum ada site</h3>
+    <p>Tambahkan site pertama Anda menggunakan tombol di atas — site adalah nama tim yang tampil ke publik.</p>
+    <button class="ac-btn ac-btn-primary" onclick="openForm()">➕ Tambah Site Pertama</button>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function openForm() {
+  document.getElementById('siteFormCard').style.display = '';
+  document.getElementById('siteFormCard').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function closeForm() {
+  document.getElementById('siteFormCard').style.display = 'none';
+  document.getElementById('siteForm').reset();
+  document.getElementById('siteFormTitle').textContent = '➕ Tambah Site Baru';
+}
+function editSiteFromBtn(btn) {
+  document.getElementById('s_code').value = btn.getAttribute('data-code') || '';
+  document.getElementById('s_name').value = btn.getAttribute('data-name') || '';
+  document.getElementById('siteFormTitle').textContent = '✏️ Edit Site — ' + btn.getAttribute('data-code');
+  openForm();
+}
+</script>
+
+{% endblock %}

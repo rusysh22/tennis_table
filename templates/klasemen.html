@@ -73,6 +73,7 @@
                         <span class="team-chip sm" style="background:{{ row.color }}; color:{{ row.text }};">{{ row.display_code }}</span>
                       </div>
                       <small class="player-names">
+                        <strong class="team-name" style="display:block;">{{ row.team }}</strong>
                         <span class="player-line">{{ row.player1 }}</span>
                         {% if row.player2 %}<span class="player-line">{{ row.player2 }}</span>{% endif %}
                       </small>

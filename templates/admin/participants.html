@@ -1,6 +1,6 @@
 {% extends "admin/_layout.html" %}
 {% set page_title = "Peserta & Tim" %}
-{% set page_subtitle = "Daftarkan pemain, lengkapi profil, dan atur tampilan chip tim" %}
+{% set page_subtitle = "Daftarkan site/tim, lengkapi profil, dan atur tampilan chip tim" %}
 
 {% block topbar_actions %}
 <button class="ac-btn ac-btn-primary" onclick="openForm()">➕ Tambah Peserta</button>
@@ -22,6 +22,12 @@
       <a href="{{ url_for('admin_categories') }}" style="font-weight:700;">buat divisi terlebih dahulu</a>.
     </div>
     {% endif %}
+    {% if not sites %}
+    <div class="ac-flash ac-flash-info" style="margin-bottom:1rem;">
+      ℹ️ Belum ada site. Silakan
+      <a href="{{ url_for('admin_sites') }}" style="font-weight:700;">tambahkan site terlebih dahulu</a>.
+    </div>
+    {% endif %}
 
     {# enctype WAJIB multipart supaya file upload bisa dikirim #}
     <form method="post" action="{{ url_for('admin_save_participant') }}"
@@ -40,30 +46,31 @@
             TIM
           </span>
           <div>
-            <strong id="previewP1" style="display:block; font-size:.92rem;">Nama Pemain 1</strong>
-            <small id="previewP2" style="color:var(--muted); font-size:.8rem;">Pemain 2</small>
+            <strong id="previewP1" style="display:block; font-size:.92rem;">Nama Site</strong>
+            <small id="previewP2" style="color:var(--muted); font-size:.8rem;">Pemain 1 / Pemain 2</small>
           </div>
         </div>
       </div>
 
-      {# ── Row 1: Tim & Kategori ── #}
+      {# ── Row 1: Site, Kategori, Grup ── #}
       <div class="ac-form-row">
         <div class="ac-form-field">
-          <label>Kode Tim (2–8 huruf) *</label>
-          <input type="text" name="code" id="f_code" required
-                 placeholder="mis. BBL, JKT, SBY" maxlength="8"
-                 style="text-transform:uppercase; font-weight:800; letter-spacing:.05em;"
-                 oninput="livePreview()">
-          <small>Kode tampil sebagai label chip di papan skor</small>
+          <label>Site / Tim *</label>
+          <select name="site_code" id="f_site" required onchange="livePreview()">
+            <option value="">— Pilih Site —</option>
+            {% for s in sites %}
+            <option value="{{ s.code }}">{{ s.code }} — {{ s.name }}</option>
+            {% endfor %}
+          </select>
         </div>
         <div class="ac-form-field">
           <label>Divisi / Kategori *</label>
-          <select name="category" id="f_category" required>
+          <select name="category" id="f_category" required onchange="onCategoryChange()">
             {% if categories %}
               {% for cat in categories %}
-              <option value="{{ cat.key }}">
+              <option value="{{ cat.key }}" data-entrant-type="{{ cat.entrant_type|default('pair') }}">
                 {% if cat.sport_key == 'padel' %}🎾{% elif cat.sport_key == 'badminton' %}🏸{% else %}🏓{% endif %}
-                {{ cat.label }}
+                {{ cat.label }}{% if cat.entrant_type == 'roster' %} (Cadangan){% endif %}
               </option>
               {% endfor %}
             {% else %}
@@ -71,127 +78,141 @@
             {% endif %}
           </select>
         </div>
-        <div class="ac-form-field">
+        <div class="ac-form-field" id="groupField">
           <label>Grup *</label>
-          <select name="group" id="f_group">
-            <option value="A">Grup A</option>
-            <option value="B">Grup B</option>
-            <option value="C">Grup C</option>
-            <option value="D">Grup D</option>
-          </select>
+          <select name="group" id="f_group"></select>
+        </div>
+      </div>
+      <div class="ac-form-row" style="grid-template-columns: 1fr;">
+        <div class="ac-form-field">
+          <small>Kode tim dibuat otomatis oleh sistem dari Site + Kategori (mis. <code>BBL-PDL1</code>) begitu disimpan — tidak perlu diketik manual.</small>
         </div>
       </div>
 
-      {# ── Row 2: Warna ── #}
-      <div class="ac-form-row" style="grid-template-columns: 1fr 1fr;">
-        <div class="ac-form-field">
-          <label>Warna Latar Chip</label>
-          <div style="display:flex; align-items:center; gap:.65rem;">
-            <input type="color" name="color" id="f_color" value="#2a78d6"
-                   style="width:52px; height:40px; padding:2px; border-radius:8px;
-                          border:1.5px solid rgba(7,89,133,.2); cursor:pointer;"
-                   oninput="livePreview()">
-            <small>Warna latar chip tim di layar skor</small>
+      {# ═══════════════════════════════════════════════════════
+         PASANGAN (kategori bertanding)
+      ═══════════════════════════════════════════════════════ #}
+      <div id="pairFields">
+
+        {# ── Row 2: Warna ── #}
+        <div class="ac-form-row" style="grid-template-columns: 1fr 1fr;">
+          <div class="ac-form-field">
+            <label>Warna Latar Chip</label>
+            <div style="display:flex; align-items:center; gap:.65rem;">
+              <input type="color" name="color" id="f_color" value="#2a78d6"
+                     style="width:52px; height:40px; padding:2px; border-radius:8px;
+                            border:1.5px solid rgba(7,89,133,.2); cursor:pointer;"
+                     oninput="livePreview()">
+              <small>Warna latar chip tim di layar skor</small>
+            </div>
+          </div>
+          <div class="ac-form-field">
+            <label>Warna Teks Chip</label>
+            <div style="display:flex; align-items:center; gap:.65rem;">
+              <input type="color" name="text" id="f_text" value="#ffffff"
+                     style="width:52px; height:40px; padding:2px; border-radius:8px;
+                            border:1.5px solid rgba(7,89,133,.2); cursor:pointer;"
+                     oninput="livePreview()">
+              <small>Warna teks chip tim</small>
+            </div>
           </div>
         </div>
-        <div class="ac-form-field">
-          <label>Warna Teks Chip</label>
-          <div style="display:flex; align-items:center; gap:.65rem;">
-            <input type="color" name="text" id="f_text" value="#ffffff"
-                   style="width:52px; height:40px; padding:2px; border-radius:8px;
-                          border:1.5px solid rgba(7,89,133,.2); cursor:pointer;"
-                   oninput="livePreview()">
-            <small>Warna teks chip tim</small>
+
+        <div style="margin:1rem 0 .5rem; padding-bottom:.5rem; border-bottom:2px solid var(--blue-100);">
+          <strong style="font-size:.9rem; color:var(--navy-900);">👤 Pemain 1 (Utama)</strong>
+        </div>
+
+        <div class="ac-form-row">
+          <div class="ac-form-field" style="grid-column: span 2;">
+            <label>Nama Lengkap Pemain 1 *</label>
+            <input type="text" name="player1" id="f_p1"
+                   placeholder="Nama lengkap karyawan" oninput="livePreview()">
+          </div>
+          <div class="ac-form-field">
+            <label>NIK Pemain 1</label>
+            <input type="text" name="id_number1" id="f_id1"
+                   placeholder="mis. 12345678">
+            <small>Nomor Induk Kependudukan / ID karyawan</small>
+          </div>
+          <div class="ac-form-field">
+            <label>Email Pemain 1</label>
+            <input type="email" name="email1" id="f_email1"
+                   placeholder="nama@perusahaan.com">
+          </div>
+        </div>
+
+        <div class="ac-form-row" style="grid-template-columns: 1fr;">
+          <div class="ac-form-field">
+            <label>📸 Foto Pemain 1</label>
+            <div class="photo-upload-zone" onclick="document.getElementById('photo1Input').click()"
+                 id="photo1Zone">
+              <img id="photo1Preview" src="" alt="" style="display:none; width:80px; height:80px;
+                   object-fit:cover; border-radius:50%; border:3px solid var(--blue-500);">
+              <div id="photo1Placeholder">
+                <span style="font-size:2rem;">📷</span>
+                <p>Klik untuk pilih foto</p>
+                <small>JPG, PNG, WEBP · Maks 8MB</small>
+              </div>
+            </div>
+            <input type="file" name="photo1" id="photo1Input" accept="image/*"
+                   style="display:none;" onchange="previewPhoto(this, 'photo1Preview', 'photo1Placeholder')">
+            <small>Foto wajah karyawan untuk kartu peserta. Akan dikompres otomatis.</small>
+          </div>
+        </div>
+
+        <div style="margin:1.2rem 0 .5rem; padding-bottom:.5rem; border-bottom:2px solid var(--blue-100);">
+          <strong style="font-size:.9rem; color:var(--navy-900);">👤 Pemain 2 <small style="font-weight:500; color:var(--muted);">(Opsional — kosongkan untuk tunggal)</small></strong>
+        </div>
+
+        <div class="ac-form-row">
+          <div class="ac-form-field" style="grid-column: span 2;">
+            <label>Nama Lengkap Pemain 2</label>
+            <input type="text" name="player2" id="f_p2"
+                   placeholder="Nama pasangan / pemain kedua" oninput="livePreview()">
+          </div>
+          <div class="ac-form-field">
+            <label>NIK Pemain 2</label>
+            <input type="text" name="id_number2" id="f_id2"
+                   placeholder="mis. 87654321">
+          </div>
+          <div class="ac-form-field">
+            <label>Email Pemain 2</label>
+            <input type="email" name="email2" id="f_email2"
+                   placeholder="nama@perusahaan.com">
+          </div>
+        </div>
+
+        <div class="ac-form-row" style="grid-template-columns: 1fr;">
+          <div class="ac-form-field">
+            <label>📸 Foto Pemain 2</label>
+            <div class="photo-upload-zone" onclick="document.getElementById('photo2Input').click()"
+                 id="photo2Zone">
+              <img id="photo2Preview" src="" alt="" style="display:none; width:80px; height:80px;
+                   object-fit:cover; border-radius:50%; border:3px solid var(--blue-500);">
+              <div id="photo2Placeholder">
+                <span style="font-size:2rem;">📷</span>
+                <p>Klik untuk pilih foto</p>
+                <small>JPG, PNG, WEBP · Maks 8MB</small>
+              </div>
+            </div>
+            <input type="file" name="photo2" id="photo2Input" accept="image/*"
+                   style="display:none;" onchange="previewPhoto(this, 'photo2Preview', 'photo2Placeholder')">
           </div>
         </div>
       </div>
 
       {# ═══════════════════════════════════════════════════════
-         PEMAIN 1
+         ROSTER CADANGAN (kategori entrant_type=roster)
       ═══════════════════════════════════════════════════════ #}
-      <div style="margin:1rem 0 .5rem; padding-bottom:.5rem; border-bottom:2px solid var(--blue-100);">
-        <strong style="font-size:.9rem; color:var(--navy-900);">👤 Pemain 1 (Utama)</strong>
-      </div>
-
-      <div class="ac-form-row">
-        <div class="ac-form-field" style="grid-column: span 2;">
-          <label>Nama Lengkap Pemain 1 *</label>
-          <input type="text" name="player1" id="f_p1" required
-                 placeholder="Nama lengkap karyawan" oninput="livePreview()">
+      <div id="rosterFields" style="display:none;">
+        <div style="margin:1rem 0 .5rem; padding-bottom:.5rem; border-bottom:2px solid var(--blue-100);">
+          <strong style="font-size:.9rem; color:var(--navy-900);">🧑‍🤝‍🧑 Daftar Pemain Cadangan — Site ini</strong>
+          <p style="margin:.3rem 0 0; font-size:.8rem; color:var(--muted);">
+            Satu site bisa punya beberapa pemain cadangan (putra/putri) untuk cabang ini. Cadangan tidak pernah masuk jadwal/pertandingan otomatis.
+          </p>
         </div>
-        <div class="ac-form-field">
-          <label>ID Karyawan / NIK Pemain 1</label>
-          <input type="text" name="id_number1" id="f_id1"
-                 placeholder="mis. 12345678">
-          <small>Nomor identitas internal perusahaan</small>
-        </div>
-        <div class="ac-form-field">
-          <label>Email Pemain 1</label>
-          <input type="email" name="email1" id="f_email1"
-                 placeholder="nama@perusahaan.com">
-        </div>
-      </div>
-
-      <div class="ac-form-row" style="grid-template-columns: 1fr;">
-        <div class="ac-form-field">
-          <label>📸 Foto Pemain 1</label>
-          <div class="photo-upload-zone" onclick="document.getElementById('photo1Input').click()"
-               id="photo1Zone">
-            <img id="photo1Preview" src="" alt="" style="display:none; width:80px; height:80px;
-                 object-fit:cover; border-radius:50%; border:3px solid var(--blue-500);">
-            <div id="photo1Placeholder">
-              <span style="font-size:2rem;">📷</span>
-              <p>Klik untuk pilih foto</p>
-              <small>JPG, PNG, WEBP · Maks 8MB</small>
-            </div>
-          </div>
-          <input type="file" name="photo1" id="photo1Input" accept="image/*"
-                 style="display:none;" onchange="previewPhoto(this, 'photo1Preview', 'photo1Placeholder')">
-          <small>Foto wajah karyawan untuk kartu peserta. Akan dikompres otomatis.</small>
-        </div>
-      </div>
-
-      {# ═══════════════════════════════════════════════════════
-         PEMAIN 2 (opsional)
-      ═══════════════════════════════════════════════════════ #}
-      <div style="margin:1.2rem 0 .5rem; padding-bottom:.5rem; border-bottom:2px solid var(--blue-100);">
-        <strong style="font-size:.9rem; color:var(--navy-900);">👤 Pemain 2 <small style="font-weight:500; color:var(--muted);">(Opsional — kosongkan untuk tunggal)</small></strong>
-      </div>
-
-      <div class="ac-form-row">
-        <div class="ac-form-field" style="grid-column: span 2;">
-          <label>Nama Lengkap Pemain 2</label>
-          <input type="text" name="player2" id="f_p2"
-                 placeholder="Nama pasangan / pemain kedua" oninput="livePreview()">
-        </div>
-        <div class="ac-form-field">
-          <label>ID Karyawan / NIK Pemain 2</label>
-          <input type="text" name="id_number2" id="f_id2"
-                 placeholder="mis. 87654321">
-        </div>
-        <div class="ac-form-field">
-          <label>Email Pemain 2</label>
-          <input type="email" name="email2" id="f_email2"
-                 placeholder="nama@perusahaan.com">
-        </div>
-      </div>
-
-      <div class="ac-form-row" style="grid-template-columns: 1fr;">
-        <div class="ac-form-field">
-          <label>📸 Foto Pemain 2</label>
-          <div class="photo-upload-zone" onclick="document.getElementById('photo2Input').click()"
-               id="photo2Zone">
-            <img id="photo2Preview" src="" alt="" style="display:none; width:80px; height:80px;
-                 object-fit:cover; border-radius:50%; border:3px solid var(--blue-500);">
-            <div id="photo2Placeholder">
-              <span style="font-size:2rem;">📷</span>
-              <p>Klik untuk pilih foto</p>
-              <small>JPG, PNG, WEBP · Maks 8MB</small>
-            </div>
-          </div>
-          <input type="file" name="photo2" id="photo2Input" accept="image/*"
-                 style="display:none;" onchange="previewPhoto(this, 'photo2Preview', 'photo2Placeholder')">
-        </div>
+        <div id="reserveRows"></div>
+        <button type="button" class="ac-btn ac-btn-ghost ac-btn-sm" onclick="addReserveRow()">➕ Tambah Pemain Cadangan</button>
       </div>
 
       <div class="ac-form-actions">
@@ -218,7 +239,7 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input type="search" id="teamSearch" placeholder="Cari nama, kode, NIK, email…">
+        <input type="search" id="teamSearch" placeholder="Cari nama, kode, NIK, site…">
       </div>
     </div>
   </div>
@@ -229,12 +250,13 @@
       <thead>
         <tr>
           <th>Chip</th>
+          <th>Site</th>
           <th>Divisi</th>
           <th>Grup</th>
-          <th>Pemain 1</th>
-          <th>NIK / Email P1</th>
+          <th>Pemain 1 / Cadangan</th>
+          <th>NIK P1</th>
           <th>Pemain 2</th>
-          <th>NIK / Email P2</th>
+          <th>NIK P2</th>
           <th style="text-align:right;">Aksi</th>
         </tr>
       </thead>
@@ -243,7 +265,6 @@
         <tr>
           <td>
             <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:nowrap;">
-              {# Player 1 photo avatar #}
               {% if t.photo1 %}
               <img src="{{ t.photo1 }}" alt="{{ t.player1 }}"
                    style="width:32px; height:32px; border-radius:50%; object-fit:cover;
@@ -256,7 +277,7 @@
                           display:flex; align-items:center; justify-content:center;
                           color:{{ t.text|default('#fff',true) }}; font-size:.75rem;
                           font-weight:900; flex-shrink:0;">
-                {{ t.player1[:1] if t.player1 else '?' }}
+                {{ (t.site_code[:1] if t.site_code else (t.player1[:1] if t.player1 else '?')) }}
               </div>
               {% endif %}
               <span class="ac-chip"
@@ -267,6 +288,10 @@
             </div>
           </td>
           <td>
+            <strong>{{ t.site_code }}</strong>
+            <br><small style="color:var(--muted);">{{ site_lookup.get(t.site_code, '—') }}</small>
+          </td>
+          <td>
             {% for cat in categories %}{% if cat.key == t.category %}
               <span style="font-size:.82rem;">
                 {% if cat.sport_key == 'padel' %}🎾{% elif cat.sport_key == 'badminton' %}🏸{% else %}🏓{% endif %}
@@ -275,12 +300,23 @@
             {% endif %}{% endfor %}
           </td>
           <td>
+            {% if t.entrant_type == 'roster' %}
+            <span style="color:var(--muted);">—</span>
+            {% else %}
             <span class="badge" style="background:var(--blue-100); color:var(--blue-800);
                                        font-weight:700; font-size:.78rem;">
               Grup {{ t.group }}
             </span>
+            {% endif %}
           </td>
           <td>
+            {% if t.entrant_type == 'roster' %}
+            <div style="display:flex; flex-direction:column; gap:.15rem;">
+              {% for r in t.reserves %}
+              <span style="font-size:.82rem;">{{ r.name }} <small style="color:var(--muted);">({{ r.role }})</small></span>
+              {% endfor %}
+            </div>
+            {% else %}
             <div style="display:flex; align-items:center; gap:.4rem;">
               {% if t.photo1 %}
               <img src="{{ t.photo1 }}" alt="{{ t.player1 }}"
@@ -290,8 +326,17 @@
               {% endif %}
               <strong>{{ t.player1 }}</strong>
             </div>
+            {% endif %}
           </td>
           <td>
+            {% if t.entrant_type == 'roster' %}
+            <div style="display:flex; flex-direction:column; gap:.15rem;">
+              {% for r in t.reserves %}
+              <code style="background:var(--surface-soft); padding:.1rem .4rem; border-radius:4px;
+                           font-size:.75rem;">{{ r.id_number or '—' }}</code>
+              {% endfor %}
+            </div>
+            {% else %}
             {% if t.id_number1 %}
             <code style="background:var(--surface-soft); padding:.1rem .4rem; border-radius:4px;
                          font-size:.75rem;">{{ t.id_number1 }}</code>
@@ -301,31 +346,38 @@
               {{ t.email1 }}
             </small>
             {% endif %}
+            {% endif %}
           </td>
           <td>
-            {% if t.player2 %}
-            <div style="display:flex; align-items:center; gap:.4rem;">
-              {% if t.photo2 %}
-              <img src="{{ t.photo2 }}" alt="{{ t.player2 }}"
-                   style="width:26px; height:26px; border-radius:50%; object-fit:cover;
-                          border:2px solid var(--blue-300); cursor:pointer; flex-shrink:0;"
-                   onclick="showPhotoModal('{{ t.photo2 }}', '{{ t.player2 }}')">
+            {% if t.entrant_type != 'roster' %}
+              {% if t.player2 %}
+              <div style="display:flex; align-items:center; gap:.4rem;">
+                {% if t.photo2 %}
+                <img src="{{ t.photo2 }}" alt="{{ t.player2 }}"
+                     style="width:26px; height:26px; border-radius:50%; object-fit:cover;
+                            border:2px solid var(--blue-300); cursor:pointer; flex-shrink:0;"
+                     onclick="showPhotoModal('{{ t.photo2 }}', '{{ t.player2 }}')">
+                {% endif %}
+                {{ t.player2 }}
+              </div>
+              {% else %}
+              <span style="color:var(--muted);">—</span>
               {% endif %}
-              {{ t.player2 }}
-            </div>
             {% else %}
             <span style="color:var(--muted);">—</span>
             {% endif %}
           </td>
           <td>
-            {% if t.id_number2 %}
-            <code style="background:var(--surface-soft); padding:.1rem .4rem; border-radius:4px;
-                         font-size:.75rem;">{{ t.id_number2 }}</code>
-            {% endif %}
-            {% if t.email2 %}
-            <small style="display:block; color:var(--muted); font-size:.73rem; margin-top:.1rem;">
-              {{ t.email2 }}
-            </small>
+            {% if t.entrant_type != 'roster' %}
+              {% if t.id_number2 %}
+              <code style="background:var(--surface-soft); padding:.1rem .4rem; border-radius:4px;
+                           font-size:.75rem;">{{ t.id_number2 }}</code>
+              {% endif %}
+              {% if t.email2 %}
+              <small style="display:block; color:var(--muted); font-size:.73rem; margin-top:.1rem;">
+                {{ t.email2 }}
+              </small>
+              {% endif %}
             {% endif %}
           </td>
           <td class="ac-td-actions">
@@ -335,7 +387,7 @@
               onclick="editTeamFromBtn(this)">✏️ Edit</button>
             <form method="post"
                   action="{{ url_for('admin_delete_participant', code=code) }}"
-                  onsubmit="return confirm('Hapus tim {{ code }} ({{ t.player1 }})? Tidak bisa dibatalkan.');"
+                  onsubmit="return confirm('Hapus tim {{ code }}? Tidak bisa dibatalkan.');"
                   style="display:inline; margin:0;">
               <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
               <button type="submit" class="ac-btn ac-btn-danger ac-btn-sm">🗑️ Hapus</button>
@@ -396,9 +448,61 @@
 }
 .photo-upload-zone p { margin: 0; font-size: .85rem; font-weight: 600; color: var(--navy-900); }
 .photo-upload-zone small { color: var(--muted); font-size: .72rem; }
+.reserve-row { display:flex; gap:.5rem; align-items:center; margin-bottom:.5rem; flex-wrap:wrap; }
+.reserve-row input[type=text] { flex:1 1 200px; }
 </style>
 
 <script>
+var CATEGORIES = {{ categories|tojson }};
+
+function categoryByKey(key) {
+  for (var i = 0; i < CATEGORIES.length; i++) {
+    if (CATEGORIES[i].key === key) return CATEGORIES[i];
+  }
+  return null;
+}
+
+function populateGroupOptions(groups) {
+  var sel = document.getElementById('f_group');
+  sel.innerHTML = '';
+  (groups || ['A']).forEach(function(g) {
+    var opt = document.createElement('option');
+    opt.value = g; opt.textContent = 'Grup ' + g;
+    sel.appendChild(opt);
+  });
+}
+
+function onCategoryChange() {
+  var cat = categoryByKey(document.getElementById('f_category').value);
+  var isRoster = !!cat && cat.entrant_type === 'roster';
+  document.getElementById('pairFields').style.display = isRoster ? 'none' : '';
+  document.getElementById('rosterFields').style.display = isRoster ? '' : 'none';
+  document.getElementById('groupField').style.display = isRoster ? 'none' : '';
+  document.getElementById('f_p1').required = !isRoster;
+
+  if (isRoster) {
+    if (!document.getElementById('reserveRows').children.length) addReserveRow();
+  } else {
+    populateGroupOptions(cat ? cat.groups : ['A']);
+  }
+  livePreview();
+}
+
+function addReserveRow(name, idNumber, role) {
+  var container = document.getElementById('reserveRows');
+  var row = document.createElement('div');
+  row.className = 'reserve-row';
+  row.innerHTML =
+    '<input type="text" name="reserve_name[]" placeholder="Nama lengkap" value="' + (name ? name.replace(/"/g, '&quot;') : '') + '">' +
+    '<input type="text" name="reserve_id_number[]" placeholder="NIK" style="flex:0 0 140px;" value="' + (idNumber ? idNumber.replace(/"/g, '&quot;') : '') + '">' +
+    '<select name="reserve_role[]" style="flex:0 0 110px;">' +
+      '<option value="putra"' + (role === 'putra' || !role ? ' selected' : '') + '>Putra</option>' +
+      '<option value="putri"' + (role === 'putri' ? ' selected' : '') + '>Putri</option>' +
+    '</select>' +
+    '<button type="button" class="ac-btn ac-btn-danger ac-btn-sm" onclick="this.parentElement.remove()">✕</button>';
+  container.appendChild(row);
+}
+
 function openForm() {
   document.getElementById('participantFormCard').style.display = '';
   document.getElementById('participantFormCard').scrollIntoView({ behavior:'smooth', block:'start' });
@@ -411,6 +515,7 @@ function resetForm() {
   document.getElementById('participantForm').reset();
   document.getElementById('f_color').value = '#2a78d6';
   document.getElementById('f_text').value  = '#ffffff';
+  document.getElementById('reserveRows').innerHTML = '';
   document.getElementById('formCardTitle').textContent = '➕ Tambah Peserta Baru';
   document.getElementById('btnCancelEdit').style.display = 'none';
   // reset photo previews
@@ -420,50 +525,59 @@ function resetForm() {
     if (img) { img.style.display = 'none'; img.src = ''; }
     if (ph)  { ph.style.display = ''; }
   });
-  livePreview();
+  onCategoryChange();
 }
 function editTeamFromBtn(btn) {
   var code = btn.getAttribute('data-code');
   var t = JSON.parse(btn.getAttribute('data-team') || '{}');
-  document.getElementById('f_code').value     = code || '';
+  document.getElementById('f_site').value     = t.site_code || '';
   document.getElementById('f_category').value = t.category || '';
-  document.getElementById('f_group').value    = t.group || 'A';
-  document.getElementById('f_p1').value       = t.player1 || '';
-  document.getElementById('f_p2').value       = t.player2 || '';
-  document.getElementById('f_color').value    = t.color || '#2a78d6';
-  document.getElementById('f_text').value     = t.text || '#ffffff';
-  document.getElementById('f_id1').value      = t.id_number1 || '';
-  document.getElementById('f_email1').value   = t.email1 || '';
-  document.getElementById('f_id2').value      = t.id_number2 || '';
-  document.getElementById('f_email2').value   = t.email2 || '';
-  // show existing photos
-  ['photo1','photo2'].forEach(function(k) {
-    var url = t[k] || '';
-    var img = document.getElementById(k + 'Preview');
-    var ph  = document.getElementById(k + 'Placeholder');
-    if (url && img && ph) {
-      img.src = url; img.style.display = 'block'; ph.style.display = 'none';
-    } else if (img && ph) {
-      img.src = ''; img.style.display = 'none'; ph.style.display = '';
-    }
-  });
+  onCategoryChange();
+
+  if (t.entrant_type === 'roster') {
+    document.getElementById('reserveRows').innerHTML = '';
+    (t.reserves || []).forEach(function(r) {
+      addReserveRow(r.name, r.id_number, r.role);
+    });
+  } else {
+    document.getElementById('f_group').value   = t.group || 'A';
+    document.getElementById('f_p1').value       = t.player1 || '';
+    document.getElementById('f_p2').value       = t.player2 || '';
+    document.getElementById('f_color').value    = t.color || '#2a78d6';
+    document.getElementById('f_text').value     = t.text || '#ffffff';
+    document.getElementById('f_id1').value      = t.id_number1 || '';
+    document.getElementById('f_email1').value   = t.email1 || '';
+    document.getElementById('f_id2').value      = t.id_number2 || '';
+    document.getElementById('f_email2').value   = t.email2 || '';
+    // show existing photos
+    ['photo1','photo2'].forEach(function(k) {
+      var url = t[k] || '';
+      var img = document.getElementById(k + 'Preview');
+      var ph  = document.getElementById(k + 'Placeholder');
+      if (url && img && ph) {
+        img.src = url; img.style.display = 'block'; ph.style.display = 'none';
+      } else if (img && ph) {
+        img.src = ''; img.style.display = 'none'; ph.style.display = '';
+      }
+    });
+  }
   document.getElementById('formCardTitle').textContent = '✏️ Edit Tim — ' + code;
   document.getElementById('btnCancelEdit').style.display = 'inline-flex';
   livePreview();
   openForm();
 }
 function livePreview() {
-  var code  = document.getElementById('f_code').value.trim()  || 'TIM';
+  var site  = document.getElementById('f_site').value || 'TIM';
   var p1    = document.getElementById('f_p1').value.trim()    || 'Nama Pemain 1';
   var p2    = document.getElementById('f_p2').value.trim()    || 'Pemain 2';
   var color = document.getElementById('f_color').value;
   var text  = document.getElementById('f_text').value;
   var chip  = document.getElementById('previewChip');
-  chip.textContent     = code;
+  chip.textContent     = site;
   chip.style.background = color;
   chip.style.color      = text;
-  document.getElementById('previewP1').textContent = p1;
-  document.getElementById('previewP2').textContent = p2;
+  document.getElementById('previewP1').textContent = site;
+  document.getElementById('previewP2').textContent = p1 + ' / ' + p2;
 }
 function previewPhoto(input, previewId, placeholderId) {
   if (!input.files || !input.files[0]) return;
@@ -489,5 +603,7 @@ document.getElementById('teamSearch').addEventListener('input', function() {
     row.style.display = (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
   });
 });
+// Init default state for the (currently hidden) form
+onCategoryChange();
 </script>
 {% endblock %}

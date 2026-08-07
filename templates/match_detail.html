@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}{{ m.team_a_code }} vs {{ m.team_b_code }} — {{ config.tournament_short_name }}{% endblock %}
-{% block og_title %}{{ m.team_a_code }} vs {{ m.team_b_code }}{% if m.status in ('completed', 'live') %} ({{ m.sets_a }}-{{ m.sets_b }}){% endif %} — {{ m.category_label }}{% endblock %}
+{% block title %}{{ m.team_a_label }} vs {{ m.team_b_label }} — {{ config.tournament_short_name }}{% endblock %}
+{% block og_title %}{{ m.team_a_label }} vs {{ m.team_b_label }}{% if m.status in ('completed', 'live') %} ({{ m.sets_a }}-{{ m.sets_b }}){% endif %} — {{ m.category_label }}{% endblock %}
 {% block og_description %}{{ m.team_a_player1 }}{% if m.team_a_player2 %}/{{ m.team_a_player2 }}{% endif %} vs {{ m.team_b_player1 }}{% if m.team_b_player2 %}/{{ m.team_b_player2 }}{% endif %} · {{ m.date_label }}, {{ m.time }} WIB di {{ m.court }}{% if m.status in ('completed', 'live') %} · Skor {{ m.sets_a }}-{{ m.sets_b }}{% endif %}.{% endblock %}
 {% block og_image %}{{ url_for('og_match_image', match_id=m.id, _external=True) }}{% endblock %}
 {% block content %}

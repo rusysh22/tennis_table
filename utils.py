@@ -374,6 +374,79 @@ def is_normalized_backend():
     return USE_NORMALIZED_DB
 
 
+SPORT_CODE_ABBR = {"padel": "PDL", "badminton": "BM", "table-tennis": "TM"}
+
+
+def list_sites():
+    if USE_NORMALIZED_DB:
+        raise RuntimeError("Site list is not available for normalized storage yet.")
+    config = load_config()
+    return config.get("sites", [])
+
+
+def site_name(config, site_code):
+    """Nama tampilan site (dipakai sebagai nama tim publik) dari kode site, atau None."""
+    if not site_code:
+        return None
+    for site in config.get("sites", []):
+        if site.get("code") == site_code:
+            return site.get("name")
+    return None
+
+
+def generate_team_code(site_code, category_key, config):
+    """Kode entrant otomatis: {SITE}-{SPORT_ABBR}{SLOT}, mis. BBL-PDL1, BBL-PDLCAD.
+    SLOT = nomor urut kategori 'pair' untuk sport itu (1, 2, ...), atau 'CAD' untuk
+    kategori roster/cadangan. Global unik karena site x sport x slot tidak pernah bentrok,
+    sehingga admin tidak perlu mengetik kode manual."""
+    site_code = (site_code or "").strip().upper()
+    category = next((c for c in config.get("categories", []) if c.get("key") == category_key), None)
+    if not category:
+        raise ValueError(f"Kategori '{category_key}' tidak ditemukan dalam konfigurasi.")
+    sport_key = category.get("sport_key", "table-tennis")
+    abbr = SPORT_CODE_ABBR.get(sport_key, sport_key[:3].upper())
+    if category.get("entrant_type") == "roster":
+        return f"{site_code}-{abbr}CAD"
+    pair_keys = [
+        c["key"] for c in config.get("categories", [])
+        if c.get("sport_key") == sport_key and c.get("entrant_type", "pair") == "pair"
+    ]
+    slot = pair_keys.index(category_key) + 1 if category_key in pair_keys else 1
+    return f"{site_code}-{abbr}{slot}"
+
+
+def auto_split_groups(category_key):
+    """Acak & bagi rata semua tim (tipe 'pair') di suatu kategori ke grup yang
+    sudah dikonfigurasi (config.categories[].groups), berapa pun jumlah grupnya.
+    Entrant tipe roster/cadangan tidak punya grup dan dilewati."""
+    config = load_config()
+    category = next((c for c in config.get("categories", []) if c.get("key") == category_key), None)
+    if not category:
+        raise ValueError(f"Kategori '{category_key}' tidak ditemukan dalam konfigurasi.")
+    if category.get("entrant_type") == "roster":
+        raise ValueError("Kategori roster/cadangan tidak memiliki grup untuk dibagi.")
+    groups = category.get("groups") or ["A"]
+
+    teams = load_teams()
+    codes = [
+        code for code, t in teams.items()
+        if t.get("category") == category_key and t.get("entrant_type") != "roster"
+    ]
+    if len(codes) < 2:
+        raise ValueError("Minimal 2 tim terdaftar di kategori ini untuk membagi grup.")
+
+    import random as _random
+    _random.shuffle(codes)
+    n_groups = len(groups)
+    assignment = {g: [] for g in groups}
+    for index, code in enumerate(codes):
+        group = groups[index % n_groups]
+        teams[code]["group"] = group
+        assignment[group].append(code)
+    save_teams(teams)
+    return assignment
+
+
 def list_sports():
     if USE_NORMALIZED_DB:
         return _NORMALIZED_REPOSITORY.list_sports()
@@ -805,6 +878,18 @@ def _scoring_profile_for(sport_key, stage_type):
     return {}
 
 
+def _qual_slot_pair(groups, two_group_pair, one_group_pair):
+    """Label slot kualifikasi knockout untuk sepasang (a, b). Auto-seed hanya
+    didukung untuk tepat 1 atau 2 grup; 3+ grup harus diisi manual oleh admin
+    (lihat auto_seed_knockout) karena tidak ada aturan cross-group seeding
+    yang general untuk N grup sembarang."""
+    if len(groups) == 2:
+        return two_group_pair
+    if len(groups) == 1:
+        return one_group_pair
+    return ("Diisi manual oleh admin", "Diisi manual oleh admin")
+
+
 def generate_group_to_knockout_schedule(category_key, start_date=None, time_slots=None, court="Meja 1", knockout_format="final_only"):
     teams = load_teams()
     config = load_config()
@@ -892,6 +977,12 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
         semifinal_profile = _scoring_profile_for(sport_key, "semifinal")
         final_profile = _scoring_profile_for(sport_key, "final")
         if knockout_format == "semi_and_final":
+            sf1_a, sf1_b = _qual_slot_pair(
+                groups, ("Juara Group A", "Runner-up Group B"), ("Peringkat 1 Group", "Peringkat 3 Group")
+            )
+            sf2_a, sf2_b = _qual_slot_pair(
+                groups, ("Juara Group B", "Runner-up Group A"), ("Peringkat 2 Group", "Peringkat 4 Group")
+            )
             sf1_id = get_next_id()
             matches.append({
                 "id": sf1_id,
@@ -905,8 +996,8 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "stage_key": "semifinal",
                 "team_a": None,
                 "team_b": None,
-                "qualification_slot_a": "Juara Group A" if len(groups) >= 2 else "Peringkat 1 Group",
-                "qualification_slot_b": "Runner-up Group B" if len(groups) >= 2 else "Peringkat 3 Group",
+                "qualification_slot_a": sf1_a,
+                "qualification_slot_b": sf1_b,
                 "date": final_date_str,
                 "time": "17:00",
                 "court": court,
@@ -914,7 +1005,7 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "sets": [],
                 "winner": None,
                 "walkover": False,
-                "notes": f"Semifinal 1 {cat_label}: " + ("Juara Group A vs Runner-up Group B" if len(groups) >= 2 else "Peringkat 1 vs Peringkat 3"),
+                "notes": f"Semifinal 1 {cat_label}: {sf1_a} vs {sf1_b}",
                 "reschedule_history": [],
                 **semifinal_profile,
             })
@@ -931,8 +1022,8 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "stage_key": "semifinal",
                 "team_a": None,
                 "team_b": None,
-                "qualification_slot_a": "Juara Group B" if len(groups) >= 2 else "Peringkat 2 Group",
-                "qualification_slot_b": "Runner-up Group A" if len(groups) >= 2 else "Peringkat 4 Group",
+                "qualification_slot_a": sf2_a,
+                "qualification_slot_b": sf2_b,
                 "date": final_date_str,
                 "time": "17:30",
                 "court": court,
@@ -940,7 +1031,7 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "sets": [],
                 "winner": None,
                 "walkover": False,
-                "notes": f"Semifinal 2 {cat_label}: " + ("Juara Group B vs Runner-up Group A" if len(groups) >= 2 else "Peringkat 2 vs Peringkat 4"),
+                "notes": f"Semifinal 2 {cat_label}: {sf2_a} vs {sf2_b}",
                 "reschedule_history": [],
                 **semifinal_profile,
             })
@@ -972,6 +1063,9 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
             })
             knockout_count += 3
         else:
+            final_a, final_b = _qual_slot_pair(
+                groups, ("Juara Group A", "Juara Group B"), ("Peringkat 1 Group", "Peringkat 2 Group")
+            )
             matches.append({
                 "id": get_next_id(),
                 "category": category_key,
@@ -984,8 +1078,8 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "stage_key": "final",
                 "team_a": None,
                 "team_b": None,
-                "qualification_slot_a": "Juara Group A" if len(groups) >= 2 else "Peringkat 1 Group",
-                "qualification_slot_b": "Juara Group B" if len(groups) == 2 else ("Peringkat 2 Group" if len(groups) == 1 else "Juara Group Lainnya"),
+                "qualification_slot_a": final_a,
+                "qualification_slot_b": final_b,
                 "date": final_date_str,
                 "time": "18:00",
                 "court": court,
@@ -993,7 +1087,7 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "sets": [],
                 "winner": None,
                 "walkover": False,
-                "notes": f"Final {cat_label}: " + ("Juara Group A vs Juara Group B" if len(groups) == 2 else "Laga Final penentuan"),
+                "notes": f"Final {cat_label}: {final_a} vs {final_b}",
                 "reschedule_history": [],
                 **final_profile,
             })
@@ -1040,7 +1134,7 @@ def auto_seed_knockout(category_key, matches=None, teams=None, config=None, forc
     changed = False
     for m in cat_matches:
         if m.get("stage_type") in ("semifinal", "semi_final", "knockout") or m.get("round_label") in ("Semifinal 1", "Semifinal 2"):
-            if len(groups) >= 2 and "A" in standings_by_group and "B" in standings_by_group:
+            if len(groups) == 2 and "A" in standings_by_group and "B" in standings_by_group:
                 rows_a = standings_by_group.get("A", [])
                 rows_b = standings_by_group.get("B", [])
                 if m.get("round_label") == "Semifinal 1":
@@ -1080,7 +1174,7 @@ def auto_seed_knockout(category_key, matches=None, teams=None, config=None, forc
                         m["team_b"] = sf2["winner"]
                         changed = True
             else:
-                if len(groups) >= 2 and "A" in standings_by_group and "B" in standings_by_group:
+                if len(groups) == 2 and "A" in standings_by_group and "B" in standings_by_group:
                     rows_a = standings_by_group.get("A", [])
                     rows_b = standings_by_group.get("B", [])
                     if len(rows_a) >= 1 and not m.get("team_a"):
@@ -1185,13 +1279,19 @@ def team_label(teams, code):
     t = teams.get(code)
     if not t:
         return code
+    name = site_name(load_config(), t.get("site_code"))
+    if name:
+        return name
     return f'{t["player1"]} / {t["player2"]}'
 
 
 def team_short(teams, code):
     if not code:
         return "TBD"
-    return teams.get(code, {}).get("code", code)
+    t = teams.get(code)
+    if not t:
+        return code
+    return t.get("site_code") or t.get("code") or code
 
 
 def truncate_words(text, max_words=2):
@@ -1669,6 +1769,7 @@ def compute_standings(matches, teams, category, group, policy_config=None):
     table = {
         c: {
             "code": c, "team": team_label(teams, c),
+            "site_code": teams[c].get("site_code", ""),
             "player1": teams[c].get("player1", ""), "player2": teams[c].get("player2", ""),
             "color": teams[c].get("color", "#9c9c9c"), "text": teams[c].get("text", "#ffffff"),
             "played": 0, "win": 0, "loss": 0,

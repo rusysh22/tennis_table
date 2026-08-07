@@ -25,11 +25,20 @@
     "padel",
     "badminton"
   ],
+  "sites": [
+    {"code": "BBL", "name": "Babelan Patriot"},
+    {"code": "JKT", "name": "Jakarta Jawara"},
+    {"code": "BPP", "name": "Balikpapan Marwah Warriors"},
+    {"code": "PSR", "name": "Paser Buen Kesong"},
+    {"code": "SBY", "name": "Surabaya Joang"},
+    {"code": "MRW", "name": "Morowali Titans"}
+  ],
   "categories": [
     {
       "key": "padel_ganda_putra",
       "label": "Padel — Ganda Putra",
       "sport_key": "padel",
+      "entrant_type": "pair",
       "groups": [
         "A",
         "B"
@@ -41,6 +50,7 @@
       "key": "padel_ganda_campuran",
       "label": "Padel — Ganda Campuran",
       "sport_key": "padel",
+      "entrant_type": "pair",
       "groups": [
         "A",
         "B"
@@ -49,9 +59,19 @@
       "knockout_format": "semi_and_final"
     },
     {
+      "key": "padel_cadangan",
+      "label": "Padel — Cadangan",
+      "sport_key": "padel",
+      "entrant_type": "roster",
+      "groups": [],
+      "has_final": false,
+      "knockout_format": "no_knockout"
+    },
+    {
       "key": "tenis_meja_ganda_putra",
       "label": "Tenis Meja — Ganda Putra",
       "sport_key": "table-tennis",
+      "entrant_type": "pair",
       "groups": [
         "A"
       ],
@@ -62,6 +82,7 @@
       "key": "tenis_meja_ganda_campuran",
       "label": "Tenis Meja — Ganda Campuran",
       "sport_key": "table-tennis",
+      "entrant_type": "pair",
       "groups": [
         "A"
       ],
@@ -69,9 +90,19 @@
       "knockout_format": "semi_and_final"
     },
     {
+      "key": "tenis_meja_cadangan",
+      "label": "Tenis Meja — Cadangan",
+      "sport_key": "table-tennis",
+      "entrant_type": "roster",
+      "groups": [],
+      "has_final": false,
+      "knockout_format": "no_knockout"
+    },
+    {
       "key": "badminton_ganda_putra",
       "label": "Badminton — Ganda Putra",
       "sport_key": "badminton",
+      "entrant_type": "pair",
       "groups": [
         "A",
         "B"
@@ -83,12 +114,22 @@
       "key": "badminton_ganda_campuran",
       "label": "Badminton — Ganda Campuran",
       "sport_key": "badminton",
+      "entrant_type": "pair",
       "groups": [
         "A",
         "B"
       ],
       "has_final": true,
       "knockout_format": "semi_and_final"
+    },
+    {
+      "key": "badminton_cadangan",
+      "label": "Badminton — Cadangan",
+      "sport_key": "badminton",
+      "entrant_type": "roster",
+      "groups": [],
+      "has_final": false,
+      "knockout_format": "no_knockout"
     }
   ]
 }

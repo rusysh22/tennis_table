@@ -1266,7 +1266,8 @@ legend{ color:var(--blue-800); }
 .competition-team-mark{ display:flex; flex-direction:column; align-items:flex-start; gap:.2rem; }
 .competition-team-b .competition-team-mark{ align-items:flex-end; }
 .competition-team .player-names{ margin-top:.65rem; gap:.2rem; }
-.competition-team .player-line{ color:var(--schedule-ink); font-size:.69rem; font-weight:700; }
+.competition-team .team-name{ display:block; color:var(--schedule-ink); font-size:.82rem; font-weight:800; margin-bottom:.1rem; }
+.competition-team .player-line{ color:var(--muted); font-size:.69rem; font-weight:600; }
 .competition-team .player-line + .player-line{ color:var(--muted); font-weight:550; }
 .competition-team-b .player-line{ text-align:right; }
 .competition-score{ min-width:0; text-align:center; }
@@ -1432,7 +1433,8 @@ legend{ color:var(--blue-800); }
 .match-arena .team-chip.lg{ min-width:64px; min-height:38px; border-radius:11px; font-size:1rem; }
 .detail-team-role{ margin-top:.85rem; color:var(--green-300); font-size:.58rem; font-weight:800; letter-spacing:.11em; text-transform:uppercase; }
 .detail-player-names{ width:100%; margin-top:.42rem; gap:.2rem; }
-.detail-player-names .player-line{ color:#fff; font-size:.76rem; font-weight:750; text-align:center; }
+.detail-player-names .team-name{ display:block; color:#fff; font-size:.88rem; font-weight:800; text-align:center; margin-bottom:.15rem; }
+.detail-player-names .player-line{ color:rgba(255,255,255,.75); font-size:.76rem; font-weight:600; text-align:center; }
 .detail-player-names .player-line + .player-line{ color:rgba(255,255,255,.62); font-weight:550; }
 .match-arena-score{ text-align:center; }
 .match-arena-score .score-row{ gap:.55rem; margin:0; }

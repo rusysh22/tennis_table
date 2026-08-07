@@ -46,6 +46,7 @@
       </div>
       <div class="detail-team-role">Team A</div>
       <div class="player-names detail-player-names">
+        <strong class="team-name">{{ m.team_a_label }}</strong>
         <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
         {% if m.team_a_player2 %}<span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>{% endif %}
       </div>
@@ -89,6 +90,7 @@
       </div>
       <div class="detail-team-role">Team B</div>
       <div class="player-names detail-player-names">
+        <strong class="team-name">{{ m.team_b_label }}</strong>
         <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
         {% if m.team_b_player2 %}<span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>{% endif %}
       </div>
@@ -244,14 +246,14 @@
         <label>Tim A
           <select name="team_a">
             <option value="">- Pilih -</option>
-            {% for code, team in eligible_teams.items() %}<option value="{{ code }}" {{ 'selected' if raw.team_a==code }}>{{ team.code|default(code) }} — {{
+            {% for code, team in eligible_teams.items() %}<option value="{{ code }}" {{ 'selected' if raw.team_a==code }}>{{ team.label }} ({{ code }}) — {{
               team.player1 }}/{{ team.player2 }}</option>{% endfor %}
           </select>
         </label>
         <label>Tim B
           <select name="team_b">
             <option value="">- Pilih -</option>
-            {% for code, team in eligible_teams.items() %}<option value="{{ code }}" {{ 'selected' if raw.team_b==code }}>{{ team.code|default(code) }} — {{
+            {% for code, team in eligible_teams.items() %}<option value="{{ code }}" {{ 'selected' if raw.team_b==code }}>{{ team.label }} ({{ code }}) — {{
               team.player1 }}/{{ team.player2 }}</option>{% endfor %}
           </select>
         </label>

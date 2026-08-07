@@ -319,8 +319,8 @@ def enrich_match(m, teams):
     m["team_b_label"] = utils.team_label(teams, m["team_b"]) if m.get("team_b") else (m.get("qualification_slot_b") or "Menunggu Kontestan")
     ta = teams.get(m["team_a"], {}) if m.get("team_a") else {}
     tb = teams.get(m["team_b"], {}) if m.get("team_b") else {}
-    m["team_a_code"] = ta.get("code") or (m["team_a"] if m.get("team_a") else (m.get("qualification_slot_a") or "TBD"))
-    m["team_b_code"] = tb.get("code") or (m["team_b"] if m.get("team_b") else (m.get("qualification_slot_b") or "TBD"))
+    m["team_a_code"] = utils.team_short(teams, m["team_a"]) if m.get("team_a") else (m.get("qualification_slot_a") or "TBD")
+    m["team_b_code"] = utils.team_short(teams, m["team_b"]) if m.get("team_b") else (m.get("qualification_slot_b") or "TBD")
     m["team_a_color"] = ta.get("color", TBD_COLOR)
     m["team_a_text"] = ta.get("text", TBD_TEXT)
     m["team_b_color"] = tb.get("color", TBD_COLOR)
@@ -456,7 +456,8 @@ def qualification_context(match, matches, teams, config):
             for group_key, code in sorted(division.get("group_winners", {}).items())
         ]
     eligible_teams = {
-        code: team for code, team in teams.items()
+        code: {**team, "label": utils.team_label(teams, code)}
+        for code, team in teams.items()
         if team.get("category") == match.get("category")
         and team.get("sport_key", "table-tennis")
         == match.get("sport_key", "table-tennis")
@@ -1859,6 +1860,23 @@ def admin_shuffle_campuran():
     return redirect(url_for("admin_dashboard"))
 
 
+@app.route("/admin/participants/shuffle-groups/<category_key>", methods=["POST"])
+@login_required
+def admin_shuffle_groups(category_key):
+    if utils.is_normalized_backend():
+        flash("Pengundian ulang legacy dinonaktifkan pada backend normalized.", "error")
+        return redirect(url_for("admin_schedule_generator"))
+    utils.backup_data_files("teams.json")
+    try:
+        assignment = utils.auto_split_groups(category_key)
+    except ValueError as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("admin_schedule_generator"))
+    summary = ", ".join(f"Grup {g}: {len(codes)} tim" for g, codes in assignment.items())
+    flash(f"Tim di kategori '{category_key}' berhasil diacak & dibagi ke grup. {summary}", "success")
+    return redirect(url_for("admin_schedule_generator"))
+
+
 @app.route("/admin/announcement", methods=["POST"])
 @login_required
 def admin_announcement():
@@ -1886,15 +1904,71 @@ def admin_participants():
     config = utils.load_config()
     sports = utils.list_sports()
     categories = config.get("categories", [])
-    return render_template("admin/participants.html", teams=teams, config=config, sports=sports, categories=categories)
+    sites = config.get("sites", [])
+    site_lookup = {s["code"]: s["name"] for s in sites}
+    return render_template(
+        "admin/participants.html", teams=teams, config=config, sports=sports,
+        categories=categories, sites=sites, site_lookup=site_lookup,
+    )
 
 
 @app.route("/admin/participants/save", methods=["POST"])
 @login_required
 def admin_save_participant():
-    code = request.form.get("code", "").strip().upper()
+    site_code = request.form.get("site_code", "").strip().upper()
     category = request.form.get("category", "").strip()
     group = request.form.get("group", "").strip()
+
+    if not site_code or not category:
+        flash("Site dan kategori divisi wajib dipilih.", "error")
+        return redirect(url_for("admin_participants"))
+
+    config = utils.load_config()
+    cat_def = next((c for c in config.get("categories", []) if c.get("key") == category), None)
+    if not cat_def:
+        flash("Kategori divisi tidak ditemukan.", "error")
+        return redirect(url_for("admin_participants"))
+    if not any(s.get("code") == site_code for s in config.get("sites", [])):
+        flash("Site tidak ditemukan. Tambahkan site terlebih dahulu di menu Sites.", "error")
+        return redirect(url_for("admin_participants"))
+
+    try:
+        code = utils.generate_team_code(site_code, category, config)
+    except ValueError as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("admin_participants"))
+
+    teams = utils.load_teams()
+    existing = teams.get(code, {})
+
+    # ── Kategori tipe Roster (Cadangan): satu record per site berisi daftar pemain cadangan ──
+    if cat_def.get("entrant_type") == "roster":
+        names = request.form.getlist("reserve_name[]")
+        id_numbers = request.form.getlist("reserve_id_number[]")
+        roles = request.form.getlist("reserve_role[]")
+        reserves = []
+        for name, id_number, role in zip(names, id_numbers, roles):
+            name = name.strip()
+            if not name:
+                continue
+            reserves.append({
+                "name": name,
+                "id_number": id_number.strip(),
+                "role": role.strip() or "putra",
+            })
+        if not reserves:
+            flash("Minimal 1 pemain cadangan dengan nama harus diisi.", "error")
+            return redirect(url_for("admin_participants"))
+        teams[code] = {
+            "site_code": site_code,
+            "category": category,
+            "entrant_type": "roster",
+            "reserves": reserves,
+        }
+        utils.save_teams(teams)
+        flash(f"Roster cadangan '{code}' ({len(reserves)} pemain) berhasil disimpan.", "success")
+        return redirect(url_for("admin_participants"))
+
     player1 = request.form.get("player1", "").strip()
     player2 = request.form.get("player2", "").strip()
     color = request.form.get("color", "#2a78d6").strip()
@@ -1904,12 +1978,13 @@ def admin_save_participant():
     id_number2 = request.form.get("id_number2", "").strip()
     email2 = request.form.get("email2", "").strip()
 
-    if not code or not category or not player1:
-        flash("Kode tim, kategori divisi, dan minimal Nama Pemain 1 wajib diisi.", "error")
+    if not player1:
+        flash("Minimal Nama Pemain 1 wajib diisi.", "error")
         return redirect(url_for("admin_participants"))
 
-    teams = utils.load_teams()
-    existing = teams.get(code, {})
+    valid_groups = cat_def.get("groups") or ["A"]
+    if group not in valid_groups:
+        group = valid_groups[0]
 
     # ── Photo upload helper (compressed, saved to local disk) ──
     def _upload_photo(file_field_name, slug):
@@ -1931,8 +2006,9 @@ def admin_save_participant():
     photo2 = _upload_photo("photo2", "photo2")
 
     teams[code] = {
+        "site_code": site_code,
         "category": category,
-        "group": group or "A",
+        "group": group,
         "player1": player1,
         "player2": player2,
         "color": color,
@@ -1969,25 +2045,35 @@ def admin_save_category():
     key = request.form.get("cat_key", "").strip().lower().replace(" ", "_")
     label = request.form.get("cat_label", "").strip()
     sport_key = request.form.get("sport_key", "table-tennis").strip()
-    groups_str = request.form.get("groups", "A,B").strip()
+    entrant_type = request.form.get("entrant_type", "pair").strip()
+    if entrant_type not in ("pair", "roster"):
+        entrant_type = "pair"
     has_final = request.form.get("has_final") == "on"
 
     if not key or not label:
         flash("Kode Divisi (Key) dan Nama Divisi wajib diisi.", "error")
         return redirect(url_for("admin_categories"))
 
-    groups = [g.strip().upper() for g in groups_str.split(",") if g.strip()]
-    if not groups:
-        groups = ["A"]
+    if entrant_type == "roster":
+        # Roster/Cadangan tidak bertanding: tidak ada grup, jadwal, atau babak final.
+        groups = []
+        has_final = False
+    else:
+        try:
+            group_count = int(request.form.get("group_count", "2"))
+        except ValueError:
+            group_count = 2
+        group_count = max(1, min(group_count, 8))
+        groups = [chr(65 + i) for i in range(group_count)]
 
     config = utils.load_config()
     categories = config.setdefault("categories", [])
     for cat in categories:
         if cat.get("key") == key:
-            cat.update({"label": label, "sport_key": sport_key, "groups": groups, "has_final": has_final})
+            cat.update({"label": label, "sport_key": sport_key, "entrant_type": entrant_type, "groups": groups, "has_final": has_final})
             break
     else:
-        categories.append({"key": key, "label": label, "sport_key": sport_key, "groups": groups, "has_final": has_final})
+        categories.append({"key": key, "label": label, "sport_key": sport_key, "entrant_type": entrant_type, "groups": groups, "has_final": has_final})
 
     enabled_sports = config.setdefault("enabled_sports", ["table-tennis"])
     if sport_key not in enabled_sports:
@@ -1996,6 +2082,61 @@ def admin_save_category():
     utils.save_config(config)
     flash(f"Divisi '{label}' ({sport_key.upper()}) berhasil disahkan & diaktifkan di sistem.", "success")
     return redirect(url_for("admin_categories"))
+
+
+@app.route("/admin/sites")
+@login_required
+def admin_sites():
+    config = utils.load_config()
+    sites = config.get("sites", [])
+    teams = utils.load_teams()
+    site_usage = {}
+    for team in teams.values():
+        sc = team.get("site_code")
+        if sc:
+            site_usage[sc] = site_usage.get(sc, 0) + 1
+    return render_template("admin/sites.html", sites=sites, site_usage=site_usage)
+
+
+@app.route("/admin/sites/save", methods=["POST"])
+@login_required
+def admin_save_site():
+    code = request.form.get("code", "").strip().upper()
+    name = request.form.get("name", "").strip()
+    if not code or not name:
+        flash("Kode Site dan Nama Site wajib diisi.", "error")
+        return redirect(url_for("admin_sites"))
+
+    config = utils.load_config()
+    sites = config.setdefault("sites", [])
+    for site in sites:
+        if site.get("code") == code:
+            site["name"] = name
+            break
+    else:
+        sites.append({"code": code, "name": name})
+    utils.save_config(config)
+    flash(f"Site '{code}' ({name}) berhasil disimpan.", "success")
+    return redirect(url_for("admin_sites"))
+
+
+@app.route("/admin/sites/delete/<code>", methods=["POST"])
+@login_required
+def admin_delete_site(code):
+    config = utils.load_config()
+    sites = config.get("sites", [])
+    teams = utils.load_teams()
+    if any(team.get("site_code") == code for team in teams.values()):
+        flash(f"Site '{code}' masih dipakai oleh tim/peserta terdaftar, tidak bisa dihapus.", "error")
+        return redirect(url_for("admin_sites"))
+    new_sites = [s for s in sites if s.get("code") != code]
+    if len(new_sites) == len(sites):
+        flash(f"Site '{code}' tidak ditemukan.", "error")
+    else:
+        config["sites"] = new_sites
+        utils.save_config(config)
+        flash(f"Site '{code}' berhasil dihapus.", "success")
+    return redirect(url_for("admin_sites"))
 
 
 @app.route("/admin/generator/group-to-knockout", methods=["POST"])

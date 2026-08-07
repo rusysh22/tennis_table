@@ -28,6 +28,7 @@
         {% endif %}
       </div>
       <div class="player-names">
+        <strong class="team-name">{{ m.team_a_label }}</strong>
         <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
         {% if m.team_a_player2 %}<span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>{% endif %}
       </div>
@@ -52,6 +53,7 @@
         {% endif %}
       </div>
       <div class="player-names">
+        <strong class="team-name">{{ m.team_b_label }}</strong>
         <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
         {% if m.team_b_player2 %}<span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>{% endif %}
       </div>
