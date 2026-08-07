@@ -18,7 +18,7 @@
   "announcement_title": "Selamat Datang di Interport Synergy Cup 2026!",
   "announcement_text": "Turnamen multi-cabang olahraga antar Site Interport 2026 resmi dimulai! 6 Site berlaga: Babelan, Jakarta, Paser, Balikpapan, Surabaya, dan Morowali. Junjung tinggi sportivitas dan semangat kebersamaan!",
   "youtube_embed_title": "Siaran Langsung Pertandingan Synergy Cup 2026",
-  "youtube_embed_url": "https://www.youtube.com/embed/RI1MbiG_4vE",
+  "youtube_embed_url": "https://www.youtube.com/embed/OSX7i0zYsn8",
   "ga_measurement_id": "",
   "enabled_sports": [
     "table-tennis",
@@ -34,7 +34,8 @@
         "A",
         "B"
       ],
-      "has_final": true
+      "has_final": true,
+      "knockout_format": "semi_and_final"
     },
     {
       "key": "padel_ganda_campuran",
@@ -44,27 +45,28 @@
         "A",
         "B"
       ],
-      "has_final": true
+      "has_final": true,
+      "knockout_format": "semi_and_final"
     },
     {
       "key": "tenis_meja_ganda_putra",
       "label": "Tenis Meja — Ganda Putra",
       "sport_key": "table-tennis",
       "groups": [
-        "A",
-        "B"
+        "A"
       ],
-      "has_final": true
+      "has_final": true,
+      "knockout_format": "semi_and_final"
     },
     {
       "key": "tenis_meja_ganda_campuran",
       "label": "Tenis Meja — Ganda Campuran",
       "sport_key": "table-tennis",
       "groups": [
-        "A",
-        "B"
+        "A"
       ],
-      "has_final": true
+      "has_final": true,
+      "knockout_format": "semi_and_final"
     },
     {
       "key": "badminton_ganda_putra",
@@ -74,7 +76,8 @@
         "A",
         "B"
       ],
-      "has_final": true
+      "has_final": true,
+      "knockout_format": "semi_and_final"
     },
     {
       "key": "badminton_ganda_campuran",
@@ -84,7 +87,8 @@
         "A",
         "B"
       ],
-      "has_final": true
+      "has_final": true,
+      "knockout_format": "semi_and_final"
     }
   ]
 }

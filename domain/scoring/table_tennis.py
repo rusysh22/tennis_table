@@ -54,8 +54,8 @@ def validate_match_score(
     deuce. Empty score entry is valid but represents an incomplete match.
     """
     errors: list[str] = []
-    if best_of not in (3, 5):
-        errors.append("Profil pertandingan harus Best of 3 atau Best of 5.")
+    if best_of not in (1, 3, 5):
+        errors.append("Profil pertandingan harus Best of 1, 3, atau 5.")
     if points_to_win < 1 or win_by < 1:
         errors.append("Profil skor pertandingan tidak valid.")
 

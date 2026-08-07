@@ -773,6 +773,38 @@ def dynamic_circle_rounds(codes):
     return rounds
 
 
+def _scoring_profile_for(sport_key, stage_type):
+    """Return the per-match scoring profile fields (merged into the match dict)
+    for a given sport + stage. Padel plays a 21-point race per game in the
+    group stage, but switches to classic set/game (15-30-40) scoring in the
+    knockout stage. Badminton is 21 points/best of 3 with a 30-point cap at
+    every stage. Table tennis keeps the existing legacy default (no override)."""
+    if sport_key == "badminton":
+        return {
+            "_profile_key": "badminton-21-bo3",
+            "_profile_version": 1,
+            "_profile_config": {"best_of": 3, "points_to_win": 21, "win_by": 2, "point_cap": 30},
+            "_segment_term": "game",
+        }
+    if sport_key == "padel":
+        if stage_type == "group":
+            return {
+                "_profile_config": {"best_of": 1, "points_to_win": 21, "win_by": 2},
+                "_segment_term": "game",
+            }
+        return {
+            "_profile_key": "padel-standard-advantage",
+            "_profile_version": 1,
+            "_profile_config": {
+                "best_of": 3, "games_to_win_set": 6, "set_win_by": 2,
+                "tie_break_at": "6-6", "game_scoring_method": "advantage",
+                "deciding_set_policy": "standard",
+            },
+            "_segment_term": "set",
+        }
+    return {}
+
+
 def generate_group_to_knockout_schedule(category_key, start_date=None, time_slots=None, court="Meja 1", knockout_format="final_only"):
     teams = load_teams()
     config = load_config()
@@ -825,6 +857,7 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
     curr_date = datetime.strptime(start_date, "%Y-%m-%d")
     slot_idx = 0
     
+    group_profile = _scoring_profile_for(sport_key, "group")
     for g, round_no, a, b in group_matches_queue:
         time_str = time_slots[slot_idx % len(time_slots)]
         matches.append({
@@ -847,6 +880,7 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
             "walkover": False,
             "notes": "",
             "reschedule_history": [],
+            **group_profile,
         })
         slot_idx += 1
         if slot_idx % len(time_slots) == 0:
@@ -855,6 +889,8 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
     knockout_count = 0
     if knockout_format != "no_knockout":
         final_date_str = config.get("final_date", curr_date.strftime("%Y-%m-%d"))
+        semifinal_profile = _scoring_profile_for(sport_key, "semifinal")
+        final_profile = _scoring_profile_for(sport_key, "final")
         if knockout_format == "semi_and_final":
             sf1_id = get_next_id()
             matches.append({
@@ -870,7 +906,7 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "team_a": None,
                 "team_b": None,
                 "qualification_slot_a": "Juara Group A" if len(groups) >= 2 else "Peringkat 1 Group",
-                "qualification_slot_b": "Runner-up Group B" if len(groups) >= 2 else "Peringkat 4 Group",
+                "qualification_slot_b": "Runner-up Group B" if len(groups) >= 2 else "Peringkat 3 Group",
                 "date": final_date_str,
                 "time": "17:00",
                 "court": court,
@@ -878,8 +914,9 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "sets": [],
                 "winner": None,
                 "walkover": False,
-                "notes": f"Semifinal 1 {cat_label}: " + ("Juara Group A vs Runner-up Group B" if len(groups) >= 2 else "Peringkat 1 vs Peringkat 4"),
+                "notes": f"Semifinal 1 {cat_label}: " + ("Juara Group A vs Runner-up Group B" if len(groups) >= 2 else "Peringkat 1 vs Peringkat 3"),
                 "reschedule_history": [],
+                **semifinal_profile,
             })
             sf2_id = get_next_id()
             matches.append({
@@ -895,7 +932,7 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "team_a": None,
                 "team_b": None,
                 "qualification_slot_a": "Juara Group B" if len(groups) >= 2 else "Peringkat 2 Group",
-                "qualification_slot_b": "Runner-up Group A" if len(groups) >= 2 else "Peringkat 3 Group",
+                "qualification_slot_b": "Runner-up Group A" if len(groups) >= 2 else "Peringkat 4 Group",
                 "date": final_date_str,
                 "time": "17:30",
                 "court": court,
@@ -903,8 +940,9 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "sets": [],
                 "winner": None,
                 "walkover": False,
-                "notes": f"Semifinal 2 {cat_label}: " + ("Juara Group B vs Runner-up Group A" if len(groups) >= 2 else "Peringkat 2 vs Peringkat 3"),
+                "notes": f"Semifinal 2 {cat_label}: " + ("Juara Group B vs Runner-up Group A" if len(groups) >= 2 else "Peringkat 2 vs Peringkat 4"),
                 "reschedule_history": [],
+                **semifinal_profile,
             })
             matches.append({
                 "id": get_next_id(),
@@ -930,6 +968,7 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "walkover": False,
                 "notes": f"Grand Final {cat_label}: Pemenang Semifinal 1 vs Pemenang Semifinal 2",
                 "reschedule_history": [],
+                **final_profile,
             })
             knockout_count += 3
         else:
@@ -956,6 +995,7 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "walkover": False,
                 "notes": f"Final {cat_label}: " + ("Juara Group A vs Juara Group B" if len(groups) == 2 else "Laga Final penentuan"),
                 "reschedule_history": [],
+                **final_profile,
             })
             knockout_count += 1
             
@@ -1021,10 +1061,10 @@ def auto_seed_knockout(category_key, matches=None, teams=None, config=None, forc
                 rows = standings_by_group.get("A", [])
                 if m.get("round_label") == "Semifinal 1" and len(rows) >= 4:
                     if not m.get("team_a"): m["team_a"] = rows[0]["code"]; changed = True
-                    if not m.get("team_b"): m["team_b"] = rows[3]["code"]; changed = True
+                    if not m.get("team_b"): m["team_b"] = rows[2]["code"]; changed = True
                 elif m.get("round_label") == "Semifinal 2" and len(rows) >= 4:
                     if not m.get("team_a"): m["team_a"] = rows[1]["code"]; changed = True
-                    if not m.get("team_b"): m["team_b"] = rows[2]["code"]; changed = True
+                    if not m.get("team_b"): m["team_b"] = rows[3]["code"]; changed = True
 
         elif m.get("stage_type") == "final" or m.get("group") == "FINAL":
             depends = m.get("depends_on", [])
@@ -1230,7 +1270,13 @@ def validate_match_segments(match, segments=None):
             candidate_segments,
         )
     best_of = sets_needed_to_win(match) * 2 - 1
-    return validate_match_score(candidate_segments, best_of=best_of)
+    profile_config = match.get("_profile_config") or {}
+    return validate_match_score(
+        candidate_segments,
+        best_of=best_of,
+        points_to_win=int(profile_config.get("points_to_win", 11)),
+        win_by=int(profile_config.get("win_by", 2)),
+    )
 
 
 def compute_winner(match):
@@ -1320,24 +1366,31 @@ def scorekeeper_terms(match, current_segment=None):
         win_by = int(config.get("win_by", 2))
         cap = int(config.get("point_cap", 30))
     elif sport_key == "padel":
-        completed = match.get("sets") or []
-        best_of = int(config.get("best_of", 3))
-        won_a, won_b = compute_sets_won(completed)
-        is_deciding_tiebreak = (
-            config.get("deciding_set_policy") == "match_tiebreak"
-            and len(completed) == best_of - 1
-            and won_a == won_b
-        )
-        if is_deciding_tiebreak:
-            unit_label = "Poin tie-break"
-            target = int(config.get("match_tiebreak_target", 10))
-            win_by = int(config.get("match_tiebreak_win_by", 2))
+        if not config.get("games_to_win_set"):
+            # Babak grup: satu game race-to-N poin yang langsung menentukan pertandingan.
+            unit_label = "Poin"
+            target = int(config.get("points_to_win", 21))
+            win_by = int(config.get("win_by", 2))
             cap = None
         else:
-            unit_label = "Game"
-            target = int(config.get("games_to_win_set", 6))
-            win_by = int(config.get("set_win_by", 2))
-            cap = 7 if config.get("tie_break_at", "6-6") else None
+            completed = match.get("sets") or []
+            best_of = int(config.get("best_of", 3))
+            won_a, won_b = compute_sets_won(completed)
+            is_deciding_tiebreak = (
+                config.get("deciding_set_policy") == "match_tiebreak"
+                and len(completed) == best_of - 1
+                and won_a == won_b
+            )
+            if is_deciding_tiebreak:
+                unit_label = "Poin tie-break"
+                target = int(config.get("match_tiebreak_target", 10))
+                win_by = int(config.get("match_tiebreak_win_by", 2))
+                cap = None
+            else:
+                unit_label = "Game"
+                target = int(config.get("games_to_win_set", 6))
+                win_by = int(config.get("set_win_by", 2))
+                cap = 7 if config.get("tie_break_at", "6-6") else None
 
     return {
         "segment_term": segment_term,

@@ -13,11 +13,9 @@ from zoneinfo import ZoneInfo
 from flask import (
     Flask, render_template, request, redirect, url_for, session, jsonify, abort, flash, send_file
 )
-import boto3
 import io
 import uuid
 from PIL import Image, ImageOps
-import requests
 from werkzeug.security import check_password_hash
 from dotenv import load_dotenv
 
@@ -67,33 +65,16 @@ app.config.update(
     SESSION_COOKIE_SECURE=_env_flag("SESSION_COOKIE_SECURE", default=True),
 )
 
-SUPABASE_S3_ENDPOINT = os.environ.get("SUPABASE_S3_ENDPOINT")
-PUBLIC_ASSET_BASE_URL = os.environ.get("PUBLIC_ASSET_BASE_URL")
-SUPABASE_REGION = os.environ.get("SUPABASE_REGION", "ap-northeast-1")
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME", "media")
-
 Image.MAX_IMAGE_PIXELS = int(os.environ.get("MAX_IMAGE_PIXELS", "25000000"))
 
-
-def _storage_is_configured():
-    return all(
-        (
-            SUPABASE_S3_ENDPOINT,
-            PUBLIC_ASSET_BASE_URL,
-            AWS_ACCESS_KEY_ID,
-            AWS_SECRET_ACCESS_KEY,
-            S3_BUCKET_NAME,
-        )
-    )
-
-GALLERY_UPLOAD_BATCH_LIMIT = 10
+# Media (champion photos, gallery, match documents) lives on local disk under
+# static/uploads, which is a persistent Docker volume -- no external object
+# storage involved.
+LOCAL_UPLOAD_ROOT = os.path.join(app.root_path, "static", "uploads")
 
 
 def compress_and_upload_image(file, match_id):
-    if not _storage_is_configured():
-        return None, "Konfigurasi penyimpanan S3 belum lengkap di environment."
+    """Compress an uploaded image to JPEG and save it under static/uploads."""
     try:
         img = Image.open(file)
         img.verify()
@@ -102,51 +83,54 @@ def compress_and_upload_image(file, match_id):
         img = ImageOps.exif_transpose(img)
         if img.mode in ("RGBA", "P"):
             img = img.convert("RGB")
-        
+
         # Compress the image
-        img.thumbnail((1200, 1200)) # Resize if larger than 1200px
+        img.thumbnail((1200, 1200))  # Resize if larger than 1200px
         output = io.BytesIO()
         img.save(output, format="JPEG", quality=75, optimize=True)
         output.seek(0)
-        
+
         filename = f"docs/{match_id}_{uuid.uuid4().hex[:8]}.jpg"
-        
-        s3_client = boto3.client(
-            's3',
-            endpoint_url=SUPABASE_S3_ENDPOINT,
-            aws_access_key_id=AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-            region_name=SUPABASE_REGION
-        )
-        s3_client.upload_fileobj(
-            output,
-            S3_BUCKET_NAME,
-            filename,
-            ExtraArgs={'ContentType': 'image/jpeg'}
-        )
-        
-        file_url = f"{PUBLIC_ASSET_BASE_URL.rstrip('/')}/{S3_BUCKET_NAME}/{filename}"
+        dest_path = os.path.join(LOCAL_UPLOAD_ROOT, filename)
+        os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+        with open(dest_path, "wb") as f:
+            f.write(output.getbuffer())
+
+        file_url = url_for("static", filename=f"uploads/{filename}", _external=False)
         return file_url, None
     except Exception as e:
         return None, str(e)
 
+
+def _local_upload_path(file_url):
+    """Resolve a static/uploads URL (as returned by compress_and_upload_image)
+    back to its on-disk path, or None if it doesn't point into that tree."""
+    if not file_url:
+        return None
+    path = urlsplit(file_url).path
+    prefix = url_for("static", filename="uploads/", _external=False)
+    if not path.startswith(prefix):
+        return None
+    relative = unquote(path[len(prefix):])
+    full_path = os.path.normpath(os.path.join(LOCAL_UPLOAD_ROOT, relative))
+    if not full_path.startswith(os.path.normpath(LOCAL_UPLOAD_ROOT) + os.sep):
+        return None
+    return full_path
+
+
 def delete_from_supabase(file_url):
-    if not _storage_is_configured():
+    """Delete a previously uploaded file from local disk (name kept for
+    call-site compatibility with the old S3-backed implementation)."""
+    path = _local_upload_path(file_url)
+    if not path:
         return
     try:
-        prefix = f"{PUBLIC_ASSET_BASE_URL.rstrip('/')}/{S3_BUCKET_NAME}/"
-        if file_url.startswith(prefix):
-            filename = file_url[len(prefix):]
-            s3_client = boto3.client(
-                's3',
-                endpoint_url=SUPABASE_S3_ENDPOINT,
-                aws_access_key_id=AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                region_name=SUPABASE_REGION
-            )
-            s3_client.delete_object(Bucket=S3_BUCKET_NAME, Key=filename)
-    except Exception:
+        os.remove(path)
+    except OSError:
         pass
+
+
+GALLERY_UPLOAD_BATCH_LIMIT = 10
 
 ROUND_LABELS = {1: "Babak 1", 2: "Babak 2", 3: "Babak 3", 4: "Final"}
 STATUS_LABELS = {
@@ -292,7 +276,7 @@ def add_security_headers(response):
         "Content-Security-Policy",
         "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; "
         "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com; "
-        "form-action 'self'; img-src 'self' data: https://*.supabase.co https://*.ytimg.com https://*.youtube.com; "
+        "form-action 'self'; img-src 'self' data: https://*.ytimg.com https://*.youtube.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; "
@@ -1927,7 +1911,7 @@ def admin_save_participant():
     teams = utils.load_teams()
     existing = teams.get(code, {})
 
-    # ── Photo upload helper (S3 → local fallback) ──────────────
+    # ── Photo upload helper (compressed, saved to local disk) ──
     def _upload_photo(file_field_name, slug):
         photo_file = request.files.get(file_field_name)
         if not photo_file or photo_file.filename == "":
@@ -1937,29 +1921,11 @@ def admin_save_participant():
         if ext not in allowed:
             flash(f"Format foto tidak didukung: .{ext}. Gunakan JPG, PNG, atau WEBP.", "error")
             return existing.get(slug)
-        if _storage_is_configured():
-            url, err = compress_and_upload_image(photo_file, f"participants/{code}_{slug}")
-            if err:
-                flash(f"Gagal upload foto ke cloud: {err}", "error")
-                return existing.get(slug)
-            return url
-        else:
-            # local filesystem fallback
-            upload_dir = os.path.join(app.root_path, "static", "uploads", "participants")
-            os.makedirs(upload_dir, exist_ok=True)
-            fname = f"{code}_{slug}_{uuid.uuid4().hex[:8]}.jpg"
-            save_path = os.path.join(upload_dir, fname)
-            try:
-                img = Image.open(photo_file)
-                img = ImageOps.exif_transpose(img)
-                if img.mode in ("RGBA", "P"):
-                    img = img.convert("RGB")
-                img.thumbnail((800, 800))
-                img.save(save_path, format="JPEG", quality=80, optimize=True)
-                return url_for("static", filename=f"uploads/participants/{fname}", _external=False)
-            except Exception as exc:
-                flash(f"Gagal menyimpan foto: {exc}", "error")
-                return existing.get(slug)
+        url, err = compress_and_upload_image(photo_file, f"participants/{code}_{slug}")
+        if err:
+            flash(f"Gagal menyimpan foto: {err}", "error")
+            return existing.get(slug)
+        return url
 
     photo1 = _upload_photo("photo1", "photo1")
     photo2 = _upload_photo("photo2", "photo2")
@@ -2306,58 +2272,43 @@ def admin_edit_match(match_id):
 
             updated = _update_match_or_flash(
                 match_id, expected_version, remove_document,
-                "Dokumen berhasil dihapus beserta filenya di S3.",
+                "Dokumen berhasil dihapus beserta filenya.",
             )
             if updated is not None:
                 delete_from_supabase(doc_url)
-                
+
         elif action == "rotate_doc":
             doc_url = request.form.get("doc_url")
             if doc_url and "docs" in m:
                 try:
-                    if not _storage_is_configured():
-                        raise ValueError("Konfigurasi penyimpanan S3 belum lengkap.")
                     clean_url = doc_url.split("?")[0]
-                    with requests.get(doc_url, timeout=(3.05, 10), stream=True) as resp:
-                        if resp.status_code != 200:
-                            raise ValueError("Gagal mengunduh dokumen dari S3 untuk di-rotate.")
-                        body = bytearray()
-                        for chunk in resp.iter_content(64 * 1024):
-                            body.extend(chunk)
-                            if len(body) > app.config["MAX_CONTENT_LENGTH"]:
-                                raise ValueError("Ukuran dokumen melebihi batas unggahan.")
-                        img = Image.open(io.BytesIO(body))
-                        img.verify()
-                        img = Image.open(io.BytesIO(body))
-                        img = img.rotate(-90, expand=True)
-                        if img.mode != "RGB":
-                            img = img.convert("RGB")
-                        
-                        output = io.BytesIO()
-                        img.save(output, format="JPEG", quality=75, optimize=True)
-                        output.seek(0)
-                        
-                        filename = "docs/" + clean_url.split("/")[-1]
-                        s3_client = boto3.client(
-                            's3', endpoint_url=SUPABASE_S3_ENDPOINT,
-                            aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                            region_name=SUPABASE_REGION
-                        )
-                        s3_client.upload_fileobj(output, S3_BUCKET_NAME, filename, ExtraArgs={'ContentType': 'image/jpeg', 'CacheControl': 'no-cache'})
-                        
-                        rotated_url = clean_url + f"?v={utils.now_wib().timestamp()}"
+                    local_path = _local_upload_path(clean_url)
+                    if not local_path or not os.path.exists(local_path):
+                        raise ValueError("Dokumen tidak ditemukan di penyimpanan lokal.")
+                    with open(local_path, "rb") as f:
+                        body = f.read()
+                    img = Image.open(io.BytesIO(body))
+                    img.verify()
+                    img = Image.open(io.BytesIO(body))
+                    img = img.rotate(-90, expand=True)
+                    if img.mode != "RGB":
+                        img = img.convert("RGB")
 
-                        def rotate_document(current):
-                            for document in current.get("docs", []):
-                                if document.get("url", "").split("?")[0] == clean_url:
-                                    document["url"] = rotated_url
-                                    return
-                            raise ValueError("Dokumen tidak ditemukan.")
+                    img.save(local_path, format="JPEG", quality=75, optimize=True)
 
-                        _update_match_or_flash(
-                            match_id, expected_version, rotate_document,
-                            "Dokumen berhasil di-rotate 90 derajat.",
-                        )
+                    rotated_url = clean_url + f"?v={utils.now_wib().timestamp()}"
+
+                    def rotate_document(current):
+                        for document in current.get("docs", []):
+                            if document.get("url", "").split("?")[0] == clean_url:
+                                document["url"] = rotated_url
+                                return
+                        raise ValueError("Dokumen tidak ditemukan.")
+
+                    _update_match_or_flash(
+                        match_id, expected_version, rotate_document,
+                        "Dokumen berhasil di-rotate 90 derajat.",
+                    )
                 except Exception as e:
                     flash(f"Gagal me-rotate dokumen: {e}", "error")
 
