@@ -127,7 +127,7 @@
 <div class="sport-hub-grid">
   {% for sport in sport_cards %}
     {% if sport.enabled %}
-    <a class="sport-hub-card sport-theme-{{ sport.key }}" href="{{ switch_sport_url(sport.key) }}">
+    <a class="sport-hub-card sport-theme-{{ sport.key }}" href="{{ switch_sport_url(sport.key) }}#match-section">
     {% else %}
     <div class="sport-hub-card sport-theme-{{ sport.key }} disabled" aria-disabled="true">
     {% endif %}
@@ -186,6 +186,7 @@
   {% endfor %}
 </div>
 
+<div id="match-section" style="scroll-margin-top: 75px;"></div>
 {% if live_now %}
 <div class="section-head">
   <h2>🔴 Sedang Berlangsung</h2><a class="link-more" href="{{ sport_url('live') }}">Lihat semua &rarr;</a>
@@ -413,5 +414,19 @@
 })();
 </script>
 {% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  var urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('sport') && urlParams.get('sport') !== 'all') {
+    var elem = document.getElementById('match-section');
+    if (elem && !window.location.hash) {
+      setTimeout(function() {
+        elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+    }
+  }
+});
+</script>
 
 {% endblock %}

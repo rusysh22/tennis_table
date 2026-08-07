@@ -318,9 +318,297 @@
           "completed_segment": null
         },
         "at": "2026-08-02T20:34:57+07:00"
+      },
+      {
+        "id": "0e97735f-b069-4d6f-877b-057963d6d78e",
+        "sequence": 14,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            1
+          ],
+          "after_current": [
+            0,
+            2
+          ],
+          "sets_before": [
+            [
+              0,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              0,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-05T17:14:42+07:00"
+      },
+      {
+        "id": "18c76d72-b5e8-4b61-b094-068d9dfb74bc",
+        "sequence": 15,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            2
+          ],
+          "after_current": [
+            0,
+            3
+          ],
+          "sets_before": [
+            [
+              0,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              0,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-05T17:14:43+07:00"
+      },
+      {
+        "id": "983de69e-ebca-4d3b-9031-5dc426d021f2",
+        "sequence": 16,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            3
+          ],
+          "after_current": [
+            0,
+            4
+          ],
+          "sets_before": [
+            [
+              0,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              0,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-05T17:14:44+07:00"
+      },
+      {
+        "id": "aadd63db-2c73-4a67-81ee-0e13dbafb904",
+        "sequence": 17,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            4
+          ],
+          "after_current": [
+            0,
+            5
+          ],
+          "sets_before": [
+            [
+              0,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              0,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-05T17:14:44+07:00"
+      },
+      {
+        "id": "586fadf2-eb45-4dea-84b4-2a17a43f0b05",
+        "sequence": 18,
+        "event_type": "score.point_awarded",
+        "side": "b",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            5
+          ],
+          "after_current": [
+            0,
+            6
+          ],
+          "sets_before": [
+            [
+              0,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              0,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-05T17:14:48+07:00"
+      },
+      {
+        "id": "49ba68df-bac6-4a1d-b451-451c37fcfa7f",
+        "sequence": 19,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            0,
+            6
+          ],
+          "after_current": [
+            1,
+            6
+          ],
+          "sets_before": [
+            [
+              0,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              0,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-05T17:14:49+07:00"
+      },
+      {
+        "id": "c0e90273-1353-4dec-832c-390209e96631",
+        "sequence": 20,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            1,
+            6
+          ],
+          "after_current": [
+            2,
+            6
+          ],
+          "sets_before": [
+            [
+              0,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              0,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-05T17:14:50+07:00"
+      },
+      {
+        "id": "07e46104-817f-4074-9ef0-1c68fed36ab3",
+        "sequence": 21,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            2,
+            6
+          ],
+          "after_current": [
+            3,
+            6
+          ],
+          "sets_before": [
+            [
+              0,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              0,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-05T17:14:51+07:00"
+      },
+      {
+        "id": "a28cdb0e-8c03-4912-aac0-0ddc0bf489dd",
+        "sequence": 22,
+        "event_type": "score.point_awarded",
+        "side": "a",
+        "value": 1,
+        "reversal_of": null,
+        "metadata": {
+          "before_current": [
+            3,
+            6
+          ],
+          "after_current": [
+            4,
+            6
+          ],
+          "sets_before": [
+            [
+              0,
+              11
+            ]
+          ],
+          "sets_after": [
+            [
+              0,
+              11
+            ]
+          ],
+          "completed_segment": null
+        },
+        "at": "2026-08-05T17:14:52+07:00"
       }
     ],
-    "version": 15,
+    "version": 24,
     "votes": {
       "a": {
         "🔥": 1,

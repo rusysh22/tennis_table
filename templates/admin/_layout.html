@@ -60,6 +60,20 @@
         <span>Live &amp; Pengumuman</span>
       </a>
 
+      <span class="ac-nav-label" style="margin-top:1.2rem;">Sistem &amp; Lisensi</span>
+      <a href="{{ url_for('admin_license') }}"
+         class="ac-nav-item {{ 'active' if request.endpoint in ('admin_license', 'admin_activate_license', 'admin_validate_license') }}">
+        <span class="ac-nav-icon">🔑</span>
+        <span>Aktivasi Lisensi</span>
+        {% if license and license.status == 'active' %}
+        <span class="ac-badge" style="background:#10b981; color:#fff;">Active</span>
+        {% elif license and license.status == 'grace' %}
+        <span class="ac-badge" style="background:#f59e0b; color:#fff;">Grace</span>
+        {% else %}
+        <span class="ac-badge" style="background:#ef4444; color:#fff;">!</span>
+        {% endif %}
+      </a>
+
       {% if storage_backend == 'legacy' %}
       <span class="ac-nav-label" style="margin-top:1.2rem;">Utilitas</span>
       <a href="{{ url_for('admin_utilities') }}"
@@ -78,6 +92,7 @@
       </form>
     </div>
   </aside>
+  <div class="ac-backdrop" id="acBackdrop"></div>
 
   {# ══ MAIN WORKSPACE ══════════════════════════════════════ #}
   <div class="ac-workspace">
@@ -114,22 +129,55 @@
 
     {# Page content #}
     <main class="ac-content">
+      {% if license and license.status != 'active' and request.endpoint != 'admin_license' %}
+      <div style="margin-bottom:1.4rem; padding:0.9rem 1.2rem; background:#fffbeb; border:1px solid #fde68a; border-left:4px solid #f59e0b; border-radius:8px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:10px; font-size:0.92rem; color:#92400e;">
+          <span style="font-size:1.4rem;">⚠️</span>
+          <div>
+            <strong>Peringatan Status Lisensi:</strong>
+            {% if license.status == 'unlicensed' %}
+              Website ini belum diaktivasi (Unlicensed). Hubungkan dengan Berlanggan.web.id untuk otorisasi resmi.
+            {% elif license.status == 'grace' %}
+              Lisensi berada dalam masa tenggang (Grace Period). Harap segera top up saldo di Berlanggan.web.id.
+            {% else %}
+              Lisensi Anda saat ini berstatus <strong>{{ license.status.upper() }}</strong> ({{ license.last_message }}).
+            {% endif %}
+          </div>
+        </div>
+        <a href="{{ url_for('admin_license') }}" class="ac-btn ac-btn-sm" style="background:#f59e0b; color:#fff; border:none; font-weight:700;">
+          🔑 Buka Menu Aktivasi &rarr;
+        </a>
+      </div>
+      {% endif %}
       {% block admin_content %}{% endblock %}
     </main>
   </div>
 </div>
 
 <script>
-// Sidebar toggle for mobile
-document.getElementById('acToggle').addEventListener('click', function() {
-  document.getElementById('acSidebar').classList.toggle('open');
+// Sidebar toggle for mobile with backdrop
+const sidebar = document.getElementById('acSidebar');
+const backdrop = document.getElementById('acBackdrop');
+const toggle = document.getElementById('acToggle');
+
+toggle.addEventListener('click', function(e) {
+  e.stopPropagation();
+  sidebar.classList.toggle('open');
+  if (backdrop) backdrop.classList.toggle('open');
 });
+
+if (backdrop) {
+  backdrop.addEventListener('click', function() {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('open');
+  });
+}
+
 // Close sidebar when clicking outside on mobile
 document.addEventListener('click', function(e) {
-  const sidebar = document.getElementById('acSidebar');
-  const toggle = document.getElementById('acToggle');
   if (window.innerWidth < 900 && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
     sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
   }
 });
 </script>

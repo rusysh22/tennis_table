@@ -434,6 +434,8 @@ def load_competition_structure():
     config = load_config()
     divisions = []
     for order, category in enumerate(config.get("categories", []), start=1):
+        knockout_format = category.get("knockout_format", "final_only" if category.get("has_final", True) else "no_knockout")
+        has_final = category.get("has_final", True) and knockout_format != "no_knockout"
         stages = [
             {
                 "id": None,
@@ -442,8 +444,8 @@ def load_competition_structure():
                 "name": "Babak Grup",
                 "sequence": 1,
                 "qualification_policy": (
-                    {"qualifiers_per_group": 1, "destination_stage": "final"}
-                    if category.get("has_final")
+                    {"qualifiers_per_group": 2 if knockout_format == "semi_and_final" else 1, "destination_stage": "semifinal" if knockout_format == "semi_and_final" else "final"}
+                    if has_final
                     else {"champion_from_standings": True}
                 ),
                 "groups": [
@@ -452,17 +454,32 @@ def load_competition_structure():
                 ],
             }
         ]
-        if category.get("has_final"):
+        if has_final:
+            if knockout_format == "semi_and_final":
+                stages.append(
+                    {
+                        "id": None,
+                        "key": "semifinal",
+                        "type": "semifinal",
+                        "name": "Babak Semifinal",
+                        "sequence": 2,
+                        "qualification_policy": {
+                            "source": "group-stage",
+                            "entrants": "top-2-groups",
+                        },
+                        "groups": [],
+                    }
+                )
             stages.append(
                 {
                     "id": None,
                     "key": "final",
                     "type": "final",
                     "name": "Final",
-                    "sequence": 2,
+                    "sequence": 3 if knockout_format == "semi_and_final" else 2,
                     "qualification_policy": {
-                        "source": "group-stage",
-                        "entrants": "group-winners",
+                        "source": "semifinal" if knockout_format == "semi_and_final" else "group-stage",
+                        "entrants": "semifinal-winners" if knockout_format == "semi_and_final" else "group-winners",
                     },
                     "groups": [],
                 }
@@ -683,6 +700,33 @@ def set_champion_photo(champion_key, photo_url=None, uploaded_at=None):
     save_json("config.json", config)
 
 
+def list_gallery_photos():
+    """Standalone galeri photos uploaded by admin, not tied to a match."""
+    config = load_config()
+    return config.get("gallery_photos", [])
+
+
+def add_gallery_photos(urls):
+    config = load_config()
+    photos = config.setdefault("gallery_photos", [])
+    uploaded_at = now_wib(config.get("timezone")).isoformat(timespec="seconds")
+    for url in urls:
+        photos.append({"id": uuid.uuid4().hex, "url": url, "uploaded_at": uploaded_at})
+    save_config(config)
+
+
+def delete_gallery_photo(photo_id):
+    """Remove one standalone galeri photo by id and return its url, or None if not found."""
+    config = load_config()
+    photos = config.get("gallery_photos", [])
+    target = next((p for p in photos if p.get("id") == photo_id), None)
+    if target is None:
+        return None
+    config["gallery_photos"] = [p for p in photos if p.get("id") != photo_id]
+    save_config(config)
+    return target.get("url")
+
+
 def clean_youtube_embed_url(url):
     if not url or not url.strip():
         return ""
@@ -729,7 +773,7 @@ def dynamic_circle_rounds(codes):
     return rounds
 
 
-def generate_group_to_knockout_schedule(category_key, start_date=None, time_slots=None, court="Meja 1"):
+def generate_group_to_knockout_schedule(category_key, start_date=None, time_slots=None, court="Meja 1", knockout_format="final_only"):
     teams = load_teams()
     config = load_config()
     matches = load_matches()
@@ -738,6 +782,10 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
     if not category:
         raise ValueError(f"Divisi/Kategori '{category_key}' tidak ditemukan dalam konfigurasi.")
     
+    category["knockout_format"] = knockout_format
+    category["has_final"] = (knockout_format != "no_knockout")
+    save_config(config)
+
     sport_key = category.get("sport_key", "table-tennis")
     cat_label = category.get("label", category_key)
     groups = category.get("groups", ["A"])
@@ -805,32 +853,86 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
             curr_date += timedelta(days=1)
             
     knockout_count = 0
-    if has_final or len(groups) > 1:
+    if knockout_format != "no_knockout":
         final_date_str = config.get("final_date", curr_date.strftime("%Y-%m-%d"))
-        if len(groups) == 2:
+        if knockout_format == "semi_and_final":
+            sf1_id = get_next_id()
             matches.append({
-                "id": get_next_id(),
+                "id": sf1_id,
                 "category": category_key,
                 "category_label": cat_label,
                 "sport_key": sport_key,
-                "group": "FINAL",
+                "group": "KNOCKOUT",
                 "round": 4,
-                "round_label": "Final",
-                "stage_type": "final",
+                "round_label": "Semifinal 1",
+                "stage_type": "semifinal",
+                "stage_key": "semifinal",
                 "team_a": None,
                 "team_b": None,
+                "qualification_slot_a": "Juara Group A" if len(groups) >= 2 else "Peringkat 1 Group",
+                "qualification_slot_b": "Runner-up Group B" if len(groups) >= 2 else "Peringkat 4 Group",
                 "date": final_date_str,
-                "time": "18:00",
+                "time": "17:00",
                 "court": court,
                 "status": "scheduled",
                 "sets": [],
                 "winner": None,
                 "walkover": False,
-                "notes": f"Final {cat_label}: Juara Group A vs Juara Group B",
+                "notes": f"Semifinal 1 {cat_label}: " + ("Juara Group A vs Runner-up Group B" if len(groups) >= 2 else "Peringkat 1 vs Peringkat 4"),
                 "reschedule_history": [],
             })
-            knockout_count += 1
-        elif len(groups) > 2 or (len(groups) == 1 and len(cat_teams) >= 3):
+            sf2_id = get_next_id()
+            matches.append({
+                "id": sf2_id,
+                "category": category_key,
+                "category_label": cat_label,
+                "sport_key": sport_key,
+                "group": "KNOCKOUT",
+                "round": 4,
+                "round_label": "Semifinal 2",
+                "stage_type": "semifinal",
+                "stage_key": "semifinal",
+                "team_a": None,
+                "team_b": None,
+                "qualification_slot_a": "Juara Group B" if len(groups) >= 2 else "Peringkat 2 Group",
+                "qualification_slot_b": "Runner-up Group A" if len(groups) >= 2 else "Peringkat 3 Group",
+                "date": final_date_str,
+                "time": "17:30",
+                "court": court,
+                "status": "scheduled",
+                "sets": [],
+                "winner": None,
+                "walkover": False,
+                "notes": f"Semifinal 2 {cat_label}: " + ("Juara Group B vs Runner-up Group A" if len(groups) >= 2 else "Peringkat 2 vs Peringkat 3"),
+                "reschedule_history": [],
+            })
+            matches.append({
+                "id": get_next_id(),
+                "category": category_key,
+                "category_label": cat_label,
+                "sport_key": sport_key,
+                "group": "FINAL",
+                "round": 5,
+                "round_label": "Final",
+                "stage_type": "final",
+                "stage_key": "final",
+                "team_a": None,
+                "team_b": None,
+                "qualification_slot_a": "Pemenang Semifinal 1",
+                "qualification_slot_b": "Pemenang Semifinal 2",
+                "depends_on": [sf1_id, sf2_id],
+                "date": final_date_str,
+                "time": "18:30",
+                "court": court,
+                "status": "scheduled",
+                "sets": [],
+                "winner": None,
+                "walkover": False,
+                "notes": f"Grand Final {cat_label}: Pemenang Semifinal 1 vs Pemenang Semifinal 2",
+                "reschedule_history": [],
+            })
+            knockout_count += 3
+        else:
             matches.append({
                 "id": get_next_id(),
                 "category": category_key,
@@ -840,8 +942,11 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "round": 4,
                 "round_label": "Final",
                 "stage_type": "final",
+                "stage_key": "final",
                 "team_a": None,
                 "team_b": None,
+                "qualification_slot_a": "Juara Group A" if len(groups) >= 2 else "Peringkat 1 Group",
+                "qualification_slot_b": "Juara Group B" if len(groups) == 2 else ("Peringkat 2 Group" if len(groups) == 1 else "Juara Group Lainnya"),
                 "date": final_date_str,
                 "time": "18:00",
                 "court": court,
@@ -849,13 +954,105 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "sets": [],
                 "winner": None,
                 "walkover": False,
-                "notes": f"Final {cat_label} (Knockout)",
+                "notes": f"Final {cat_label}: " + ("Juara Group A vs Juara Group B" if len(groups) == 2 else "Laga Final penentuan"),
                 "reschedule_history": [],
             })
             knockout_count += 1
             
     save_matches(matches)
+    try:
+        auto_seed_knockout(category_key, matches=matches, teams=teams, config=config, force=True)
+    except Exception:
+        pass
     return len(group_matches_queue), knockout_count
+
+
+def auto_seed_knockout(category_key, matches=None, teams=None, config=None, force=False):
+    if matches is None:
+        matches = load_matches()
+    if teams is None:
+        teams = load_teams()
+    if config is None:
+        config = load_config()
+
+    category = next((c for c in config.get("categories", []) if c.get("key") == category_key), None)
+    if not category:
+        return False
+
+    cat_matches = [m for m in matches if m.get("category") == category_key]
+    group_matches = [m for m in cat_matches if m.get("stage_type") in ("group", "round_robin") and m.get("group") not in ("FINAL", "KNOCKOUT", "SEMIFINAL")]
+    
+    if not force and group_matches:
+        all_completed = all(
+            m.get("status") in ("completed", "cancelled") or is_valid_completed_match(m) or m.get("walkover")
+            for m in group_matches
+        )
+        if not all_completed and len(group_matches) > 0:
+            pass # Continue to check Semifinals -> Finals advancement
+
+    groups = category.get("groups", ["A"])
+    standings_by_group = {}
+    policy_config = (category.get("standing_policy") or {}).get("config") or DEFAULT_STANDING_POLICY
+    for g in groups:
+        rows = compute_standings(cat_matches, teams, category_key, g, policy_config=policy_config)
+        standings_by_group[g] = rows
+
+    changed = False
+    for m in cat_matches:
+        if m.get("stage_type") in ("semifinal", "semi_final", "knockout") or m.get("round_label") in ("Semifinal 1", "Semifinal 2"):
+            if len(groups) >= 2 and "A" in standings_by_group and "B" in standings_by_group:
+                rows_a = standings_by_group.get("A", [])
+                rows_b = standings_by_group.get("B", [])
+                if m.get("round_label") == "Semifinal 1":
+                    if len(rows_a) >= 1 and not m.get("team_a"):
+                        m["team_a"] = rows_a[0]["code"]
+                        changed = True
+                    if len(rows_b) >= 2 and not m.get("team_b"):
+                        m["team_b"] = rows_b[1]["code"]
+                        changed = True
+                elif m.get("round_label") == "Semifinal 2":
+                    if len(rows_b) >= 1 and not m.get("team_a"):
+                        m["team_a"] = rows_b[0]["code"]
+                        changed = True
+                    if len(rows_a) >= 2 and not m.get("team_b"):
+                        m["team_b"] = rows_a[1]["code"]
+                        changed = True
+            elif len(groups) == 1 and "A" in standings_by_group:
+                rows = standings_by_group.get("A", [])
+                if m.get("round_label") == "Semifinal 1" and len(rows) >= 4:
+                    if not m.get("team_a"): m["team_a"] = rows[0]["code"]; changed = True
+                    if not m.get("team_b"): m["team_b"] = rows[3]["code"]; changed = True
+                elif m.get("round_label") == "Semifinal 2" and len(rows) >= 4:
+                    if not m.get("team_a"): m["team_a"] = rows[1]["code"]; changed = True
+                    if not m.get("team_b"): m["team_b"] = rows[2]["code"]; changed = True
+
+        elif m.get("stage_type") == "final" or m.get("group") == "FINAL":
+            depends = m.get("depends_on", [])
+            if depends:
+                sf_matches = {sf.get("id"): sf for sf in cat_matches if sf.get("id") in depends}
+                if len(depends) >= 2:
+                    sf1 = sf_matches.get(depends[0])
+                    sf2 = sf_matches.get(depends[1])
+                    if sf1 and sf1.get("winner") and m.get("team_a") != sf1.get("winner"):
+                        m["team_a"] = sf1["winner"]
+                        changed = True
+                    if sf2 and sf2.get("winner") and m.get("team_b") != sf2.get("winner"):
+                        m["team_b"] = sf2["winner"]
+                        changed = True
+            else:
+                if len(groups) >= 2 and "A" in standings_by_group and "B" in standings_by_group:
+                    rows_a = standings_by_group.get("A", [])
+                    rows_b = standings_by_group.get("B", [])
+                    if len(rows_a) >= 1 and not m.get("team_a"):
+                        m["team_a"] = rows_a[0]["code"]
+                        changed = True
+                    if len(rows_b) >= 1 and not m.get("team_b"):
+                        m["team_b"] = rows_b[0]["code"]
+                        changed = True
+
+    if changed:
+        save_matches(matches)
+    return changed
 
 
 def list_api_matches(
@@ -1599,10 +1796,12 @@ def _matches_for_stage(matches, division_key, stage):
     if stage.get("type") in {"group", "round_robin"}:
         return [
             match for match in division_matches
-            if match.get("group") and match.get("group") != "FINAL"
+            if match.get("group") and match.get("group") not in {"FINAL", "KNOCKOUT", "SEMIFINAL"} and match.get("stage_type", "group") in {"group", "round_robin"}
         ]
     if stage.get("type") == "final":
-        return [match for match in division_matches if match.get("group") == "FINAL"]
+        return [match for match in division_matches if match.get("group") == "FINAL" or match.get("stage_type") == "final"]
+    if stage.get("type") in {"semifinal", "semi_final", "knockout"}:
+        return [match for match in division_matches if match.get("group") in {"KNOCKOUT", "SEMIFINAL"} or match.get("stage_type") in {"semifinal", "semi_final", "knockout"}]
     return []
 
 

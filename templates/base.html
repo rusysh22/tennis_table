@@ -109,7 +109,7 @@
        class="sport-pill {{ 'active' if selected_sport == 'all' }}">Semua Cabang</a>
     {% for sport in sports %}
       {% if sport.enabled %}
-      <a href="{{ switch_sport_url(sport.key) }}"
+      <a href="{{ switch_sport_url(sport.key) }}{{ '#match-section' if request.endpoint == 'index' and sport.key != 'all' else '' }}"
          class="sport-pill {{ 'active' if selected_sport == sport.key }}"
          aria-current="{{ 'page' if selected_sport == sport.key else 'false' }}">
         <span aria-hidden="true">{{ sport.icon }}</span> {{ sport.name }}

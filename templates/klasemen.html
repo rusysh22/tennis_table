@@ -75,7 +75,6 @@
                       <small class="player-names">
                         <span class="player-line">{{ row.player1 }}</span>
                         {% if row.player2 %}<span class="player-line">{{ row.player2 }}</span>{% endif %}
-                        {% if row.tie_break %}<span class="player-line">Tie-break: {{ row.tie_break }}</span>{% endif %}
                       </small>
                     </div>
                   </td>
@@ -95,13 +94,6 @@
         {% endfor %}
       {% endif %}
     {% endfor %}
-
-    {% if division.standing_policy %}
-    <p class="standing-policy-note">
-      {{ division.standing_summary }}. Urutan tie-break:
-      {{ division.standing_policy.config.tie_break_order|join(' → ') }}.
-    </p>
-    {% endif %}
   </section>
   {% endfor %}
 {% else %}

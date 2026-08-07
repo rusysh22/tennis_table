@@ -175,9 +175,10 @@ body::before{
 }
 
 .sport-switcher{
-  top:72px;
+  top:var(--header-h, 74px);
+  margin-top:0 !important;
   border-bottom:1px solid var(--line);
-  background:rgba(244,251,252,.78);
+  background:rgba(244,251,252,.85);
   backdrop-filter:blur(18px) saturate(140%);
 }
 .sport-switcher-inner{ max-width:1240px; padding:10px 1.35rem; gap:9px; }
@@ -471,23 +472,138 @@ fieldset form > label input:focus,fieldset form > label textarea:focus,
 .badge-sport.sport-badminton{ background:#ccfbf1; color:#0f766e; }
 .team-chip{ border-radius:9px; box-shadow:0 2px 7px rgba(3,32,47,.13); }
 
-.sport-hub-grid,.qualification-grid,.rules-overview-grid{ gap:1rem; }
-.sport-hub-card,.rule-profile-card{ border-radius:18px; }
-.sport-hub-card{ padding:1.15rem; }
-.sport-hub-icon{
-  display:grid;
-  place-items:center;
-  width:48px;
-  height:48px;
-  border-radius:14px;
-  background:linear-gradient(135deg,var(--blue-100),var(--green-100));
-  font-size:1.45rem;
+.qualification-grid,.rules-overview-grid{ gap:1rem; }
+.rule-profile-card{ border-radius:18px; }
+.rule-profile-head h3{ color:var(--navy-900); letter-spacing:-.02em; }
+.rule-profile-head div span,.rule-profile p{ color:var(--muted); }
+.sport-coming-soon{ background:#e8f0f2; color:#526b76; padding:0.25rem 0.65rem; border-radius:99px; font-size:0.72rem; font-weight:800; text-transform:uppercase; }
+
+/* ================== ULTRA-PREMIUM SPORT HUB CARDS ================== */
+.sport-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.35rem;
+  margin-bottom: 2.5rem;
 }
-.sport-hub-head h3,.rule-profile-head h3{ color:var(--navy-900); letter-spacing:-.02em; }
-.sport-hub-head div span,.rule-profile-head div span,.rule-profile p{ color:var(--muted); }
-.sport-hub-stats{ color:var(--blue-800); }
-.sport-hub-stats strong{ color:var(--green-700); }
-.sport-coming-soon{ background:#e8f0f2; color:#526b76; }
+.sport-hub-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.35rem 1.4rem;
+  border-radius: 22px;
+  background: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04), 0 2px 6px rgba(15, 23, 42, 0.02);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+}
+.sport-hub-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--blue-700, #0369a1), var(--green-600, #059669));
+  opacity: 0.85;
+  transition: height 0.25s ease, opacity 0.25s ease;
+}
+.sport-hub-card:not(.disabled):hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.11), 0 6px 16px rgba(15, 23, 42, 0.06);
+  border-color: rgba(14, 165, 233, 0.45);
+}
+.sport-hub-card:not(.disabled):hover::before {
+  height: 6px;
+  opacity: 1;
+}
+.sport-hub-card.disabled {
+  opacity: 0.62;
+  background: #f8fafc;
+}
+
+/* Sport Custom Themes */
+.sport-theme-table-tennis::before { background: linear-gradient(90deg, #0284c7, #3b82f6); }
+.sport-theme-table-tennis .sport-card-icon-wrap { background: linear-gradient(135deg, #e0f2fe, #dbeafe); color: #0284c7; border: 1px solid #bae6fd; }
+.sport-theme-table-tennis .sport-card-progress-bar { background: linear-gradient(90deg, #38bdf8, #0284c7); }
+
+.sport-theme-padel::before { background: linear-gradient(90deg, #059669, #10b981); }
+.sport-theme-padel .sport-card-icon-wrap { background: linear-gradient(135deg, #d1fae5, #ecfdf5); color: #059669; border: 1px solid #a7f3d0; }
+.sport-theme-padel .sport-card-progress-bar { background: linear-gradient(90deg, #34d399, #059669); }
+
+.sport-theme-badminton::before { background: linear-gradient(90deg, #7c3aed, #a855f7); }
+.sport-theme-badminton .sport-card-icon-wrap { background: linear-gradient(135deg, #f3e8ff, #faf5ff); color: #7c3aed; border: 1px solid #e9d5ff; }
+.sport-theme-badminton .sport-card-progress-bar { background: linear-gradient(90deg, #c084fc, #7c3aed); }
+
+/* Top Header & Icon */
+.sport-card-top {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  margin-bottom: 1.2rem;
+}
+.sport-card-icon-wrap {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.sport-card-icon { font-size: 1.8rem; line-height: 1; }
+.sport-hub-card:not(.disabled):hover .sport-card-icon-wrap { transform: scale(1.08) rotate(-4deg); }
+.sport-card-title-area { flex: 1; min-width: 0; }
+.sport-card-title-area h3 {
+  margin: 0 0 0.25rem !important;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--navy-950, #0f172a);
+  letter-spacing: -0.02em;
+}
+.sport-card-div-tag { display: inline-block; font-size: 0.79rem; font-weight: 600; color: #64748b; }
+.sport-arrow {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #475569;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  transition: all 0.25s ease;
+}
+.sport-hub-card:not(.disabled):hover .sport-arrow { background: var(--navy-950, #0f172a); color: #ffffff; transform: translateX(3px); }
+
+/* Stats & Progress */
+.sport-card-stats-bar { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.85rem; }
+.sport-stat-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.38rem 0.78rem; border-radius: 99px; font-size: 0.78rem; font-weight: 600; line-height: 1; }
+.stat-live { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.stat-offline { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+.stat-completed { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+.sport-card-progress { width: 100%; height: 6px; background: #f1f5f9; border-radius: 99px; overflow: hidden; margin-bottom: 1.15rem; }
+.sport-card-progress-bar { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+
+/* Next Match Box */
+.sport-card-next-match {
+  margin-top: auto;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.85rem 1.1rem;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.sport-hub-card:not(.disabled):hover .sport-card-next-match { background: #f1f5f9; border-color: #cbd5e1; }
+.next-match-header { display: flex; align-items: center; justify-content: space-between; font-size: 0.73rem; font-weight: 600; color: #64748b; margin-bottom: 0.45rem; }
+.next-tag { color: #0284c7; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.next-match-teams { font-size: 1.05rem; color: #0f172a; display: flex; align-items: center; gap: 0.5rem; }
+.vs-badge { font-size: 0.7rem; font-weight: 800; background: #e2e8f0; color: #475569; padding: 0.15rem 0.4rem; border-radius: 6px; text-transform: uppercase; }
+.next-match-empty { display: flex; align-items: center; gap: 0.65rem; color: #64748b; font-size: 0.83rem; font-weight: 500; line-height: 1.4; }
+.empty-icon { font-size: 1.2rem; }
 .rule-profile{ border-top-color:var(--line); }
 .rule-profile summary{ color:var(--blue-800); }
 .rule-config-list dt{ color:var(--muted); }
@@ -1502,7 +1618,7 @@ legend{ color:var(--blue-800); }
    SIGNATURE ARENA HEADER
    A two-level competition command bar shared by every route.
    ========================================================= */
-:root{ --header-h:104px; }
+:root{ --header-h:74px; }
 
 .site-header{
   z-index:80;
@@ -1752,7 +1868,7 @@ legend{ color:var(--blue-800); }
 }
 
 @media (max-width:860px){
-  :root{ --header-h:90px; }
+  :root{ --header-h:64px; }
   body.nav-open{ overflow:hidden; }
   body.nav-open::after{
     content:"";

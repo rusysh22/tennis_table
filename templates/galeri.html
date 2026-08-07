@@ -4,13 +4,29 @@
 {% macro gallery_item(p, delay=0) %}
 <div class="gallery-item" style="animation-delay: {{ delay }}s;">
   <div class="gallery-img-wrap">
-    <img src="{{ p.url }}" class="public-doc-img gallery-img" alt="Foto {{ p.team_a_code }} vs {{ p.team_b_code }}" data-full-src="{{ p.url }}" loading="lazy">
+    <img src="{{ p.url }}" class="public-doc-img gallery-img"
+      alt="{% if p.is_standalone %}Foto Galeri{% else %}Foto {{ p.team_a_code }} vs {{ p.team_b_code }}{% endif %}"
+      data-full-src="{{ p.url }}" loading="lazy">
     <div class="gallery-overlay">
       <div class="gallery-info">
+        {% if p.is_standalone %}
+        <span class="gallery-teams">📸 Galeri</span>
+        <span class="gallery-meta">{{ p.date_label }}</span>
+        {% else %}
         <span class="gallery-teams">{{ p.team_a_code }} vs {{ p.team_b_code }}</span>
         <span class="gallery-meta">{{ p.category_label }} · {{ p.date_label }}</span>
+        {% endif %}
       </div>
     </div>
+    {% if is_admin and p.is_standalone %}
+    <form method="post" action="{{ url_for('admin_delete_gallery_photo') }}"
+      style="position:absolute; top:6px; right:6px;" onsubmit="return confirm('Hapus foto ini dari galeri?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="photo_id" value="{{ p.photo_id }}">
+      <button type="submit" title="Hapus"
+        style="background:rgba(0,0,0,0.65); border:none; color:#fff; border-radius:50%; width:26px; height:26px; font-size:13px; cursor:pointer; line-height:1;">✕</button>
+    </form>
+    {% endif %}
   </div>
 </div>
 {% endmacro %}
@@ -27,6 +43,28 @@
     </p>
   </div>
 </div>
+
+{% if is_admin %}
+<div class="admin-shell" style="margin-bottom:1.2rem;">
+  <form method="post" action="{{ url_for('admin_upload_gallery_photos') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="champion-upload-actions">
+      <label class="btn btn-outline champion-upload-button">
+        📷 Kamera
+        <input type="file" name="gallery_photos" accept="image/*" capture="environment" hidden onchange="this.form.submit()">
+      </label>
+      <label class="btn btn-outline champion-upload-button">
+        📁 Pilih Foto (maks. 10)
+        <input type="file" name="gallery_photos" accept="image/jpeg, image/png, image/webp" multiple hidden
+          onchange="if(this.files.length>10){alert('Maksimal 10 foto per sekali unggah. Silakan pilih ulang.'); this.value='';}else{this.form.submit();}">
+      </label>
+    </div>
+  </form>
+  <p style="font-size:.75rem; color:#a0677a; margin-top:.6rem; text-align:center;">
+    Foto galeri tidak perlu terkait pertandingan tertentu dan otomatis dikompres. Maksimal 10 foto per sekali unggah.
+  </p>
+</div>
+{% endif %}
 
 {% if photos %}
   {% if photos|length >= 9 %}

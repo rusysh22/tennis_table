@@ -131,40 +131,61 @@
           <span style="font-size:2.2rem;">🎾</span>
           <div>
             <h2 style="margin:0; font-size:1.25rem; color:#fff;">Padel (Racquet Sport)</h2>
-            <small style="color: rgba(255,255,255,0.85); font-weight:500;">Regulasi FIP — Set & Game Based Scoring</small>
+            <small style="color: rgba(255,255,255,0.85); font-weight:500;">Opsi format FIP Standar, Golden Point, atau Americano (21 Poin)</small>
           </div>
         </div>
-        <span class="badge" style="background: rgba(255,255,255,0.2); color:#fff; font-size:.85rem; padding:.35rem .8rem;">Default: Best of 3 Sets / 6 Games per Set</span>
+        <span class="badge" style="background: rgba(255,255,255,0.2); color:#fff; font-size:.85rem; padding:.35rem .8rem;">Multi-Option Format</span>
       </div>
     </div>
     <div class="ac-card-body" style="padding: 1.5rem;">
+      
+      {# ── Preset Opsi Cepat Padel ── #}
+      <div style="margin-bottom:1.4rem; padding:1rem 1.2rem; background:var(--surface-soft, #f8fafc); border-radius:12px; border:1px solid rgba(126,34,206,0.2);">
+        <p style="font-size:.78rem; font-weight:800; color:var(--navy-900, #0f172a); margin:0 0 .6rem;">⚡ Pilih Cepat Format / Opsi Permainan Padel:</p>
+        <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+          <button type="button" class="ac-btn ac-btn-sm" style="background:#f3e8ff; color:#6b21a8; border:1px solid #d8b4fe;" onclick="applyPadelPreset('americano_21')">🏆 Americano 21 Poin (1 Game Cepat)</button>
+          <button type="button" class="ac-btn ac-btn-sm" style="background:#f3e8ff; color:#6b21a8; border:1px solid #d8b4fe;" onclick="applyPadelPreset('americano_21_best3')">🏸 Americano 21 Poin (Best of 3)</button>
+          <button type="button" class="ac-btn ac-btn-sm" style="background:#f3e8ff; color:#6b21a8; border:1px solid #d8b4fe;" onclick="applyPadelPreset('golden_point')">⚡ Golden Point (6 Games / Set No-Ad)</button>
+          <button type="button" class="ac-btn ac-btn-sm" style="background:#f3e8ff; color:#6b21a8; border:1px solid #d8b4fe;" onclick="applyPadelPreset('standard')">🎾 Standar Tradisional (Advantage)</button>
+        </div>
+      </div>
+
       <div class="ac-form-row">
         <div class="ac-form-field">
-          <label>Format Pertandingan (Best of Sets)</label>
-          <select name="best_of_padel">
-            <option value="3" {% if pd.get('best_of') == 3 %}selected{% endif %}>Best of 3 Sets (Standar Profesional FIP)</option>
-            <option value="1" {% if pd.get('best_of') == 1 %}selected{% endif %}>1 Pro Set (Main sampai 8 atau 9 games)</option>
+          <label>Sistem &amp; Format Skor (Scoring Method)</label>
+          <select name="game_scoring_method_padel" id="padel_method" onchange="togglePadelFields()">
+            <option value="rally_21_win_by_2" {% if pd.get('game_scoring_method') == 'rally_21_win_by_2' %}selected{% endif %}>Americano / Rally 21 Poin (Deuce Selisih 2)</option>
+            <option value="rally_21_sudden_death" {% if pd.get('game_scoring_method') == 'rally_21_sudden_death' %}selected{% endif %}>Americano / Rally 21 Poin (Sudden Death / Golden Point di 20-20)</option>
+            <option value="rally_32" {% if pd.get('game_scoring_method') == 'rally_32' %}selected{% endif %}>Mexicano / Rally 32 Poin</option>
+            <option value="golden_point" {% if pd.get('game_scoring_method') == 'golden_point' %}selected{% endif %}>Golden Point (Standar FIP 6 Games / Set No-Ad)</option>
+            <option value="advantage" {% if pd.get('game_scoring_method') in ('advantage', '') %}selected{% endif %}>Advantage (Tradisional 40-40 Deuce &rarr; Ad)</option>
           </select>
-          <small>Padel dihitung berdasarkan Set (bukan sekadar Game angka murni)</small>
+          <small>Pilih sistem kalkulasi poin yang diterapkan untuk cabang Padel</small>
         </div>
         <div class="ac-form-field">
-          <label>Target Game per Set</label>
-          <input type="number" name="games_to_win_set_padel" value="{{ pd.get('games_to_win_set', 6) }}" min="1" max="10" required>
-          <small>Jumlah game untuk memenangkan 1 Set (biasanya 6, misal 6-3 atau 6-4)</small>
-        </div>
-        <div class="ac-form-field">
-          <label>Sistem Skor Game (Deuce Rule)</label>
-          <select name="game_scoring_method_padel">
-            <option value="advantage" {% if pd.get('game_scoring_method') == 'advantage' %}selected{% endif %}>Advantage (Deuce konvensional 40-40 &rarr; Ad)</option>
-            <option value="golden_point" {% if pd.get('game_scoring_method') == 'golden_point' %}selected{% endif %}>Golden Point (No-Ad / 40-40 penentuan langsung satu poin)</option>
+          <label>Format Laga / Set (Best of)</label>
+          <select name="best_of_padel" id="padel_best_of">
+            <option value="1" {% if pd.get('best_of') == 1 %}selected{% endif %}>1 Set / Game Langsung (Cepat / Efisien Waktu)</option>
+            <option value="3" {% if pd.get('best_of') == 3 %}selected{% endif %}>Best of 3 Sets / Games (Standar Profesional / Semi-Final)</option>
+            <option value="5" {% if pd.get('best_of') == 5 %}selected{% endif %}>Best of 5 Sets / Games</option>
           </select>
-          <small>Golden Point sering Dipakai di turnamen klub untuk mempercepat waktu</small>
+          <small>Jumlah maksimal set atau game per pertandingan</small>
+        </div>
+        <div class="ac-form-field" id="box_padel_points">
+          <label>Target Poin per Laga (Jika Rally Point)</label>
+          <input type="number" name="points_to_win_padel" id="padel_points" value="{{ pd.get('points_to_win', 21) }}" min="0" max="50">
+          <small>Isi angka target poin (misal 21 untuk Americano, atau 0 untuk sistem Set konvensional)</small>
+        </div>
+        <div class="ac-form-field" id="box_padel_games">
+          <label>Target Game per Set (Jika Sistem Set)</label>
+          <input type="number" name="games_to_win_set_padel" id="padel_games" value="{{ pd.get('games_to_win_set', 6) }}" min="0" max="10">
+          <small>Jumlah game untuk menang 1 Set (biasanya 6, misal 6-3 atau 6-4)</small>
         </div>
       </div>
       <div class="ac-form-row" style="grid-template-columns: 1fr;">
         <div class="ac-form-field">
-          <label>Catatan & Penjelasan Aturan untuk Pemain / Wasit</label>
-          <textarea name="notes_padel" rows="2">{{ pd.get('notes', '') }}</textarea>
+          <label>Catatan &amp; Penjelasan Aturan untuk Pemain / Wasit</label>
+          <textarea name="notes_padel" id="padel_notes" rows="3">{{ pd.get('notes', '') }}</textarea>
         </div>
       </div>
     </div>
@@ -176,4 +197,55 @@
   </div>
 </form>
 
+<script>
+function applyPadelPreset(type) {
+  const method = document.getElementById('padel_method');
+  const bestOf = document.getElementById('padel_best_of');
+  const points = document.getElementById('padel_points');
+  const games = document.getElementById('padel_games');
+  const notes = document.getElementById('padel_notes');
+
+  if (type === 'americano_21') {
+    method.value = 'rally_21_win_by_2';
+    bestOf.value = '1';
+    points.value = '21';
+    games.value = '0';
+    notes.value = 'Format Americano 21 Poin (1 Game Langsung): Setiap rally bernilai 1 poin (tanpa sistem 15-30-40). Pertandingan dimenangkan tim pertama yang menyentuh 21 poin dengan selisih minimal 2 poin (deuce 20-20). Servis bergantian setiap 2 poin, dan pindah lapangan saat skor mencapai 11 poin.';
+  } else if (type === 'americano_21_best3') {
+    method.value = 'rally_21_win_by_2';
+    bestOf.value = '3';
+    points.value = '21';
+    games.value = '0';
+    notes.value = 'Format Rally Point 21 — Best of 3 Games: Siapa cepat memenangkan 2 game @ 21 poin. Setiap reli menghasilkan poin. Servis berotasi setiap 2 poin bergantian.';
+  } else if (type === 'golden_point') {
+    method.value = 'golden_point';
+    bestOf.value = '3';
+    points.value = '0';
+    games.value = '6';
+    notes.value = 'Standar FIP Golden Point (No-Ad): Best of 3 Sets, 6 games per set. Jika skor dalam game imbang 40-40, diterapkan Golden Point (poin penentuan tunggal tanpa advantage). Tiebreak di skor 6-6.';
+  } else if (type === 'standard') {
+    method.value = 'advantage';
+    bestOf.value = '3';
+    points.value = '0';
+    games.value = '6';
+    notes.value = 'Standar Tradisional Padel: Best of 3 Sets, 6 games per set dengan aturan advantage tradisional jika skor mencapai deuce 40-40. Tiebreak di skor 6-6.';
+  }
+  togglePadelFields();
+}
+
+function togglePadelFields() {
+  const val = document.getElementById('padel_method').value;
+  const boxPoints = document.getElementById('box_padel_points');
+  const boxGames = document.getElementById('box_padel_games');
+  if (val && val.startsWith('rally')) {
+    if (boxPoints) boxPoints.style.opacity = '1';
+    if (boxGames) boxGames.style.opacity = '0.4';
+  } else {
+    if (boxPoints) boxPoints.style.opacity = '0.4';
+    if (boxGames) boxGames.style.opacity = '1';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', togglePadelFields);
+</script>
 {% endblock %}

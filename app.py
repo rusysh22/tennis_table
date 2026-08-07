@@ -23,6 +23,7 @@ from dotenv import load_dotenv
 
 import og_image
 import utils
+import license_client
 
 load_dotenv()
 
@@ -57,7 +58,7 @@ if not app.secret_key:
 app.config.update(
     ADMIN_PASSWORD=os.environ.get("ADMIN_PASSWORD"),
     ADMIN_PASSWORD_HASH=os.environ.get("ADMIN_PASSWORD_HASH"),
-    MAX_CONTENT_LENGTH=int(os.environ.get("MAX_UPLOAD_BYTES", 8 * 1024 * 1024)),
+    MAX_CONTENT_LENGTH=int(os.environ.get("MAX_UPLOAD_BYTES", 48 * 1024 * 1024)),
     PERMANENT_SESSION_LIFETIME=timedelta(
         hours=int(os.environ.get("ADMIN_SESSION_HOURS", "8"))
     ),
@@ -86,6 +87,9 @@ def _storage_is_configured():
             S3_BUCKET_NAME,
         )
     )
+
+GALLERY_UPLOAD_BATCH_LIMIT = 10
+
 
 def compress_and_upload_image(file, match_id):
     if not _storage_is_configured():
@@ -251,6 +255,30 @@ def protect_against_csrf():
     return None
 
 
+@app.before_request
+def enforce_license_interception():
+    if app.config.get("TESTING") and not app.config.get("TEST_LICENSE_INTERCEPT"):
+        return None
+
+    allowed_endpoints = {
+        "static", "admin_login", "admin_logout",
+        "admin_license", "admin_activate_license",
+        "admin_validate_license", "admin_deactivate_license",
+        "license_lockout", "not_found"
+    }
+    endpoint = request.endpoint or ""
+    if endpoint in allowed_endpoints or endpoint.startswith("static"):
+        return None
+
+    is_active, reason = license_client.is_license_active()
+    if not is_active:
+        if session.get("is_admin"):
+            flash(f"⚠️ Akses ditahan: {reason} Silakan aktifkan lisensi dari Berlanggan.web.id.", "error")
+            return redirect(url_for("admin_license"))
+        return redirect(url_for("license_lockout", reason=reason))
+    return None
+
+
 @app.after_request
 def add_security_headers(response):
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
@@ -297,25 +325,25 @@ def enrich_match(m, teams):
     m = dict(m)
     m.setdefault("sport_key", "table-tennis")
     m.setdefault(
-        "stage_type", "final" if m.get("group") == "FINAL" else "group"
+        "stage_type", "final" if m.get("group") == "FINAL" else ("semifinal" if m.get("group") in ("KNOCKOUT", "SEMIFINAL") else "group")
     )
     m.setdefault(
-        "stage_key", "final" if m.get("group") == "FINAL" else "group-stage"
+        "stage_key", "final" if m.get("group") == "FINAL" else ("semifinal" if m.get("group") in ("KNOCKOUT", "SEMIFINAL") else "group-stage")
     )
     m.setdefault("stage_label", m.get("round_label", "Pertandingan"))
-    m["team_a_label"] = utils.team_label(teams, m["team_a"])
-    m["team_b_label"] = utils.team_label(teams, m["team_b"])
-    ta = teams.get(m["team_a"], {})
-    tb = teams.get(m["team_b"], {})
-    m["team_a_code"] = ta.get("code", m["team_a"]) or "TBD"
-    m["team_b_code"] = tb.get("code", m["team_b"]) or "TBD"
+    m["team_a_label"] = utils.team_label(teams, m["team_a"]) if m.get("team_a") else (m.get("qualification_slot_a") or "Menunggu Kontestan")
+    m["team_b_label"] = utils.team_label(teams, m["team_b"]) if m.get("team_b") else (m.get("qualification_slot_b") or "Menunggu Kontestan")
+    ta = teams.get(m["team_a"], {}) if m.get("team_a") else {}
+    tb = teams.get(m["team_b"], {}) if m.get("team_b") else {}
+    m["team_a_code"] = ta.get("code") or (m["team_a"] if m.get("team_a") else (m.get("qualification_slot_a") or "TBD"))
+    m["team_b_code"] = tb.get("code") or (m["team_b"] if m.get("team_b") else (m.get("qualification_slot_b") or "TBD"))
     m["team_a_color"] = ta.get("color", TBD_COLOR)
     m["team_a_text"] = ta.get("text", TBD_TEXT)
     m["team_b_color"] = tb.get("color", TBD_COLOR)
     m["team_b_text"] = tb.get("text", TBD_TEXT)
-    m["team_a_player1"] = ta.get("player1", "TBD")
+    m["team_a_player1"] = ta.get("player1", m.get("qualification_slot_a") or "TBD")
     m["team_a_player2"] = ta.get("player2", "")
-    m["team_b_player1"] = tb.get("player1", "TBD")
+    m["team_b_player1"] = tb.get("player1", m.get("qualification_slot_b") or "TBD")
     m["team_b_player2"] = tb.get("player2", "")
     m["date_label"] = (
         utils.format_date_id(m["date"]) if m.get("date") else "Belum dijadwalkan"
@@ -545,6 +573,11 @@ def _update_match_or_flash(match_id, expected_version, updater, success_message)
         flash(str(exc) or "Pertandingan tidak ditemukan.", "error")
         return None
     flash(success_message, "success")
+    if updated and isinstance(updated, dict) and updated.get("category"):
+        try:
+            utils.auto_seed_knockout(updated["category"])
+        except Exception:
+            pass
     return updated
 
 
@@ -630,6 +663,7 @@ def inject_globals():
         "is_admin": bool(session.get("is_admin")),
         "now": utils.now_wib(config.get("timezone")),
         "csrf_token": get_csrf_token(),
+        "license": license_client.get_license(),
     }
 
 
@@ -1041,10 +1075,66 @@ def galeri():
                     "category_label": m["category_label"],
                     "round_label": m["round_label"],
                     "date_label": m["date_label"],
-                    "time": m["time"]
+                    "time": m["time"],
+                    "is_standalone": False,
                 })
+    for gp in utils.list_gallery_photos():
+        uploaded_at = gp.get("uploaded_at", "")
+        try:
+            date_label = utils.format_date_id(uploaded_at.split("T")[0])
+        except (ValueError, IndexError):
+            date_label = ""
+        photos.append({
+            "url": gp["url"],
+            "uploaded_at": uploaded_at,
+            "photo_id": gp.get("id"),
+            "category_label": "Galeri",
+            "date_label": date_label,
+            "is_standalone": True,
+        })
     photos.sort(key=lambda p: p["uploaded_at"], reverse=True)
     return render_template("galeri.html", photos=photos)
+
+
+@app.route("/admin/galeri/upload", methods=["POST"])
+@login_required
+def admin_upload_gallery_photos():
+    files = [f for f in request.files.getlist("gallery_photos") if f and f.filename]
+    if not files:
+        flash("Pilih minimal satu foto untuk diunggah.", "error")
+        return redirect(url_for("galeri"))
+    if len(files) > GALLERY_UPLOAD_BATCH_LIMIT:
+        flash(f"Maksimal {GALLERY_UPLOAD_BATCH_LIMIT} foto per sekali unggah.", "error")
+        return redirect(url_for("galeri"))
+
+    uploaded_urls = []
+    upload_errors = []
+    for file in files:
+        file_url, error = compress_and_upload_image(file, "gallery")
+        if error:
+            upload_errors.append(f"{file.filename}: {error}")
+        elif file_url:
+            uploaded_urls.append(file_url)
+
+    if uploaded_urls:
+        utils.add_gallery_photos(uploaded_urls)
+        flash(f"{len(uploaded_urls)} foto berhasil diunggah dan dikompres ke galeri.", "success")
+    if upload_errors:
+        flash("Sebagian foto gagal diunggah: " + "; ".join(upload_errors), "error")
+    return redirect(url_for("galeri"))
+
+
+@app.route("/admin/galeri/delete", methods=["POST"])
+@login_required
+def admin_delete_gallery_photo():
+    photo_id = request.form.get("photo_id", "").strip()
+    url = utils.delete_gallery_photo(photo_id) if photo_id else None
+    if url:
+        delete_from_supabase(url)
+        flash("Foto galeri berhasil dihapus.", "success")
+    else:
+        flash("Foto galeri tidak ditemukan.", "error")
+    return redirect(url_for("galeri"))
 
 
 def _match_detail_context(match_id, is_modal):
@@ -1948,13 +2038,28 @@ def admin_generate_group_to_knockout():
     category_key = request.form.get("category_key", "").strip()
     start_date = request.form.get("start_date", "").strip()
     court = request.form.get("court", "Meja 1").strip()
+    knockout_format = request.form.get("knockout_format", "final_only").strip()
     try:
         g_count, k_count = utils.generate_group_to_knockout_schedule(
-            category_key, start_date=start_date or None, court=court
+            category_key, start_date=start_date or None, court=court, knockout_format=knockout_format
         )
-        flash(f"Berhasil meng-generate {g_count} laga babak grup dan {k_count} laga babak knockout untuk divisi '{category_key}'.", "success")
+        flash(f"Berhasil meng-generate {g_count} laga babak grup dan {k_count} laga babak knockout untuk divisi '{category_key}' dengan format '{knockout_format}'.", "success")
     except Exception as exc:
         flash(f"Gagal generate jadwal: {str(exc)}", "error")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/generator/sync-knockout/<category_key>", methods=["POST"])
+@login_required
+def admin_sync_knockout(category_key):
+    try:
+        updated = utils.auto_seed_knockout(category_key, force=True)
+        if updated:
+            flash(f"Berhasil menyinkronkan & mengesahkan tim lolos babak knockout untuk divisi '{category_key}'!", "success")
+        else:
+            flash(f"Data tim lolos knockout untuk divisi '{category_key}' sudah sinkron (atau babak grup belum berstatus completed).", "info")
+    except Exception as exc:
+        flash(f"Gagal menyinkronkan knockout: {str(exc)}", "error")
     return redirect(url_for("admin_dashboard"))
 
 
@@ -2269,6 +2374,52 @@ def admin_edit_match(match_id):
         "admin/edit_match.html", m=enrich_match(m, teams), raw=m,
         teams=teams, **qualification,
     )
+
+
+# ---------- license activation routes ----------
+
+@app.route("/license-lockout")
+def license_lockout():
+    reason = request.args.get("reason", "Lisensi website belum aktif atau masa berlakunya telah habis sesuai ketentuan dari Berlanggan.web.id.")
+    return render_template("license_lockout.html", reason=reason), 403
+
+
+@app.route("/admin/license")
+@login_required
+def admin_license():
+    lic = license_client.validate(force=False)
+    return render_template("admin/license.html", license=lic)
+
+
+@app.route("/admin/license/activate", methods=["POST"])
+@login_required
+def admin_activate_license():
+    key = request.form.get("license_key", "").strip()
+    success, message, code = license_client.activate(key)
+    if success:
+        flash(message, "success")
+    else:
+        flash(message, "error")
+    return redirect(url_for("admin_license"))
+
+
+@app.route("/admin/license/validate", methods=["POST"])
+@login_required
+def admin_validate_license():
+    lic = license_client.validate(force=True)
+    if lic.get("status") in ("active", "grace"):
+        flash("Sync & Validasi ke Berlanggan.web.id berhasil! Lisensi aktif.", "success")
+    else:
+        flash(f"Status lisensi: {lic.get('status').upper()}. {lic.get('last_message')}", "warning")
+    return redirect(url_for("admin_license"))
+
+
+@app.route("/admin/license/deactivate", methods=["POST"])
+@login_required
+def admin_deactivate_license():
+    success, message = license_client.deactivate()
+    flash(message, "info")
+    return redirect(url_for("admin_license"))
 
 
 @app.errorhandler(404)
