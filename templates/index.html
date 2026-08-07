@@ -147,7 +147,7 @@
       </div>
       <div class="sport-card-stats-bar">
         {% if sport.live_count > 0 %}
-        <span class="sport-stat-badge stat-live"><span class="pulse-dot" style="width:7px; height:7px; margin-right:3px;"></span> <strong>{{ sport.live_count }}</strong> Sedang Live</span>
+        <span class="sport-stat-badge stat-live"><span class="live-pulse-dot" aria-hidden="true"></span><strong>{{ sport.live_count }}</strong> Sedang Live</span>
         {% else %}
         <span class="sport-stat-badge stat-offline">⚪ Offline / 0 Live</span>
         {% endif %}

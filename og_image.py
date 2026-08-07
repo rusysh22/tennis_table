@@ -16,14 +16,15 @@ FONT_PATH = os.path.join(os.path.dirname(__file__), "static", "fonts", "PlusJaka
 
 CARD_W, CARD_H = 1200, 630
 
-MAROON_900 = (0x3D, 0x00, 0x0C)
-MAROON_700 = (0x5C, 0x00, 0x11)
-RED_600 = (0xC8, 0x10, 0x2E)
-PINK_400 = (0xFF, 0x6F, 0x91)
-WHITE = (0xFF, 0xFA, 0xF9)
-INK = (0x1C, 0x09, 0x10)
+BLUE_900 = (0x0C, 0x2A, 0x3D)
+BLUE_700 = (0x03, 0x69, 0xA1)
+BLUE_500 = (0x0E, 0xA5, 0xE9)
+GREEN_600 = (0x05, 0x96, 0x69)
+GREEN_400 = (0x34, 0xD3, 0x99)
+WHITE = (0xF7, 0xFE, 0xFC)
+INK = (0x0A, 0x1F, 0x1C)
 
-GRAD_STOPS = [(0.0, MAROON_900), (0.30, MAROON_700), (0.62, RED_600), (1.0, PINK_400)]
+GRAD_STOPS = [(0.0, BLUE_900), (0.30, BLUE_700), (0.62, GREEN_600), (1.0, GREEN_400)]
 
 _FONT_CACHE = {}
 
@@ -133,7 +134,7 @@ def generate_match_card(m, tournament_name):
     total_w = (w1 + pad * 2) + gap + (w2 + pad * 2)
     start_x = cx - total_w / 2
     y0 = 46
-    _draw_pill(draw, start_x + (w1 + pad * 2) / 2, y0, cat_label, f_tag, (255, 255, 255, 235), MAROON_700, pad_x=pad)
+    _draw_pill(draw, start_x + (w1 + pad * 2) / 2, y0, cat_label, f_tag, (255, 255, 255, 235), BLUE_700, pad_x=pad)
     _draw_pill(draw, start_x + (w1 + pad * 2) + gap + (w2 + pad * 2) / 2, y0, status_label, f_tag,
                (223, 245, 225) if m["status"] == "completed" else (238, 240, 255),
                (23, 92, 44) if m["status"] == "completed" else (58, 63, 168), pad_x=pad)
@@ -161,7 +162,7 @@ def generate_match_card(m, tournament_name):
         score_text = f'{m["sets_a"]} : {m["sets_b"]}'
         _draw_centered(draw, cx, row_y - 6, score_text, f_score, WHITE)
     else:
-        _draw_pill(draw, cx, row_y + 30, "VS", f_vs, (255, 255, 255, 220), RED_600, pad_x=22)
+        _draw_pill(draw, cx, row_y + 30, "VS", f_vs, (255, 255, 255, 220), GREEN_600, pad_x=22)
 
     # meta: tanggal . jam . meja
     meta = f'{m["date_label"]}    {m["time"]} WIB    {m["court"]}'
@@ -186,7 +187,7 @@ def generate_default_card(title, subtitle, tag="ROUND ROBIN"):
     f_title = _font(58, 800)
     f_sub = _font(28, 500)
 
-    _draw_pill(draw, cx, 210, tag.upper(), f_tag, (255, 255, 255, 235), MAROON_700, pad_x=22)
+    _draw_pill(draw, cx, 210, tag.upper(), f_tag, (255, 255, 255, 235), BLUE_700, pad_x=22)
 
     # judul bisa 2 baris kalau kepanjangan (dibagi per kata secara kasar)
     words = title.split()

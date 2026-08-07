@@ -55,24 +55,36 @@
 <div class="empty-state compact">Belum ada divisi aktif untuk cabang ini.</div>
 {% endif %}
 
-{% if selected_sport in ('all', 'table-tennis') %}
-<div class="section-head"><h2>📖 Pedoman Aturan Mini Round</h2></div>
+{% if selected_sport == 'all' %}
+<div class="section-head"><h2>📋 Catatan Umum Peserta (Semua Cabor)</h2></div>
+<div class="admin-shell" style="margin-bottom:1.6rem;">
+  <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+    <li>Datang sesuai waktu yang ditentukan panitia dan pastikan nama pasangan serta kategori sudah benar sebelum bertanding.</li>
+    <li>Gunakan pakaian dan perlengkapan olahraga yang sesuai, jaga sportivitas, dan hormati lawan, wasit/umpire, referee, serta panitia.</li>
+    <li>Jangan melakukan tindakan provokatif atau berkata kasar. Jika cedera atau tidak nyaman, segera laporkan ke panitia/official.</li>
+    <li>Keputusan official sesuai kewenangannya bersifat final dan wajib dihormati.</li>
+    <li>Batas keterlambatan (W.O.) dan batas waktu pengajuan protes <strong>berbeda-beda di tiap cabor</strong> — lihat bagian masing-masing di bawah.</li>
+  </ul>
+</div>
+{% endif %}
+
+{% if selected_sport in ('all', 'padel') %}
+<div class="section-head"><h2>🎾 Pedoman Aturan Padel</h2></div>
 
 <div class="admin-shell" style="margin-bottom:1.6rem;">
   <p style="color:#a0677a; font-size:.85rem; margin-bottom:0;">
-    <strong>Mini Round Site Jakarta · {{ config.tournament_short_name }}</strong> — pedoman internal dengan acuan
-    prinsip dasar <em>Laws of Table Tennis ITTF 2026</em>. Dokumen ini menjadi pegangan peserta, wasit, dan panitia.
-    Ketentuan teknis pertandingan diterapkan secara konsisten, sedangkan penjelasan kepada peserta pemula
-    dilakukan secara edukatif tanpa mengurangi prinsip keadilan dan sportivitas.
+    <strong>Padel · {{ config.tournament_short_name }}</strong> — Round Robin <em>Play to 21</em> dilanjutkan
+    Semi Final, Perebutan Juara 3, dan Final memakai <em>Tennis Points</em> dengan Golden Point.
   </p>
   <div class="table-wrap" style="margin-top:1rem;">
     <table class="standings rules-table">
       <tbody>
-        <tr><td><strong>Pelaksanaan</strong></td><td>20&ndash;29 Juli 2026</td></tr>
-        <tr><td><strong>Waktu</strong></td><td>18.00&ndash;20.00 WIB</td></tr>
-        <tr><td><strong>Tempat</strong></td><td>Graha Mitra</td></tr>
-        <tr><td><strong>Peserta</strong></td><td>8 tim Ganda Putra (Grup A &amp; Grup B, masing-masing 4 tim) dan 4 tim Ganda Campuran (Grup A)</td></tr>
-        <tr><td><strong>Status</strong></td><td>Pedoman internal dengan acuan prinsip dasar Laws of Table Tennis ITTF 2026</td></tr>
+        <tr><td><strong>Venue</strong></td><td>Padeloom — Court 3 (Ganda Putra), Court 4 (Ganda Campuran)</td></tr>
+        <tr><td><strong>Registrasi</strong></td><td>14.30 WIB</td></tr>
+        <tr><td><strong>Round Robin mulai</strong></td><td>16.45 WIB</td></tr>
+        <tr><td><strong>Peserta</strong></td><td>5 tim Ganda Putra, 4 tim Ganda Campuran (5 regional contingent)</td></tr>
+        <tr><td><strong>Total match Round Robin</strong></td><td>16 match (10 Ganda Putra, 6 Ganda Campuran)</td></tr>
+        <tr><td><strong>Target selesai</strong></td><td>Final Ganda Putra pukul 20.15 WIB</td></tr>
       </tbody>
     </table>
   </div>
@@ -81,227 +93,360 @@
 <div class="admin-shell">
 
   <fieldset>
-    <legend>1. Ringkasan Format Pertandingan</legend>
+    <legend>1. Sistem Turnamen</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>Round Robin:</strong> semua tim dalam grup saling bertemu. Ganda Putra (5 tim) meloloskan 4 tim teratas ke semi final; Ganda Campuran (4 tim) seluruhnya lolos ke semi final sesuai peringkat.</li>
+      <li><strong>Semi Final:</strong> Rank 1 vs Rank 4, Rank 2 vs Rank 3. Pemenang masuk final.</li>
+      <li><strong>Perebutan Juara 3:</strong> diikuti kedua tim yang kalah di semi final.</li>
+      <li><strong>Final:</strong> menentukan Juara 1 dan Juara 2.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>2. Skor Round Robin — Play to 21</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Setiap reli menghasilkan 1 poin, tidak ada sistem set.</li>
+      <li>Pertandingan selesai ketika total poin kedua tim mencapai 21 (misalnya 11–10, 12–9, 13–8).</li>
+      <li>Tim dengan skor lebih tinggi menang. Menang = 1 match point, kalah = 0 match point.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>3. Skor Semi Final, Juara 3, dan Final — Tennis Points</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Total 5 game, tidak ada deuce.</li>
+      <li>Skor 40–40 langsung <strong>Golden Point</strong> — poin berikutnya menentukan game.</li>
+      <li>Penerima servis memilih sisi penerimaan pada Golden Point.</li>
+      <li>Ketentuan ini berlaku sama untuk Semi Final, Perebutan Juara 3, dan Final.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>4. Sistem Peringkat</legend>
+    <p style="font-size:.9rem; line-height:1.6; margin:.2rem 0 .6rem;">Urutan kriteria klasemen Round Robin:</p>
+    <ol style="padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>Matches Won</strong> — jumlah kemenangan terbanyak.</li>
+      <li><strong>Head-to-Head</strong> — hasil pertemuan langsung.</li>
+      <li><strong>Point Difference</strong> — selisih poin keseluruhan.</li>
+      <li><strong>Coin Toss</strong> — jika seluruh kriteria masih sama.</li>
+    </ol>
+  </fieldset>
+
+  <fieldset>
+    <legend>5. Prosedur Pertandingan</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Seluruh pemain wajib hadir pukul 14.30 WIB untuk registrasi dan pemeriksaan.</li>
+      <li>Sebelum pertandingan, wasit melakukan coin toss untuk menentukan servis pertama atau sisi lapangan.</li>
+      <li>Pemanasan 1 menit sebelum pertandingan pertama.</li>
+      <li>Keterlambatan lebih dari 3 menit setelah pertandingan dimulai dinyatakan W.O.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>6. Etika — Self-Call</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Padel menggunakan prinsip <strong>self-call</strong>: pemain wajib jujur menyatakan hasil pukulan sendiri.</li>
+      <li>Peserta wajib sportif, menghormati lawan, dan menyelesaikan perselisihan dengan tenang.</li>
+      <li>Wasit dipanggil hanya apabila terjadi deadlock atau diperlukan keputusan official.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>7. Perlengkapan &amp; Health/Safety</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>Disediakan panitia:</strong> jersey resmi, bola pertandingan, 4 raket padel bagi yang membutuhkan, air minum.</li>
+      <li><strong>Dibawa peserta:</strong> jersey turnamen (wajib dipakai), celana olahraga, sepatu olahraga yang sesuai untuk court.</li>
+      <li><strong>Health &amp; Liability Consent Form wajib diisi</strong> sebelum bertanding. Pemeriksaan tekanan darah tersedia bila diperlukan.</li>
+      <li>Peserta harus dalam kondisi fisik prima, tetap terhidrasi, dan segera melapor bila cedera/tidak nyaman.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset class="danger-zone">
+    <legend>⚠️ Perlu Dikonfirmasi Panitia</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>Batas W.O.:</strong> ketentuan utama menyebut lebih dari 3 menit, namun ada catatan internal yang menyebut 5 menit. Panitia perlu menetapkan satu angka final.</li>
+      <li><strong>Pemanasan:</strong> materi menyebut 1 menit sebelum pertandingan pertama — perlu dipastikan apakah berlaku untuk setiap pertandingan atau hanya match pertama.</li>
+    </ul>
+  </fieldset>
+
+</div>
+{% endif %}
+
+{% if selected_sport in ('all', 'badminton') %}
+<div class="section-head"><h2>🏸 Pedoman Aturan Badminton</h2></div>
+
+<div class="admin-shell" style="margin-bottom:1.6rem;">
+  <p style="color:#a0677a; font-size:.85rem; margin-bottom:0;">
+    <strong>Badminton · {{ config.tournament_short_name }}</strong> — 21 Rally Point, Best of 2 Set,
+    Penyisihan Grup &rarr; Semi Final &rarr; Juara 3 / Final.
+  </p>
+</div>
+
+<div class="admin-shell">
+
+  <fieldset>
+    <legend>1. Prinsip Umum</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Kategori: Ganda Putra dan Ganda Campuran. Sistem skor utama: 21 Rally Point.</li>
+      <li>Peserta wajib hadir minimal 30 menit sebelum jadwal.</li>
+      <li>Tidak hadir sampai 3 menit setelah dipanggil dinyatakan W.O.</li>
+      <li>Keputusan wasit dan panitia bersifat final. Sportivitas dan fair play wajib dijaga.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>2. Sistem Pertandingan</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>Penyisihan Grup:</strong> setiap grup terdiri dari 3 pasangan. Ganda Putra memakai sistem Group Point, Ganda Campuran memakai Round Robin.</li>
+      <li>Alur: Penyisihan Grup &rarr; Semi Final &rarr; (Juara 3 &amp; Final).</li>
+      <li>Juara dan runner-up grup maju ke semi final. Pasangan yang kalah di semi final mengikuti perebutan Juara 3; pemenang semi final masuk final.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>3. Poin Klasemen &amp; Tie-break</legend>
+    <p style="font-size:.9rem; line-height:1.6; margin:.2rem 0 .6rem;">Menang = 1 poin klasemen, kalah = 0 poin. Jika poin sama, urutan tie-break:</p>
+    <ol style="padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Selisih poin.</li>
+      <li>Total poin yang diperoleh.</li>
+      <li>Head-to-head.</li>
+      <li>Undian/Coin Toss bila masih sama.</li>
+    </ol>
+  </fieldset>
+
+  <fieldset>
+    <legend>4. Format Match — Best of 2 Set</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Set menggunakan 21 Rally Point — setiap reli menghasilkan poin, siapa pun yang servis.</li>
+      <li>Menang 2 set = menang match.</li>
+      <li>Jika 1–1 pada babak penyisihan, dilanjutkan rubber set.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>5. Aturan Servis</legend>
+    <ol style="padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Shuttle dipukul di bawah tinggi pinggang.</li>
+      <li>Kepala raket mengarah ke bawah saat servis.</li>
+      <li>Kedua kaki tidak bergerak sebelum shuttle dipukul.</li>
+      <li>Tidak melakukan foot fault.</li>
+    </ol>
+    <p style="font-size:.85rem; color:#a0677a; margin:.6rem 0 0;">Service tidak sah &rarr; poin untuk lawan. Keputusan wasit mengenai legalitas service bersifat final.</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>6. Fault</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Shuttle keluar lapangan, atau tersangkut di net/tidak melewati net.</li>
+      <li>Shuttle dipukul dua kali oleh pasangan yang sama.</li>
+      <li>Menyentuh net dengan badan atau raket saat rally.</li>
+      <li>Mengganggu konsentrasi lawan, atau service tidak sah.</li>
+    </ul>
+    <p style="font-size:.85rem; color:#a0677a; margin:.6rem 0 0;">Prinsip sederhana: fault &rarr; poin untuk lawan.</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>7. Pergantian &amp; Interval</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Ganti sisi lapangan setelah setiap set. Nama pemain didaftarkan sebelum pertandingan.</li>
+      <li>Tidak ada pergantian pemain antar-set, kecuali karena cedera dan berdasarkan rekomendasi Tim Medis.</li>
+      <li>Istirahat antar-set maksimal 1 menit. Coaching berlebihan tidak diperbolehkan.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>8. Perlengkapan</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>Dibawa peserta:</strong> sepatu olahraga (sangat disarankan non-marking), raket pribadi, pakaian olahraga yang sopan.</li>
+      <li><strong>Disediakan panitia:</strong> shuttlecock, lapangan/court, wasit, score sheet.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>9. W.O. &amp; Protes</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>W.O. jika:</strong> terlambat lebih dari 3 menit setelah dipanggil, mengundurkan diri, atau tidak dapat melanjutkan pertandingan.</li>
+      <li><strong>Protes:</strong> diajukan oleh kapten tim/peserta bersangkutan, disampaikan sebelum pertandingan berikutnya dimulai. Keputusan wasit final dan dicatat di score sheet.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset class="danger-zone">
+    <legend>⚠️ Perlu Dikonfirmasi Panitia</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>Rubber set:</strong> materi menyebut rubber set pada babak penyisihan jika 1–1, tetapi belum menjelaskan tegas apakah semifinal/final juga memakainya.</li>
+      <li><strong>Pergantian pemain:</strong> materi Badminton menyebut tidak ada pergantian antar-set, sementara materi All Cabor mengizinkan pergantian jika cedera dan direkomendasikan Tim Medis. Perlu diputuskan mana yang berlaku.</li>
+      <li><strong>Tie-break:</strong> pastikan urutan final — selisih poin, total poin, head-to-head, coin toss — dikomunikasikan konsisten ke peserta.</li>
+    </ul>
+  </fieldset>
+
+</div>
+{% endif %}
+
+{% if selected_sport in ('all', 'table-tennis') %}
+<div class="section-head"><h2>🏓 Pedoman Aturan Tenis Meja</h2></div>
+
+<div class="admin-shell" style="margin-bottom:1.6rem;">
+  <p style="color:#a0677a; font-size:.85rem; margin-bottom:0;">
+    <strong>Tenis Meja · {{ config.tournament_short_name }}</strong> — Round Robin &rarr; Knockout, Best of 3 game
+    (Final Best of 5), setiap match memiliki slot maksimal 25 menit.
+  </p>
+  <div class="table-wrap" style="margin-top:1rem;">
+    <table class="standings rules-table">
+      <tbody>
+        <tr><td><strong>Persiapan</strong></td><td>16.00&ndash;16.15 WIB — cek meja, briefing official, konfirmasi kehadiran</td></tr>
+        <tr><td><strong>Mulai</strong></td><td>16.15 WIB, match berikutnya berjalan setiap 25 menit</td></tr>
+        <tr><td><strong>Kategori</strong></td><td>Ganda Putra dan Ganda Campuran</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="admin-shell">
+
+  <fieldset>
+    <legend>1. Hierarki Aturan &amp; Kewenangan Official</legend>
+    <p style="font-size:.9rem; line-height:1.6; margin:.2rem 0 .6rem;">Urutan kewenangan aturan:</p>
+    <ol style="padding-left:1.3rem; margin:.4rem 0 .8rem; font-size:.9rem; line-height:1.7;">
+      <li><strong>Peraturan Khusus {{ config.tournament_short_name }}</strong> — ketentuan utama penyelenggaraan, termasuk slot 25 menit.</li>
+      <li><strong>ITTF Statutes 2026</strong> — dipakai untuk teknis permainan yang tidak diatur secara khusus oleh event.</li>
+    </ol>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>Umpire</strong> memutus fakta pertandingan: bola masuk/keluar, edge, net, urutan pukulan, legalitas servis, point/let.</li>
+      <li><strong>Referee/Ketua Pertandingan</strong> menangani penafsiran aturan, sengketa penyelenggaraan, protes, dan diskualifikasi. Keputusan referee final dan mengikat.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>2. Ketentuan &amp; Perubahan Pasangan</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>Ganda Putra:</strong> 2 pemain putra dari site/club yang sama. <strong>Ganda Campuran:</strong> 1 pemain putra + 1 pemain putri dari site/club yang sama, tanpa kewajiban urutan servis berdasarkan gender.</li>
+      <li>Satu pemain hanya boleh terdaftar pada satu pasangan dalam satu kategori.</li>
+      <li>Setelah undian, pasangan tidak dapat diubah. Penggantian darurat hanya sebelum match pertama pasangan tersebut, dengan alasan yang dapat diterima dan persetujuan tertulis referee.</li>
+      <li>Setelah pasangan memainkan rally pertama pada match pertamanya, susunan pemain terkunci sampai kompetisi selesai. Jika salah satu anggota tidak hadir, pasangan dapat dikenakan W.O.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>3. Sistem Kompetisi</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>Round Robin:</strong> semua pasangan bertemu lawan dalam grup, klasemen berdasarkan jumlah kemenangan.</li>
+      <li><strong>Semi Final:</strong> 2 pasangan terbaik dari masing-masing grup lolos; juara grup bertemu runner-up grup lain, sistem gugur.</li>
+      <li><strong>Final:</strong> Best of 5 game, pasangan pertama yang memenangkan 3 game menjadi juara.</li>
+      <li><strong>Juara 3:</strong> tidak ada perebutan Juara 3 — kedua pasangan yang kalah di semifinal ditetapkan sebagai Juara 3 Bersama, kecuali panitia menetapkan kebijakan lain sebelum Technical Meeting.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>4. Format Skor</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>Match normal:</strong> Best of 3 game — menang 2 game = menang match. <strong>Final:</strong> Best of 5 game.</li>
+      <li>Setiap game target 11 poin. Pada 10–10 terjadi deuce, setelahnya harus unggul 2 poin.</li>
+      <li>Pergantian servis setiap 2 poin; pada 10–10 dan saat expedite system, servis berganti setiap 1 poin.</li>
+      <li>Pergantian sisi setiap game; pada game ketiga, berganti sisi ketika salah satu pasangan mencapai 5 poin.</li>
+      <li>Interval antar-game maksimal 1 menit dan time-out (1 kali per pasangan, maksimal 1 menit) tetap dihitung dalam slot 25 menit.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>5. Protokol Slot 25 Menit</legend>
+    <p style="font-size:.9rem; line-height:1.6; margin:.2rem 0 .6rem;">Satu slot dihitung sejak pasangan dipanggil masuk area sampai hasil dicatat:</p>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li><strong>± 1 menit</strong> — masuk &amp; pemeriksaan pemain, pakaian, bet, bola, urutan pemain.</li>
+      <li><strong>Maksimal 2 menit</strong> — pemanasan &amp; undian servis/receive/sisi.</li>
+      <li><strong>Sisa waktu</strong> — permainan Best of 3 (interval &amp; time-out masuk hitungan).</li>
+      <li><strong>Setelah match</strong> — umpire mencatat hasil, pemain meninggalkan area, match berikutnya segera berjalan.</li>
+    </ul>
+    <p style="font-size:.85rem; color:#a0677a; margin:.6rem 0 0;">
+      Interval, time-out, diskusi, pengeringan keringat, penggantian bola, dan keterlambatan pemain semuanya
+      dihitung dalam 25 menit — kecuali penghentian karena keselamatan serius yang diputuskan referee.
+    </p>
+  </fieldset>
+
+  <fieldset>
+    <legend>6. Keterlambatan &amp; W.O.</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Pasangan wajib berada di waiting area 10 menit sebelum jadwal. Umpire melakukan panggilan terakhir saat waktu pertandingan.</li>
+      <li>Toleransi maksimal 3 menit — keterlambatan tetap mengurangi jatah slot 25 menit.</li>
+      <li>Setelah 3 menit, jika pasangan belum lengkap/siap, referee dapat menetapkan W.O. — dicatat 2–0 dengan skor game 11–0, 11–0.</li>
+      <li>Reschedule hanya dipertimbangkan sebelum hari pertandingan, bukan hak peserta; pada hari-H jadwal tidak dapat diubah hanya karena kesepakatan antar peserta.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>7. Servis Ganda &amp; Servis Sah</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Sebelum match, umpire melakukan undian — pemenang memilih servis, receive, atau sisi meja.</li>
+      <li>Game pertama: pasangan yang servis menentukan server pertama, pasangan receiver menentukan receiver pertama. Game berikutnya: server pertama dipilih pasangan yang berhak servis, receiver mengikuti urutan resmi game sebelumnya.</li>
+      <li>Servis sah: bola diam di telapak tangan terbuka, tangan bebas tidak bergerak, bola dilambungkan hampir vertikal tanpa spin minimal 16 cm, berada di atas meja dan di belakang end line, tidak disembunyikan. Dalam ganda, servis harus diagonal — half-court kanan server ke half-court kanan receiver.</li>
+      <li>Sanksi: servis jelas tidak sah &rarr; poin untuk lawan; servis meragukan &rarr; warning; pengulangan &rarr; fault.</li>
+      <li>Kesalahan urutan servis/receiver segera dikoreksi ketika diketahui — poin yang sudah terjadi tetap sah dan tidak diulang.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>8. Urutan Memukul dalam Ganda</legend>
+    <p style="font-size:.9rem; line-height:1.7; margin:.2rem 0 .6rem;">
+      Urutan harus bergantian: <strong>A1 (Server) &rarr; B1 (Receiver) &rarr; A2 (Partner Server) &rarr; B2 (Partner Receiver) &rarr; kembali ke A1</strong>.
+      Jika pemain memukul dua kali sebelum giliran partner, poin diberikan kepada lawan.
+    </p>
+  </fieldset>
+
+  <fieldset>
+    <legend>9. Let vs Poin</legend>
+    <p style="font-size:.9rem; line-height:1.6; margin:.2rem 0 .4rem;"><strong>Let — rally diulang:</strong> servis menyentuh net tetapi tetap masuk sah, receiver belum siap dan tidak mencoba memukul, ada gangguan dari luar, atau umpire menghentikan permainan untuk koreksi.</p>
+    <p style="font-size:.9rem; line-height:1.6; margin:.2rem 0 0;"><strong>Poin untuk lawan:</strong> gagal servis/return sah, bola tidak menyentuh court sendiri, menghalangi bola sebelum memantul, memukul dua kali berturut-turut atau di luar urutan, menggerakkan meja, menyentuh net assembly, atau menyentuh meja dengan tangan bebas saat rally.</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>10. Peralatan</legend>
     <div class="table-wrap">
       <table class="standings rules-table">
-        <thead>
-          <tr><th>Ketentuan</th><th>Ganda Putra</th><th>Ganda Campuran</th></tr>
-        </thead>
         <tbody>
-          <tr><td>Jumlah tim</td><td>8 tim (Grup A &amp; Grup B, 4 tim/grup)</td><td>4 tim (Grup A)</td></tr>
-          <tr><td>Sistem babak grup</td><td>Full round robin per grup</td><td>Full round robin</td></tr>
-          <tr><td>Pertandingan grup</td><td>Best of 3 game</td><td>Best of 3 game</td></tr>
-          <tr><td>Final</td><td>Juara Grup A vs Juara Grup B; Best of 5 game</td><td>Tidak ada</td></tr>
-          <tr><td>Meja tersedia</td><td>1 meja</td><td>1 meja</td></tr>
-          <tr><td>Perebutan juara 3</td><td>Tidak ada</td><td>Tidak ada</td></tr>
-          <tr><td>Pemain pengganti</td><td>Tidak ada</td><td>Tidak ada</td></tr>
+          <tr><td><strong>Meja</strong></td><td>2,74 m &times; 1,525 m, tinggi 76 cm, permukaan rata/gelap/tidak mengilap, ada center line untuk ganda.</td></tr>
+          <tr><td><strong>Net</strong></td><td>Tinggi 15,25 cm, terpasang utuh dan tegang.</td></tr>
+          <tr><td><strong>Bola</strong></td><td>Plastik, diameter 40 mm, berat 2,7 g, putih/oranye matte — satu jenis/merek/warna untuk seluruh match.</td></tr>
+          <tr><td><strong>Bet</strong></td><td>Satu sisi hitam, sisi lain warna terang berbeda dari hitam dan warna bola; karet utuh dan rata, tidak boleh diberi perlakuan yang mengubah permukaan.</td></tr>
         </tbody>
       </table>
     </div>
-  </fieldset>
-
-  <fieldset>
-    <legend>2. Skor dan Penentuan Pemenang</legend>
-    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
-      <li>Satu game dimainkan sampai 11 poin.</li>
-      <li>Pada skor 10-10 (deuce), game dilanjutkan sampai salah satu tim unggul 2 poin, misalnya 12-10 atau 15-13.</li>
-      <li>Babak grup menggunakan Best of 3 game. Tim yang lebih dahulu memenangkan 2 game menjadi pemenang pertandingan.</li>
-      <li>Final (khusus Ganda Putra, mempertemukan Juara Grup A vs Juara Grup B) menggunakan Best of 5 game. Tim yang lebih dahulu memenangkan 3 game menjadi juara dan wakil Site Jakarta. Ganda Campuran saat ini tidak memiliki babak final.</li>
-      <li>Setiap rally menghasilkan 1 poin, kecuali rally dinyatakan let dan harus diulang.</li>
-    </ul>
-  </fieldset>
-
-  <fieldset>
-    <legend>3. Undian, Pemanasan, dan Persiapan Pertandingan</legend>
-    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
-      <li>Sebelum pertandingan dimulai, wasit melakukan undian. Pemenang undian dapat memilih servis terlebih dahulu, menerima servis terlebih dahulu, atau memilih sisi meja. Tim lawan memperoleh pilihan yang tersisa.</li>
-      <li>Setiap tim memperoleh waktu pemanasan bersama maksimal 3 menit sebelum pertandingan.</li>
-      <li>Sebelum setiap game, pasangan yang mendapat giliran servis menentukan pemain yang melakukan servis pertama. Pasangan penerima kemudian menentukan pemain yang menerima servis pertama.</li>
-      <li>Urutan server, penerima, dan posisi pemain yang telah ditetapkan wajib diikuti sampai game selesai, kecuali dikoreksi oleh wasit sesuai aturan.</li>
-    </ul>
-  </fieldset>
-
-  <fieldset>
-    <legend>4. Aturan Servis</legend>
-    <div class="table-wrap">
-      <table class="standings rules-table">
-        <tbody>
-          <tr><td><strong>Posisi awal bola</strong></td><td>Bola diletakkan diam di telapak tangan terbuka dari tangan bebas.</td></tr>
-          <tr><td><strong>Lambungan</strong></td><td>Bola dilambungkan hampir vertikal ke atas sekurang-kurangnya sekitar 16 cm, tanpa sengaja memberi putaran dengan tangan.</td></tr>
-          <tr><td><strong>Saat memukul</strong></td><td>Bola dipukul ketika sedang turun setelah mencapai titik tertinggi.</td></tr>
-          <tr><td><strong>Posisi bola</strong></td><td>Sejak mulai servis sampai dipukul, bola harus berada di atas permukaan meja dan di belakang garis akhir meja.</td></tr>
-          <tr><td><strong>Tidak boleh disembunyikan</strong></td><td>Bola tidak boleh tertutup oleh badan, lengan, pakaian, atau pasangan. Penerima dan wasit harus dapat melihat bola.</td></tr>
-          <tr><td><strong>Servis menyentuh net</strong></td><td>Jika servis menyentuh net tetapi tetap masuk dengan benar, rally diulang (let).</td></tr>
-          <tr><td><strong>Pergantian servis</strong></td><td>Servis berganti setiap 2 poin. Setelah deuce 10-10, servis berganti setiap 1 poin.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </fieldset>
-
-  <fieldset>
-    <legend>5. Aturan Khusus Permainan Ganda</legend>
-    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
-      <li><strong>Servis diagonal:</strong> servis wajib memantul terlebih dahulu di bidang kanan meja server, kemudian di bidang kanan meja penerima.</li>
-      <li><strong>Urutan memukul:</strong> setelah servis, pemain dari kedua pasangan wajib memukul secara bergantian. Contoh: A1 melakukan servis, B1 menerima, A2 memukul, B2 memukul, kemudian kembali ke A1.</li>
-      <li><strong>Pergantian servis:</strong> setelah dua poin, penerima sebelumnya menjadi server dan pasangan server sebelumnya menyesuaikan urutan penerima sesuai susunan yang telah ditetapkan.</li>
-      <li><strong>Pergantian sisi:</strong> kedua tim berganti sisi setelah setiap game. Pada game penentuan, tim berganti sisi ketika salah satu tim mencapai 5 poin.</li>
-      <li><strong>Kesalahan urutan:</strong> apabila ditemukan kesalahan urutan servis, penerima, atau sisi meja, permainan dihentikan dan dilanjutkan dengan urutan yang seharusnya pada skor terakhir. Seluruh poin yang telah diperoleh sebelum kesalahan ditemukan tetap sah.</li>
-      <li><strong>Pukulan tidak berurutan:</strong> apabila pemain yang sama memukul dua kali berturut-turut atau urutan pukulan salah, poin diberikan kepada lawan.</li>
-    </ul>
-  </fieldset>
-
-  <fieldset>
-    <legend>6. Kapan Poin Diberikan</legend>
-    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
-      <li>Lawan gagal melakukan servis yang benar.</li>
-      <li>Lawan gagal mengembalikan bola sehingga bola tidak menyentuh bidang meja yang benar.</li>
-      <li>Bola dipukul keluar tanpa terlebih dahulu menyentuh meja lawan.</li>
-      <li>Lawan menyentuh permukaan meja dengan tangan bebas saat rally berlangsung.</li>
-      <li>Lawan menggerakkan meja secara sengaja saat rally berlangsung.</li>
-      <li>Lawan menyentuh net atau perangkat net saat rally berlangsung.</li>
-      <li>Dalam permainan ganda, lawan memukul bola tidak sesuai urutan.</li>
-    </ul>
-  </fieldset>
-
-  <fieldset>
-    <legend>7. Bola Masuk, Bola Keluar, dan Peralatan</legend>
-    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
-      <li>Bola yang menyentuh bagian atas permukaan meja, termasuk garis atau tepi atas meja, dinyatakan masuk.</li>
-      <li>Bola yang hanya mengenai sisi vertikal meja tanpa menyentuh permukaan atas dinyatakan keluar.</li>
-      <li>Peserta boleh menggunakan bet pribadi sepanjang kondisinya layak, tidak rusak berlebihan, dan tidak membahayakan.</li>
-      <li>Bola pertandingan ditentukan oleh panitia dan tidak boleh diganti tanpa persetujuan wasit.</li>
-      <li>Apabila menggunakan bet atau perlengkapan panitia, kedua tim dianggap menerima kondisi perlengkapan tersebut sebelum pertandingan dimulai.</li>
-    </ul>
-  </fieldset>
-
-  <fieldset>
-    <legend>8. Rally Diulang (Let) dan Gangguan Pertandingan</legend>
-    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
-      <li>Servis menyentuh net tetapi masuk sesuai ketentuan.</li>
-      <li>Penerima belum siap dan tidak berusaha memukul bola.</li>
-      <li>Permainan terganggu oleh orang yang melintas, barang jatuh, bola lain masuk ke area meja, kondisi meja, atau keadaan lain di luar kendali pemain.</li>
-      <li>Pemain tidak boleh menghentikan rally secara sepihak. Keputusan menghentikan dan mengulang rally berada pada wasit.</li>
-      <li>Wasit menghentikan permainan untuk memperbaiki urutan servis, penerima, atau sisi meja.</li>
-    </ul>
-  </fieldset>
-
-  <fieldset>
-    <legend>9. Jeda, Time-out, dan Cedera</legend>
-    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
-      <li>Jeda antar-game maksimal 1 menit.</li>
-      <li>Setiap tim memperoleh 1 kali time-out maksimal 1 menit dalam satu pertandingan.</li>
-      <li>Apabila pemain mengalami cedera atau gangguan kesehatan, wasit dapat memberikan waktu penanganan maksimal 5 menit setelah berkonsultasi dengan panitia.</li>
-      <li>Jika pemain tidak dapat melanjutkan pertandingan dan tidak tersedia pemain pengganti, tim dinyatakan kalah pada pertandingan tersebut.</li>
-    </ul>
-  </fieldset>
-
-  <fieldset>
-    <legend>10. Sistem Klasemen Babak Grup</legend>
-    <div class="table-wrap">
-      <table class="standings rules-table">
-        <thead><tr><th>Hasil</th><th>Poin Klasemen</th></tr></thead>
-        <tbody>
-          <tr><td>Menang</td><td>2 poin</td></tr>
-          <tr><td>Kalah setelah bertanding</td><td>1 poin</td></tr>
-          <tr><td>Kalah W.O.</td><td>0 poin</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p style="font-size:.85rem; color:#a0677a; margin:.8rem 0 0;">
-      Urutan klasemen ditentukan berdasarkan total poin klasemen, hasil pertemuan langsung (head-to-head),
-      selisih game, selisih poin, dan pertandingan penentuan apabila seluruh indikator masih sama serta
-      memengaruhi kelolosan ke final.
+    <p style="font-size:.85rem; color:#a0677a; margin:.6rem 0 0;">
+      Bet ditunjukkan ke lawan dan umpire sebelum match, tidak boleh diganti selama match kecuali rusak dan dinyatakan tidak layak.
     </p>
   </fieldset>
 
   <fieldset>
-    <legend>11. Peserta, Kehadiran, Keterlambatan, dan W.O.</legend>
+    <legend>11. Pakaian &amp; Area Pertandingan</legend>
     <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
-      <li>Komposisi tim bersifat tetap setelah Technical Meeting. Pergantian pasangan atau pemain tidak diperbolehkan.</li>
-      <li>Satu pemain tidak boleh terdaftar pada dua tim dalam kategori yang sama.</li>
-      <li>Peserta yang mengikuti dua kategori wajib mengikuti jadwal yang ditetapkan panitia.</li>
-      <li>Peserta hadir paling lambat 10 menit sebelum jadwal pertandingan.</li>
-      <li>Toleransi keterlambatan maksimal 15 menit.</li>
-      <li>Lewat 15 menit tanpa informasi, tim dapat dinyatakan kalah W.O.</li>
-      <li>Hasil W.O. babak grup dicatat 0-2, sedangkan final dicatat 0-3.</li>
-      <li>Permintaan perubahan jadwal diajukan maksimal H-1 karena kebutuhan pekerjaan, sakit, atau keadaan mendesak, serta harus disetujui panitia dan lawan.</li>
-      <li>Waktu pertandingan dapat dimajukan apabila kedua tim dan panitia telah siap serta tidak mengganggu jadwal lain.</li>
+      <li>Jersey/pakaian seragam atau minimal konsisten warna dan identitas site/club; warna lawan harus cukup berbeda (jika mirip, umpire mengundi siapa yang berganti).</li>
+      <li>Sepatu olahraga wajib aman dan tidak licin. Aksesori yang mengganggu lawan dilarang, tulisan/desain tidak boleh ofensif.</li>
+      <li>Area pertandingan harus bebas dari barang/kabel/kursi yang mengganggu, lantai kering, ruang gerak cukup, dan pencahayaan stabil.</li>
     </ul>
   </fieldset>
 
   <fieldset>
-    <legend>12. Wasit, Pencatatan Hasil, dan Protes</legend>
+    <legend>12. Official &amp; Coaching</legend>
     <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
-      <li><strong>Wasit:</strong> pertandingan dipimpin oleh panitia atau peserta netral yang tidak sedang bermain. Final dipimpin oleh wasit panitia.</li>
-      <li><strong>Keputusan rally:</strong> keberatan harus disampaikan sebelum rally berikutnya dimulai.</li>
-      <li><strong>Pengesahan hasil:</strong> setelah pertandingan selesai, wasit mencatat hasil. Perwakilan kedua tim wajib memeriksa dan menyetujui hasil sebelum meninggalkan area pertandingan.</li>
-      <li><strong>Protes administrasi:</strong> disampaikan kepada panitia maksimal 30 menit setelah pertandingan.</li>
-      <li><strong>Keputusan akhir:</strong> keputusan panitia bersifat final untuk pelaksanaan Mini Round Interport Site Jakarta.</li>
+      <li><strong>Referee:</strong> memimpin undian, menetapkan jadwal, memastikan eligibility, menafsirkan aturan, memutus protes, menjatuhkan diskualifikasi.</li>
+      <li><strong>Umpire:</strong> memimpin match, memeriksa perlengkapan, memutus point/let, mengumumkan skor. <strong>Assistant Umpire/Timekeeper:</strong> membantu keputusan edge/net, mengukur warm-up/interval/time-out/durasi game, mengawasi slot 25 menit.</li>
+      <li><strong>Coaching:</strong> maksimal 1 adviser/coach per pasangan, ditunjuk sebelum match, tidak boleh memberi advice saat rally atau menyebabkan delay.</li>
     </ul>
   </fieldset>
 
   <fieldset>
-    <legend>13. Etika, Keselamatan, dan Dokumentasi</legend>
+    <legend>13. Disiplin, Sanksi, Cedera &amp; Protes</legend>
     <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
-      <li>Peserta wajib bersikap sportif, menghormati lawan, wasit, dan panitia, serta tidak berkata kasar atau mengganggu konsentrasi lawan.</li>
-      <li>Area pertandingan harus bebas dari barang penghalang dan lantai tidak boleh licin.</li>
-      <li>Dokumentasi foto atau video diperbolehkan sepanjang tidak mengganggu pertandingan.</li>
-      <li>Panitia dapat menyesuaikan jadwal akibat kebutuhan operasional perusahaan, dengan pemberitahuan kepada pihak terkait.</li>
-      <li>Kondisi yang belum tercantum dalam pedoman ini diputuskan oleh panitia dengan mengutamakan keadilan, keselamatan, dan sportivitas.</li>
+      <li>Pelanggaran awal (bahasa tidak pantas, sengaja menunda, dsb.) &rarr; Kartu Kuning/peringatan. Pelanggaran berikutnya &rarr; Kuning + Merah, lawan mendapat +1 poin, lalu +2 poin. Pelanggaran serius (ancaman, kekerasan, kecurangan) &rarr; pertandingan dihentikan dan dilaporkan ke referee.</li>
+      <li>Jika pemain tidak dapat melanjutkan karena cedera, dinyatakan retired dan lawan menang. Jika ada darah, pertandingan dihentikan sampai luka ditangani.</li>
+      <li>Protes hasil: sebelum score sheet ditandatangani, atau maksimal 5 menit setelah match selesai. Fakta yang sudah diputus umpire tidak dapat diubah berdasarkan kesepakatan pemain. Keputusan referee final.</li>
     </ul>
   </fieldset>
 
-  <fieldset>
-    <legend>14. Penerapan untuk Peserta Pemula</legend>
-    <p style="font-size:.9rem; line-height:1.6; margin-bottom:.6rem;">
-      Aturan dasar tetap digunakan agar seluruh peserta memahami standar tenis meja. Karena kegiatan bersifat
-      internal dan melibatkan pemain pemula sampai senior, panitia menerapkan pendekatan edukatif sebagai berikut:
-    </p>
+  <fieldset class="danger-zone">
+    <legend>⚠️ Perlu Dikonfirmasi Panitia</legend>
     <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
-      <li>Sebelum pertandingan pertama, panitia memperagakan servis yang benar, servis diagonal, urutan memukul dalam ganda, dan perbedaan bola tepi dengan bola sisi.</li>
-      <li>Pada pertandingan pertama setiap tim, pelanggaran servis pertama yang tidak disengaja dapat diberikan satu kali peringatan dan servis diulang.</li>
-      <li>Peringatan berlaku satu kali untuk satu tim dalam satu pertandingan. Pelanggaran berikutnya dinyatakan fault dan poin diberikan kepada lawan.</li>
-      <li>Pelanggaran yang disengaja, servis yang jelas disembunyikan, atau penolakan memperbaiki servis dapat langsung dinyatakan fault oleh wasit.</li>
+      <li><strong>Mekanisme saat slot 25 menit habis:</strong> timekeeper memberi sinyal dan waktu terus berjalan, tetapi mekanisme penyelesaian match saat waktu benar-benar habis perlu dipastikan secara eksplisit kepada peserta.</li>
+      <li><strong>Juara 3 Bersama:</strong> materi menetapkan dua semifinalis yang kalah sebagai Juara 3 Bersama, kecuali panitia menetapkan kebijakan lain sebelum Technical Meeting.</li>
     </ul>
-  </fieldset>
-
-  <fieldset>
-    <legend>15. Ringkasan Cepat Sebelum Bermain</legend>
-    <div class="table-wrap">
-      <table class="standings rules-table">
-        <thead><tr><th>Topik</th><th>Ringkasan</th></tr></thead>
-        <tbody>
-          <tr><td>Skor</td><td>11 poin dan wajib unggul 2 poin.</td></tr>
-          <tr><td>Grup</td><td>Best of 3; menang 2 game.</td></tr>
-          <tr><td>Final</td><td>Best of 5; menang 3 game.</td></tr>
-          <tr><td>Servis</td><td>Telapak tangan terbuka, lambung minimal sekitar 16 cm, dan tidak disembunyikan.</td></tr>
-          <tr><td>Ganda</td><td>Servis diagonal kanan-ke-kanan dan pukulan wajib bergantian.</td></tr>
-          <tr><td>Servis berganti</td><td>Setiap 2 poin; pada deuce setiap 1 poin.</td></tr>
-          <tr><td>Kehadiran</td><td>Datang 10 menit lebih awal; toleransi maksimal 15 menit.</td></tr>
-          <tr><td>Pemanasan</td><td>Maksimal 3 menit.</td></tr>
-          <tr><td>Jeda</td><td>Maksimal 1 menit antar-game.</td></tr>
-          <tr><td>Cedera</td><td>Penanganan maksimal 5 menit; tanpa pengganti.</td></tr>
-          <tr><td>Hasil</td><td>Periksa dan sahkan skor setelah pertandingan.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </fieldset>
-
-  <fieldset>
-    <legend>16. Referensi dan Kedudukan Dokumen</legend>
-    <p style="font-size:.88rem; line-height:1.6; margin-bottom:.6rem;">
-      Referensi utama: <em>International Table Tennis Federation (ITTF), ITTF Statutes 2026</em>, bagian
-      <em>Laws of Table Tennis</em>, berlaku mulai 1 Januari 2026.
-    </p>
-    <p style="font-size:.88rem; line-height:1.6; margin-bottom:.6rem;">
-      Ketentuan format kompetisi, poin klasemen, keterlambatan, W.O., tidak adanya pemain pengganti, waktu
-      pemanasan, penanganan cedera, dan pendekatan edukatif untuk pemula merupakan aturan khusus internal
-      Mini Round Interport Site Jakarta yang disepakati dalam Technical Meeting.
-    </p>
-    <p style="font-size:.88rem; line-height:1.6; margin-bottom:0;">
-      Apabila terdapat perbedaan antara kebiasaan bermain informal dan pedoman ini, ketentuan dalam pedoman
-      yang telah disahkan pada Technical Meeting menjadi acuan pelaksanaan pertandingan.
-    </p>
   </fieldset>
 
 </div>

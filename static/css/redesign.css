@@ -581,10 +581,20 @@ fieldset form > label input:focus,fieldset form > label textarea:focus,
 
 /* Stats & Progress */
 .sport-card-stats-bar { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.85rem; }
-.sport-stat-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.38rem 0.78rem; border-radius: 99px; font-size: 0.78rem; font-weight: 600; line-height: 1; }
+.sport-stat-badge { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.38rem 0.78rem; border-radius: 99px; font-size: 0.78rem; font-weight: 600; line-height: 1; white-space: nowrap; }
 .stat-live { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 .stat-offline { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
 .stat-completed { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+.live-pulse-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #dc2626; flex-shrink: 0;
+  box-shadow: 0 0 0 0 rgba(220, 38, 38, .55);
+  animation: pulseDotRed 1.4s ease-out infinite;
+}
+@keyframes pulseDotRed {
+  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, .55); }
+  70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
 .sport-card-progress { width: 100%; height: 6px; background: #f1f5f9; border-radius: 99px; overflow: hidden; margin-bottom: 1.15rem; }
 .sport-card-progress-bar { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
 
@@ -598,8 +608,9 @@ fieldset form > label input:focus,fieldset form > label textarea:focus,
   transition: background 0.25s ease, border-color 0.25s ease;
 }
 .sport-hub-card:not(.disabled):hover .sport-card-next-match { background: #f1f5f9; border-color: #cbd5e1; }
-.next-match-header { display: flex; align-items: center; justify-content: space-between; font-size: 0.73rem; font-weight: 600; color: #64748b; margin-bottom: 0.45rem; }
+.next-match-header { display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; font-size: 0.73rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem; }
 .next-tag { color: #0284c7; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.next-time { white-space: nowrap; }
 .next-match-teams { font-size: 1.05rem; color: #0f172a; display: flex; align-items: center; gap: 0.5rem; }
 .vs-badge { font-size: 0.7rem; font-weight: 800; background: #e2e8f0; color: #475569; padding: 0.15rem 0.4rem; border-radius: 6px; text-transform: uppercase; }
 .next-match-empty { display: flex; align-items: center; gap: 0.65rem; color: #64748b; font-size: 0.83rem; font-weight: 500; line-height: 1.4; }
