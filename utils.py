@@ -1259,14 +1259,18 @@ def auto_seed_knockout(category_key, matches=None, teams=None, config=None, forc
 
     cat_matches = [m for m in matches if m.get("category") == category_key]
     group_matches = [m for m in cat_matches if m.get("stage_type") in ("group", "round_robin") and m.get("group") not in ("FINAL", "KNOCKOUT", "SEMIFINAL")]
-    
-    if not force and group_matches:
-        all_completed = all(
-            m.get("status") in ("completed", "cancelled") or is_valid_completed_match(m) or m.get("walkover")
-            for m in group_matches
-        )
-        if not all_completed and len(group_matches) > 0:
-            pass # Continue to check Semifinals -> Finals advancement
+
+    # Semifinal slots are seeded from group-stage standings, which are meaningless
+    # until every group match has a real result -- an all-0 table still produces
+    # *some* sort order, so without this gate the semifinal gets locked in to
+    # whichever teams land first/third in that arbitrary tie-break the moment the
+    # schedule is generated, long before anyone has actually played. `force`
+    # intentionally does NOT bypass this: it only means "run even if nothing
+    # calls this after a score update", not "seed off unfinished standings".
+    group_stage_complete = bool(group_matches) and all(
+        m.get("status") in ("completed", "cancelled") or is_valid_completed_match(m) or m.get("walkover")
+        for m in group_matches
+    )
 
     groups = category.get("groups", ["A"])
     standings_by_group = {}
@@ -1278,6 +1282,8 @@ def auto_seed_knockout(category_key, matches=None, teams=None, config=None, forc
     changed = False
     for m in cat_matches:
         if m.get("stage_type") in ("semifinal", "semi_final", "knockout") or m.get("round_label") in ("Semifinal 1", "Semifinal 2"):
+            if not group_stage_complete:
+                continue
             if len(groups) == 2 and "A" in standings_by_group and "B" in standings_by_group:
                 rows_a = standings_by_group.get("A", [])
                 rows_b = standings_by_group.get("B", [])
