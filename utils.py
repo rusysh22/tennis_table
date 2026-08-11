@@ -212,8 +212,108 @@ def save_json(name, data):
         os.replace(tmp, _path(name))
 
 
+def load_participants():
+    return load_json("participants.json")
+
+
+def save_participants(participants):
+    if USE_NORMALIZED_DB:
+        raise RuntimeError(
+            "Whole-collection participant writes are disabled for normalized storage."
+        )
+    save_json("participants.json", participants)
+
+
+def generate_participant_id(site_code, participants):
+    """ID peserta baru, mis. 'BBL-01' -- diprefix kode site supaya gampang dibaca
+    dan otomatis unik lintas site tanpa perlu koordinasi nomor global."""
+    site_code = (site_code or "").strip().upper()
+    existing = [
+        int(pid.rsplit("-", 1)[-1])
+        for pid in participants
+        if pid.startswith(f"{site_code}-") and pid.rsplit("-", 1)[-1].isdigit()
+    ]
+    return f"{site_code}-{max(existing, default=0) + 1:02d}"
+
+
+def upsert_participant(participants, site_code, name, id_number="", email="", photo=None, existing_id=None):
+    """Cari peserta yang cocok (by id eksplisit, lalu NIK, lalu nama -- dalam site
+    yang sama) dan perbarui datanya, atau buat baru kalau belum ada. Ini yang
+    membuat satu orang tidak terdaftar berulang saat diinput ulang di form admin."""
+    site_code = (site_code or "").strip().upper()
+    pid = existing_id if existing_id in participants else None
+    if not pid and id_number:
+        pid = next(
+            (k for k, v in participants.items()
+             if v.get("site_code") == site_code and id_number and v.get("id_number") == id_number),
+            None,
+        )
+    if not pid and name:
+        pid = next(
+            (k for k, v in participants.items()
+             if v.get("site_code") == site_code and v.get("name", "").strip().lower() == name.strip().lower()),
+            None,
+        )
+    if not pid:
+        pid = generate_participant_id(site_code, participants)
+    old = participants.get(pid, {})
+    participants[pid] = {
+        "name": name,
+        "id_number": id_number,
+        "email": email,
+        "photo": photo if photo is not None else old.get("photo", ""),
+        "site_code": site_code,
+    }
+    return pid
+
+
+def _hydrate_team(team, participants):
+    """Susun ulang field tampilan lama (player1, id_number1, reserves, dst) dari
+    'members' (referensi participant_id + role) supaya seluruh kode pembaca tim
+    yang sudah ada -- rute, template, standings -- tidak perlu tahu soal peserta
+    yang kini disimpan terpisah di participants.json."""
+    team = dict(team)
+    members = team.get("members")
+    if members is None:
+        return team  # data lama/format lain (mis. fixture test) -- tampilkan apa adanya
+
+    if team.get("entrant_type") == "roster":
+        reserves = []
+        for m in members:
+            p = participants.get(m.get("participant_id"), {})
+            reserves.append({
+                "participant_id": m.get("participant_id"),
+                "name": p.get("name", ""),
+                "id_number": p.get("id_number", ""),
+                "role": m.get("role", "putra"),
+            })
+        team["reserves"] = reserves
+        return team
+
+    by_role = {m.get("role"): m.get("participant_id") for m in members}
+    for slot, role in (("1", "pemain1"), ("2", "pemain2")):
+        pid = by_role.get(role)
+        p = participants.get(pid, {}) if pid else {}
+        team[f"participant_id{slot}"] = pid
+        team[f"player{slot}"] = p.get("name", "")
+        team[f"id_number{slot}"] = p.get("id_number", "")
+        team[f"email{slot}"] = p.get("email", "")
+        team[f"photo{slot}"] = p.get("photo", "")
+    return team
+
+
 def load_teams():
-    return load_json("teams.json")
+    teams = load_json("teams.json")
+    if USE_NORMALIZED_DB:
+        return teams
+    participants = load_json("participants.json")
+    return {code: _hydrate_team(t, participants) for code, t in teams.items()}
+
+
+_HYDRATED_TEAM_FIELDS = (
+    "player1", "player2", "id_number1", "id_number2", "email1", "email2",
+    "photo1", "photo2", "participant_id1", "participant_id2", "reserves",
+)
 
 
 def save_teams(teams):
@@ -221,7 +321,17 @@ def save_teams(teams):
         raise RuntimeError(
             "Whole-collection team writes are disabled for normalized storage."
         )
-    save_json("teams.json", teams)
+    # Callers that round-trip load_teams() -> mutate -> save_teams() (e.g.
+    # auto_split_groups) get back the hydrated dict; strip the fields that
+    # were derived from participants.json so teams.json stays members-only.
+    cleaned = {
+        code: (
+            {k: v for k, v in t.items() if k not in _HYDRATED_TEAM_FIELDS}
+            if "members" in t else t
+        )
+        for code, t in teams.items()
+    }
+    save_json("teams.json", cleaned)
 
 
 def load_matches():
@@ -866,11 +976,11 @@ def _scoring_profile_for(sport_key, stage_type):
                 "_segment_term": "game",
             }
         return {
-            "_profile_key": "padel-standard-advantage",
+            "_profile_key": "padel-knockout-golden-point",
             "_profile_version": 1,
             "_profile_config": {
-                "best_of": 3, "games_to_win_set": 6, "set_win_by": 2,
-                "tie_break_at": "6-6", "game_scoring_method": "advantage",
+                "best_of": 1, "games_to_win_set": 5, "set_win_by": 1,
+                "tie_break_at_six_all": False, "game_scoring_method": "golden_point",
                 "deciding_set_policy": "standard",
             },
             "_segment_term": "set",
@@ -1035,6 +1145,33 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "reschedule_history": [],
                 **semifinal_profile,
             })
+            third_place_id = get_next_id()
+            matches.append({
+                "id": third_place_id,
+                "category": category_key,
+                "category_label": cat_label,
+                "sport_key": sport_key,
+                "group": "KNOCKOUT",
+                "round": 4,
+                "round_label": "Perebutan Juara 3",
+                "stage_type": "third_place",
+                "stage_key": "third_place",
+                "team_a": None,
+                "team_b": None,
+                "qualification_slot_a": "Kalah Semifinal 1",
+                "qualification_slot_b": "Kalah Semifinal 2",
+                "depends_on": [sf1_id, sf2_id],
+                "date": final_date_str,
+                "time": "18:00",
+                "court": court,
+                "status": "scheduled",
+                "sets": [],
+                "winner": None,
+                "walkover": False,
+                "notes": f"Perebutan Juara 3 {cat_label}: Kalah Semifinal 1 vs Kalah Semifinal 2",
+                "reschedule_history": [],
+                **semifinal_profile,
+            })
             matches.append({
                 "id": get_next_id(),
                 "category": category_key,
@@ -1061,7 +1198,7 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
                 "reschedule_history": [],
                 **final_profile,
             })
-            knockout_count += 3
+            knockout_count += 4
         else:
             final_a, final_b = _qual_slot_pair(
                 groups, ("Juara Group A", "Juara Group B"), ("Peringkat 1 Group", "Peringkat 2 Group")
@@ -1159,6 +1296,22 @@ def auto_seed_knockout(category_key, matches=None, teams=None, config=None, forc
                 elif m.get("round_label") == "Semifinal 2" and len(rows) >= 4:
                     if not m.get("team_a"): m["team_a"] = rows[1]["code"]; changed = True
                     if not m.get("team_b"): m["team_b"] = rows[3]["code"]; changed = True
+
+        elif m.get("stage_type") == "third_place":
+            depends = m.get("depends_on", [])
+            if len(depends) >= 2:
+                sf_matches = {sf.get("id"): sf for sf in cat_matches if sf.get("id") in depends}
+                sf1 = sf_matches.get(depends[0])
+                sf2 = sf_matches.get(depends[1])
+                for sf, slot in ((sf1, "team_a"), (sf2, "team_b")):
+                    if not sf or not sf.get("winner"):
+                        continue
+                    if not sf.get("team_a") or not sf.get("team_b"):
+                        continue
+                    loser = sf["team_a"] if sf["winner"] == sf["team_b"] else sf["team_b"]
+                    if m.get(slot) != loser:
+                        m[slot] = loser
+                        changed = True
 
         elif m.get("stage_type") == "final" or m.get("group") == "FINAL":
             depends = m.get("depends_on", [])
@@ -1304,6 +1457,18 @@ def truncate_words(text, max_words=2):
 def format_date_id(date_str):
     d = datetime.strptime(date_str, "%Y-%m-%d")
     return f"{DAY_NAMES[d.weekday()]}, {d.day} {MONTH_NAMES[d.month]} {d.year}"
+
+
+def format_date_range_id(start_date, end_date):
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
+    if start.date() == end.date():
+        return f"{start.day} {MONTH_NAMES[start.month]} {start.year}"
+    if start.year == end.year and start.month == end.month:
+        return f"{start.day}–{end.day} {MONTH_NAMES[start.month]} {start.year}"
+    if start.year == end.year:
+        return f"{start.day} {MONTH_NAMES[start.month]} – {end.day} {MONTH_NAMES[end.month]} {start.year}"
+    return f"{start.day} {MONTH_NAMES[start.month]} {start.year} – {end.day} {MONTH_NAMES[end.month]} {end.year}"
 
 
 def _team_names(player1, player2):

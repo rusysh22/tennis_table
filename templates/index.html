@@ -11,8 +11,7 @@
   <div class="hero-meta">
     <div class="hero-chip">
       <div class="k">Tanggal</div>
-      <div class="v">{{ config.start_date[8:10] }}&ndash;{{ config.end_date[8:10] }} Juli {{ config.start_date[:4] }}
-      </div>
+      <div class="v">{{ tournament_date_range }}</div>
     </div>
     <div class="hero-chip">
       <div class="k">Waktu</div>
@@ -21,10 +20,6 @@
     <div class="hero-chip">
       <div class="k">Sesi</div>
       <div class="v">{{ config.time_window_note }}</div>
-    </div>
-    <div class="hero-chip">
-      <div class="k">Lokasi</div>
-      <div class="v">{{ config.venue }}</div>
     </div>
   </div>
 

@@ -33,6 +33,8 @@
     <form method="post" action="{{ url_for('admin_save_participant') }}"
           enctype="multipart/form-data" id="participantForm">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="participant_id1" id="f_pid1" value="">
+      <input type="hidden" name="participant_id2" id="f_pid2" value="">
 
       {# ── Chip preview ── #}
       <div style="margin-bottom:1.4rem; padding:1rem 1.2rem; background:var(--surface-soft);
@@ -488,11 +490,12 @@ function onCategoryChange() {
   livePreview();
 }
 
-function addReserveRow(name, idNumber, role) {
+function addReserveRow(name, idNumber, role, participantId) {
   var container = document.getElementById('reserveRows');
   var row = document.createElement('div');
   row.className = 'reserve-row';
   row.innerHTML =
+    '<input type="hidden" name="reserve_participant_id[]" value="' + (participantId ? participantId.replace(/"/g, '&quot;') : '') + '">' +
     '<input type="text" name="reserve_name[]" placeholder="Nama lengkap" value="' + (name ? name.replace(/"/g, '&quot;') : '') + '">' +
     '<input type="text" name="reserve_id_number[]" placeholder="NIK" style="flex:0 0 140px;" value="' + (idNumber ? idNumber.replace(/"/g, '&quot;') : '') + '">' +
     '<select name="reserve_role[]" style="flex:0 0 110px;">' +
@@ -537,7 +540,7 @@ function editTeamFromBtn(btn) {
   if (t.entrant_type === 'roster') {
     document.getElementById('reserveRows').innerHTML = '';
     (t.reserves || []).forEach(function(r) {
-      addReserveRow(r.name, r.id_number, r.role);
+      addReserveRow(r.name, r.id_number, r.role, r.participant_id);
     });
   } else {
     document.getElementById('f_group').value   = t.group || 'A';
@@ -549,6 +552,8 @@ function editTeamFromBtn(btn) {
     document.getElementById('f_email1').value   = t.email1 || '';
     document.getElementById('f_id2').value      = t.id_number2 || '';
     document.getElementById('f_email2').value   = t.email2 || '';
+    document.getElementById('f_pid1').value     = t.participant_id1 || '';
+    document.getElementById('f_pid2').value     = t.participant_id2 || '';
     // show existing photos
     ['photo1','photo2'].forEach(function(k) {
       var url = t[k] || '';

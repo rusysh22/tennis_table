@@ -640,6 +640,7 @@ def inject_globals():
     selected_sport = _selected_sport()
     return {
         "config": config,
+        "tournament_date_range": utils.format_date_range_id(config["start_date"], config["end_date"]),
         "sports": sports,
         "selected_sport": selected_sport,
         "sport_url": _sport_url,
@@ -1940,33 +1941,37 @@ def admin_save_participant():
 
     teams = utils.load_teams()
     existing = teams.get(code, {})
+    participants = utils.load_participants()
 
     # ── Kategori tipe Roster (Cadangan): satu record per site berisi daftar pemain cadangan ──
     if cat_def.get("entrant_type") == "roster":
         names = request.form.getlist("reserve_name[]")
         id_numbers = request.form.getlist("reserve_id_number[]")
         roles = request.form.getlist("reserve_role[]")
-        reserves = []
-        for name, id_number, role in zip(names, id_numbers, roles):
+        reserve_pids = request.form.getlist("reserve_participant_id[]")
+        members = []
+        for i, (name, id_number, role) in enumerate(zip(names, id_numbers, roles)):
             name = name.strip()
             if not name:
                 continue
-            reserves.append({
-                "name": name,
-                "id_number": id_number.strip(),
-                "role": role.strip() or "putra",
-            })
-        if not reserves:
+            existing_pid = reserve_pids[i] if i < len(reserve_pids) else ""
+            pid = utils.upsert_participant(
+                participants, site_code, name, id_number.strip(),
+                existing_id=existing_pid or None,
+            )
+            members.append({"participant_id": pid, "role": role.strip() or "putra"})
+        if not members:
             flash("Minimal 1 pemain cadangan dengan nama harus diisi.", "error")
             return redirect(url_for("admin_participants"))
+        utils.save_participants(participants)
         teams[code] = {
             "site_code": site_code,
             "category": category,
             "entrant_type": "roster",
-            "reserves": reserves,
+            "members": members,
         }
         utils.save_teams(teams)
-        flash(f"Roster cadangan '{code}' ({len(reserves)} pemain) berhasil disimpan.", "success")
+        flash(f"Roster cadangan '{code}' ({len(members)} pemain) berhasil disimpan.", "success")
         return redirect(url_for("admin_participants"))
 
     player1 = request.form.get("player1", "").strip()
@@ -2005,20 +2010,26 @@ def admin_save_participant():
     photo1 = _upload_photo("photo1", "photo1")
     photo2 = _upload_photo("photo2", "photo2")
 
+    pid1 = utils.upsert_participant(
+        participants, site_code, player1, id_number1, email1, photo1 or "",
+        existing_id=request.form.get("participant_id1") or None,
+    )
+    members = [{"participant_id": pid1, "role": "pemain1"}]
+    if player2:
+        pid2 = utils.upsert_participant(
+            participants, site_code, player2, id_number2, email2, photo2 or "",
+            existing_id=request.form.get("participant_id2") or None,
+        )
+        members.append({"participant_id": pid2, "role": "pemain2"})
+    utils.save_participants(participants)
+
     teams[code] = {
         "site_code": site_code,
         "category": category,
         "group": group,
-        "player1": player1,
-        "player2": player2,
         "color": color,
         "text": text,
-        "id_number1": id_number1,
-        "email1": email1,
-        "photo1": photo1 or "",
-        "id_number2": id_number2,
-        "email2": email2,
-        "photo2": photo2 or "",
+        "members": members,
     }
     utils.save_teams(teams)
     flash(f"Data tim/peserta '{code}' ({player1}) berhasil disimpan.", "success")

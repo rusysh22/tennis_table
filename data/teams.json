@@ -1,1 +1,659 @@
-{}
+{
+  "BBL-PDL1": {
+    "site_code": "BBL",
+    "category": "padel_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-02",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BPP-PDL1": {
+    "site_code": "BPP",
+    "category": "padel_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BPP-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-02",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "JKT-PDL1": {
+    "site_code": "JKT",
+    "category": "padel_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-02",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "PSR-PDL1": {
+    "site_code": "PSR",
+    "category": "padel_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-02",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "SBY-PDL1": {
+    "site_code": "SBY",
+    "category": "padel_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "SBY-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "SBY-02",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BBL-PDL2": {
+    "site_code": "BBL",
+    "category": "padel_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-03",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-04",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BPP-PDL2": {
+    "site_code": "BPP",
+    "category": "padel_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BPP-03",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-04",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "JKT-PDL2": {
+    "site_code": "JKT",
+    "category": "padel_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-03",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-04",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "PSR-PDL2": {
+    "site_code": "PSR",
+    "category": "padel_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-03",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-04",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BBL-BM1": {
+    "site_code": "BBL",
+    "category": "badminton_ganda_putra",
+    "group": "B",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-05",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-06",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BPP-BM1": {
+    "site_code": "BPP",
+    "category": "badminton_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BPP-05",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-06",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "JKT-BM1": {
+    "site_code": "JKT",
+    "category": "badminton_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-05",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-06",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "MRW-BM1": {
+    "site_code": "MRW",
+    "category": "badminton_ganda_putra",
+    "group": "B",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "MRW-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "MRW-02",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "PSR-BM1": {
+    "site_code": "PSR",
+    "category": "badminton_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-05",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-06",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "SBY-BM1": {
+    "site_code": "SBY",
+    "category": "badminton_ganda_putra",
+    "group": "B",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "SBY-03",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "SBY-04",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BBL-BM2": {
+    "site_code": "BBL",
+    "category": "badminton_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-07",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-08",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BPP-BM2": {
+    "site_code": "BPP",
+    "category": "badminton_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BPP-07",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-08",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "JKT-BM2": {
+    "site_code": "JKT",
+    "category": "badminton_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-07",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-08",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "PSR-BM2": {
+    "site_code": "PSR",
+    "category": "badminton_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-07",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-08",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "SBY-BM2": {
+    "site_code": "SBY",
+    "category": "badminton_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "SBY-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "SBY-05",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BBL-TM1": {
+    "site_code": "BBL",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-09",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-10",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BPP-TM1": {
+    "site_code": "BPP",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BPP-09",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-10",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "JKT-TM1": {
+    "site_code": "JKT",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-09",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-10",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "PSR-TM1": {
+    "site_code": "PSR",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-09",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-10",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "SBY-TM1": {
+    "site_code": "SBY",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "SBY-06",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "SBY-07",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BBL-TM2": {
+    "site_code": "BBL",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-11",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-12",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BPP-TM2": {
+    "site_code": "BPP",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BPP-11",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-12",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "JKT-TM2": {
+    "site_code": "JKT",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-11",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-12",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "PSR-TM2": {
+    "site_code": "PSR",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "A",
+    "color": "#2a78d6",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-11",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-12",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BBL-PDLCAD": {
+    "site_code": "BBL",
+    "category": "padel_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "BBL-13",
+        "role": "putra"
+      }
+    ]
+  },
+  "BPP-PDLCAD": {
+    "site_code": "BPP",
+    "category": "padel_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "BPP-13",
+        "role": "putra"
+      },
+      {
+        "participant_id": "BPP-08",
+        "role": "putri"
+      }
+    ]
+  },
+  "JKT-PDLCAD": {
+    "site_code": "JKT",
+    "category": "padel_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "JKT-13",
+        "role": "putra"
+      },
+      {
+        "participant_id": "JKT-14",
+        "role": "putri"
+      }
+    ]
+  },
+  "PSR-PDLCAD": {
+    "site_code": "PSR",
+    "category": "padel_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "PSR-05",
+        "role": "putra"
+      },
+      {
+        "participant_id": "PSR-12",
+        "role": "putri"
+      }
+    ]
+  },
+  "BBL-BMCAD": {
+    "site_code": "BBL",
+    "category": "badminton_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "BBL-14",
+        "role": "putra"
+      }
+    ]
+  },
+  "BPP-BMCAD": {
+    "site_code": "BPP",
+    "category": "badminton_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "BPP-03",
+        "role": "putra"
+      },
+      {
+        "participant_id": "BPP-04",
+        "role": "putri"
+      }
+    ]
+  },
+  "JKT-BMCAD": {
+    "site_code": "JKT",
+    "category": "badminton_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "JKT-15",
+        "role": "putra"
+      },
+      {
+        "participant_id": "JKT-12",
+        "role": "putri"
+      }
+    ]
+  },
+  "MRW-BMCAD": {
+    "site_code": "MRW",
+    "category": "badminton_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "MRW-03",
+        "role": "putra"
+      }
+    ]
+  },
+  "PSR-BMCAD": {
+    "site_code": "PSR",
+    "category": "badminton_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "PSR-10",
+        "role": "putra"
+      },
+      {
+        "participant_id": "PSR-04",
+        "role": "putri"
+      }
+    ]
+  },
+  "BBL-TMCAD": {
+    "site_code": "BBL",
+    "category": "tenis_meja_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "BBL-15",
+        "role": "putra"
+      }
+    ]
+  },
+  "BPP-TMCAD": {
+    "site_code": "BPP",
+    "category": "tenis_meja_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "BPP-14",
+        "role": "putra"
+      },
+      {
+        "participant_id": "BPP-08",
+        "role": "putri"
+      }
+    ]
+  },
+  "PSR-TMCAD": {
+    "site_code": "PSR",
+    "category": "tenis_meja_cadangan",
+    "entrant_type": "roster",
+    "members": [
+      {
+        "participant_id": "PSR-06",
+        "role": "putra"
+      },
+      {
+        "participant_id": "PSR-08",
+        "role": "putri"
+      }
+    ]
+  }
+}

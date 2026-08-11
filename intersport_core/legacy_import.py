@@ -163,7 +163,24 @@ def _rule_profile_rows(sport_ids):
     return rows, profile_ids
 
 
-def build_import_plan(config, teams, matches, source_checksums=None):
+def _team_member_names(team, participants):
+    """Nama pemain 1/2 dari sebuah tim -- baik format lama (player1/player2
+    langsung) maupun format roster (members: participant_id + role, dengan
+    nama sebenarnya di participants.json)."""
+    members = team.get("members")
+    if not members:
+        return [team.get("player1"), team.get("player2")]
+    by_role = {m.get("role"): m.get("participant_id") for m in members}
+    names = []
+    for role in ("pemain1", "pemain2"):
+        pid = by_role.get(role)
+        person = participants.get(pid) if pid else None
+        names.append(person.get("name") if person else None)
+    return names
+
+
+def build_import_plan(config, teams, matches, source_checksums=None, participants=None):
+    participants = participants or {}
     source_checksums = source_checksums or {
         "config.json": _canonical_checksum(config),
         "teams.json": _canonical_checksum(teams),
@@ -359,7 +376,7 @@ def build_import_plan(config, teams, matches, source_checksums=None):
             continue
         entrant_id = stable_uuid("entrant", division_id, code)
         entrant_ids[code] = entrant_id
-        member_names = [team.get("player1"), team.get("player2")]
+        member_names = _team_member_names(team, participants)
         display_name = " / ".join(name for name in member_names if name) or code
         records["entrants"].append(
             {
@@ -822,9 +839,15 @@ def load_legacy_import_plan(data_dir):
         raw = (data_dir / name).read_bytes()
         checksums[name] = sha256(raw).hexdigest()
         payloads[name] = json.loads(raw.decode("utf-8"))
+    participants_path = data_dir / "participants.json"
+    participants = (
+        json.loads(participants_path.read_bytes().decode("utf-8"))
+        if participants_path.exists() else {}
+    )
     return build_import_plan(
         payloads["config.json"],
         payloads["teams.json"],
         payloads["matches.json"],
         source_checksums=checksums,
+        participants=participants,
     )

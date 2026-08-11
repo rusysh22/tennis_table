@@ -4,16 +4,14 @@
   "status": "active",
   "timezone": "Asia/Jakarta",
   "locale": "id-ID",
-  "start_date": "2026-08-09",
-  "end_date": "2026-08-23",
-  "buffer_dates": [
-    "2026-08-15"
-  ],
-  "final_date": "2026-08-23",
-  "closing_date": "2026-08-23",
-  "time_window": "18.00 - 20.00 WIB",
+  "start_date": "2026-08-12",
+  "end_date": "2026-08-14",
+  "buffer_dates": [],
+  "final_date": "2026-08-14",
+  "closing_date": "2026-08-14",
+  "time_window": "16.00 - 21.00 WIB",
   "time_window_note": "After Office Hours",
-  "venue": "Synergy Room & Courts",
+  "venue": "Padeloom, Saintuary Sport & Synergy Room Lt. 7",
   "final_note": "Babak Final dan Penutupan Turnamen",
   "announcement_title": "Selamat Datang di Interport Synergy Cup 2026!",
   "announcement_text": "Turnamen multi-cabang olahraga antar Site Interport 2026 resmi dimulai! 6 Site berlaga: Babelan, Jakarta, Paser, Balikpapan, Surabaya, dan Morowali. Junjung tinggi sportivitas dan semangat kebersamaan!",
@@ -26,12 +24,30 @@
     "badminton"
   ],
   "sites": [
-    {"code": "BBL", "name": "Babelan Patriot"},
-    {"code": "JKT", "name": "Jakarta Jawara"},
-    {"code": "BPP", "name": "Balikpapan Marwah Warriors"},
-    {"code": "PSR", "name": "Paser Buen Kesong"},
-    {"code": "SBY", "name": "Surabaya Joang"},
-    {"code": "MRW", "name": "Morowali Titans"}
+    {
+      "code": "BBL",
+      "name": "Babelan Patriot"
+    },
+    {
+      "code": "JKT",
+      "name": "Jakarta Jawara"
+    },
+    {
+      "code": "BPP",
+      "name": "Balikpapan Marwah Warriors"
+    },
+    {
+      "code": "PSR",
+      "name": "Paser Buen Kesong"
+    },
+    {
+      "code": "SBY",
+      "name": "Surabaya Joang"
+    },
+    {
+      "code": "MRW",
+      "name": "Morowali Titans"
+    }
   ],
   "categories": [
     {
@@ -40,8 +56,7 @@
       "sport_key": "padel",
       "entrant_type": "pair",
       "groups": [
-        "A",
-        "B"
+        "A"
       ],
       "has_final": true,
       "knockout_format": "semi_and_final"
@@ -52,8 +67,7 @@
       "sport_key": "padel",
       "entrant_type": "pair",
       "groups": [
-        "A",
-        "B"
+        "A"
       ],
       "has_final": true,
       "knockout_format": "semi_and_final"
@@ -116,8 +130,7 @@
       "sport_key": "badminton",
       "entrant_type": "pair",
       "groups": [
-        "A",
-        "B"
+        "A"
       ],
       "has_final": true,
       "knockout_format": "semi_and_final"
