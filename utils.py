@@ -1439,6 +1439,14 @@ def get_match(matches, match_id):
     return None
 
 
+def match_sort_key(m):
+    """Sort key for schedule listings: chronological by date/time/court, but
+    matches with no confirmed time yet (semifinal/final still awaiting group-
+    stage results) always sink to the bottom of their date instead of sorting
+    first just because "" < any real time string."""
+    return (m["date"], 0 if m.get("time") else 1, m.get("time") or "", m.get("court") or "")
+
+
 def team_label(teams, code):
     if not code:
         return "TBD"

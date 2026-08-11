@@ -822,7 +822,7 @@ def jadwal():
             or needle in m["team_b_player2"].lower()
         ]
 
-    filtered.sort(key=lambda m: (m["date"], m["time"], m["court"]))
+    filtered.sort(key=utils.match_sort_key)
     dates = sorted({m["date"] for m in enriched})
     categories = [
         category for category in config.get("categories", [])
@@ -1639,7 +1639,7 @@ def admin_logout():
 def admin_dashboard():
     teams, matches, config = data_context()
     enriched = [enrich_match(m, teams) for m in matches]
-    enriched.sort(key=lambda m: (m["date"], m["time"], m["court"]))
+    enriched.sort(key=utils.match_sort_key)
     counts = {
         "scheduled": sum(1 for m in matches if m["status"] == "scheduled"),
         "live": sum(1 for m in matches if m["status"] == "live"),
