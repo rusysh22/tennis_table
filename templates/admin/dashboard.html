@@ -3,8 +3,10 @@
 {% set page_subtitle = "Pantau semua pertandingan dan akses cepat ke manajemen turnamen" %}
 
 {% block topbar_actions %}
+{% if admin_role != 'sport' %}
 <a href="{{ url_for('admin_participants') }}" class="ac-btn ac-btn-secondary ac-btn-sm">👥 Peserta</a>
 <a href="{{ url_for('admin_schedule_generator') }}" class="ac-btn ac-btn-primary ac-btn-sm">⚡ Generate Jadwal</a>
+{% endif %}
 {% endblock %}
 
 {% block admin_content %}
@@ -105,10 +107,14 @@
   <div class="ac-empty">
     <span class="ac-empty-icon">📅</span>
     <h3>Belum ada jadwal pertandingan</h3>
+    {% if admin_role != 'sport' %}
     <p>Mulai dengan menambahkan divisi dan peserta, lalu generate jadwal otomatis.</p>
     <a href="{{ url_for('admin_categories') }}" class="ac-btn ac-btn-primary">
       🏆 Mulai dari Divisi &amp; Cabor
     </a>
+    {% else %}
+    <p>Belum ada pertandingan terjadwal untuk cabor Anda.</p>
+    {% endif %}
   </div>
   {% endif %}
 </div>

@@ -119,6 +119,7 @@ class ApplicationSecurityAndScoreTests(unittest.TestCase):
         return self.client.post(
             path,
             data={
+                "account_key": "general",
                 "password": "correct-horse-battery-staple",
                 "csrf_token": self._csrf_token(),
             },

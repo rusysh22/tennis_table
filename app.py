@@ -56,6 +56,14 @@ if not app.secret_key:
 app.config.update(
     ADMIN_PASSWORD=os.environ.get("ADMIN_PASSWORD"),
     ADMIN_PASSWORD_HASH=os.environ.get("ADMIN_PASSWORD_HASH"),
+    ADMIN_PASSWORD_GALLERY=os.environ.get("ADMIN_PASSWORD_GALLERY"),
+    ADMIN_PASSWORD_HASH_GALLERY=os.environ.get("ADMIN_PASSWORD_HASH_GALLERY"),
+    ADMIN_PASSWORD_TABLE_TENNIS=os.environ.get("ADMIN_PASSWORD_TABLE_TENNIS"),
+    ADMIN_PASSWORD_HASH_TABLE_TENNIS=os.environ.get("ADMIN_PASSWORD_HASH_TABLE_TENNIS"),
+    ADMIN_PASSWORD_PADEL=os.environ.get("ADMIN_PASSWORD_PADEL"),
+    ADMIN_PASSWORD_HASH_PADEL=os.environ.get("ADMIN_PASSWORD_HASH_PADEL"),
+    ADMIN_PASSWORD_BADMINTON=os.environ.get("ADMIN_PASSWORD_BADMINTON"),
+    ADMIN_PASSWORD_HASH_BADMINTON=os.environ.get("ADMIN_PASSWORD_HASH_BADMINTON"),
     MAX_CONTENT_LENGTH=int(os.environ.get("MAX_UPLOAD_BYTES", 48 * 1024 * 1024)),
     PERMANENT_SESSION_LIFETIME=timedelta(
         hours=int(os.environ.get("ADMIN_SESSION_HOURS", "8"))
@@ -64,6 +72,24 @@ app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=_env_flag("SESSION_COOKIE_SECURE", default=True),
 )
+
+# Admin accounts: each operator (general / gallery / one per sport) gets its own
+# password via environment variables, following the same ADMIN_PASSWORD_HASH
+# convention as before. An account only shows up in the login dropdown if its
+# env var is actually set -- a deployment that only sets ADMIN_PASSWORD_HASH
+# (today's setup) keeps working unchanged, just with a single-option dropdown.
+ADMIN_ACCOUNTS = [
+    {"key": "general", "label": "General (Semua Cabor)", "role": "general", "sport_key": None,
+     "password_env": "ADMIN_PASSWORD", "hash_env": "ADMIN_PASSWORD_HASH"},
+    {"key": "gallery", "label": "Admin Galeri", "role": "gallery", "sport_key": None,
+     "password_env": "ADMIN_PASSWORD_GALLERY", "hash_env": "ADMIN_PASSWORD_HASH_GALLERY"},
+    {"key": "table-tennis", "label": "Admin Tenis Meja", "role": "sport", "sport_key": "table-tennis",
+     "password_env": "ADMIN_PASSWORD_TABLE_TENNIS", "hash_env": "ADMIN_PASSWORD_HASH_TABLE_TENNIS"},
+    {"key": "padel", "label": "Admin Padel", "role": "sport", "sport_key": "padel",
+     "password_env": "ADMIN_PASSWORD_PADEL", "hash_env": "ADMIN_PASSWORD_HASH_PADEL"},
+    {"key": "badminton", "label": "Admin Badminton", "role": "sport", "sport_key": "badminton",
+     "password_env": "ADMIN_PASSWORD_BADMINTON", "hash_env": "ADMIN_PASSWORD_HASH_BADMINTON"},
+]
 
 Image.MAX_IMAGE_PIXELS = int(os.environ.get("MAX_IMAGE_PIXELS", "25000000"))
 
@@ -184,15 +210,28 @@ def _safe_internal_next(value):
     return value
 
 
-def _verify_admin_password(candidate):
-    password_hash = app.config.get("ADMIN_PASSWORD_HASH")
+def _configured_accounts():
+    return [
+        account for account in ADMIN_ACCOUNTS
+        if app.config.get(account["hash_env"]) or app.config.get(account["password_env"])
+    ]
+
+
+def _verify_account_password(account, candidate):
+    password_hash = app.config.get(account["hash_env"])
     if password_hash:
         try:
             return check_password_hash(password_hash, candidate)
         except ValueError:
             return False
-    password = app.config.get("ADMIN_PASSWORD")
+    password = app.config.get(account["password_env"])
     return bool(password) and secrets.compare_digest(password, candidate)
+
+
+def _assert_sport_access(sport_key):
+    """Abort 403 if the logged-in sport-scoped admin doesn't own this sport_key."""
+    if session.get("admin_role") == "sport" and session.get("admin_sport") != (sport_key or "table-tennis"):
+        abort(403)
 
 
 def _login_client_key():
@@ -256,10 +295,40 @@ def enforce_license_interception():
 
     is_active, reason = license_client.is_license_active()
     if not is_active:
-        if session.get("is_admin"):
+        if session.get("is_admin") and session.get("admin_role", "general") == "general":
             flash(f"⚠️ Akses ditahan: {reason} Silakan aktifkan lisensi dari Berlanggan.web.id.", "error")
             return redirect(url_for("admin_license"))
         return redirect(url_for("license_lockout", reason=reason))
+    return None
+
+
+GENERAL_ONLY_ENDPOINTS = {
+    "admin_sites", "admin_save_site", "admin_delete_site",
+    "admin_participants", "admin_save_participant", "admin_delete_participant", "admin_shuffle_groups",
+    "admin_categories", "admin_save_category",
+    "admin_rules", "admin_save_rules",
+    "admin_schedule_generator", "admin_generate_group_to_knockout", "admin_sync_knockout",
+    "admin_settings", "admin_announcement", "admin_live_stream",
+    "admin_utilities", "admin_reset", "admin_shuffle_putra", "admin_shuffle_campuran",
+    "admin_license", "admin_activate_license", "admin_validate_license", "admin_deactivate_license",
+}
+GALLERY_ENDPOINTS = {"admin_upload_gallery_photos", "admin_delete_gallery_photo"}
+
+
+@app.before_request
+def enforce_admin_role_scope():
+    if not request.path.startswith("/admin") or not session.get("is_admin"):
+        return None
+    endpoint = request.endpoint or ""
+    if endpoint in {"admin_login", "admin_logout"}:
+        return None
+    role = session.get("admin_role", "general")
+    if role == "gallery" and endpoint not in GALLERY_ENDPOINTS:
+        flash("Akun ini hanya memiliki akses ke menu Galeri.", "error")
+        return redirect(url_for("galeri"))
+    if role == "sport" and (endpoint in GENERAL_ONLY_ENDPOINTS or endpoint in GALLERY_ENDPOINTS):
+        flash("Menu ini tidak tersedia untuk akun cabor Anda.", "error")
+        return redirect(url_for("admin_dashboard"))
     return None
 
 
@@ -647,6 +716,9 @@ def inject_globals():
         "switch_sport_url": _switch_sport_url,
         "storage_backend": utils.STORAGE_BACKEND,
         "is_admin": bool(session.get("is_admin")),
+        "admin_role": (session.get("admin_role") or "general") if session.get("is_admin") else None,
+        "admin_sport": session.get("admin_sport"),
+        "admin_label": session.get("admin_label"),
         "now": utils.now_wib(config.get("timezone")),
         "csrf_token": get_csrf_token(),
         "license": license_client.get_license(),
@@ -958,6 +1030,8 @@ def admin_upload_champion_photo(category, group):
         ),
         None,
     )
+    if division:
+        _assert_sport_access(division.get("sport_key"))
     champion = None
     if division:
         if division.get("champion_target") == group:
@@ -1611,35 +1685,46 @@ def api_v1_standings():
 
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
+    accounts = _configured_accounts()
     if request.method == "POST":
         client_key = _login_client_key()
         remaining = _login_lock_remaining(client_key)
+        account_key = request.form.get("account_key", "")
         if remaining:
             flash(
                 f"Terlalu banyak percobaan login. Coba lagi dalam {remaining} detik.",
                 "error",
             )
-            return render_template("admin/login.html"), 429
+            return render_template("admin/login.html", accounts=accounts, selected_account_key=account_key), 429
 
-        password = request.form.get("password", "")
-        if not app.config.get("ADMIN_PASSWORD_HASH") and not app.config.get("ADMIN_PASSWORD"):
+        if not accounts:
             flash(
                 "Login admin belum dikonfigurasi. Set ADMIN_PASSWORD_HASH di environment.",
                 "error",
             )
-            return render_template("admin/login.html"), 503
+            return render_template("admin/login.html", accounts=accounts, selected_account_key=account_key), 503
 
-        if _verify_admin_password(password):
+        password = request.form.get("password", "")
+        account = next((a for a in accounts if a["key"] == account_key), None)
+
+        if account and _verify_account_password(account, password):
             _clear_login_failures(client_key)
             session.clear()
             session["is_admin"] = True
+            session["admin_key"] = account["key"]
+            session["admin_role"] = account["role"]
+            session["admin_sport"] = account["sport_key"]
+            session["admin_label"] = account["label"]
             session[CSRF_SESSION_KEY] = secrets.token_urlsafe(32)
             session.permanent = True
+            if account["role"] == "gallery":
+                return redirect(url_for("galeri"))
             nxt = _safe_internal_next(request.args.get("next")) or url_for("admin_dashboard")
             return redirect(nxt)
         _record_login_failure(client_key)
-        flash("Password salah.", "error")
-    return render_template("admin/login.html")
+        flash("Akun atau password salah.", "error")
+        return render_template("admin/login.html", accounts=accounts, selected_account_key=account_key)
+    return render_template("admin/login.html", accounts=accounts, selected_account_key=accounts[0]["key"] if accounts else "")
 
 
 @app.route("/admin/logout", methods=["POST"])
@@ -1653,6 +1738,9 @@ def admin_logout():
 @login_required
 def admin_dashboard():
     teams, matches, config = data_context()
+    if session.get("admin_role") == "sport":
+        admin_sport = session.get("admin_sport")
+        matches = [m for m in matches if m.get("sport_key", "table-tennis") == admin_sport]
     enriched = [enrich_match(m, teams) for m in matches]
     enriched.sort(key=utils.match_sort_key)
     counts = {
@@ -1703,7 +1791,10 @@ def admin_utilities():
 @login_required
 def scorekeeper_index():
     teams, matches, config = data_context()
-    sport_filter = request.args.get("sport", "").strip()
+    admin_sport_scope = session.get("admin_sport") if session.get("admin_role") == "sport" else None
+    if admin_sport_scope:
+        matches = [m for m in matches if m.get("sport_key", "table-tennis") == admin_sport_scope]
+    sport_filter = admin_sport_scope or request.args.get("sport", "").strip()
     date_filter = request.args.get("date", "").strip()
     court_filter = request.args.get("court", "").strip()
     status_filter = request.args.get("status", "").strip()
@@ -1737,6 +1828,8 @@ def scorekeeper_index():
 
     counts = Counter(match.get("status") for match in matches)
     sports = [sport for sport in utils.list_sports() if sport.get("enabled")]
+    if admin_sport_scope:
+        sports = [sport for sport in sports if sport["key"] == admin_sport_scope]
     dates = sorted({match.get("date") for match in matches if match.get("date")})
     courts = sorted({match.get("court") for match in matches if match.get("court")})
     return render_template(
@@ -1760,6 +1853,7 @@ def scorekeeper_match(match_id):
     match = utils.get_match(matches, match_id)
     if not match:
         abort(404)
+    _assert_sport_access(match.get("sport_key", "table-tennis"))
     document = scorekeeper_document(match, teams)
     return render_template("admin/scorekeeper_match.html", **document)
 
@@ -1770,6 +1864,14 @@ def scorekeeper_action(match_id):
     action = request.form.get("action", "")
     side = request.form.get("side") or None
     reason = request.form.get("reason", "")
+
+    if session.get("admin_role") == "sport":
+        current_match = utils.get_match(utils.load_matches(), match_id)
+        if not current_match:
+            return jsonify({"ok": False, "error": "Pertandingan tidak ditemukan."}), 404
+        if current_match.get("sport_key", "table-tennis") != session.get("admin_sport"):
+            return jsonify({"ok": False, "error": "Anda tidak memiliki akses ke pertandingan ini."}), 403
+
     try:
         expected_version = _expected_match_version()
     except ValueError as exc:
@@ -2252,6 +2354,7 @@ def admin_edit_match(match_id):
     m = utils.get_match(matches, match_id)
     if not m:
         abort(404)
+    _assert_sport_access(m.get("sport_key", "table-tennis"))
 
     if request.method == "POST":
         action = request.form.get("action")

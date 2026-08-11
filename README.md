@@ -16,23 +16,49 @@ python app.py              # buka http://127.0.0.1:5000
 
 ## Login admin
 
-Jalur login panitia tersedia di **`/admin/login`**. Alamat ini sengaja tidak ditautkan pada halaman
-publik; bagikan hanya kepada panitia yang berwenang. Setelah login berhasil, admin diarahkan ke `/admin`.
+Jalur login panitia tersedia di **`/admin/login`** (juga ditautkan lewat menu "Admin" di
+header/nav). Setelah login berhasil, admin diarahkan ke `/admin` (akun galeri diarahkan ke
+`/galeri`).
+
+### Multi-akun per peran
+
+Ada 5 akun yang bisa dikonfigurasi, masing-masing lewat env var `ADMIN_PASSWORD_HASH_<NAMA>`
+sendiri-sendiri. Sebuah akun hanya muncul di dropdown login kalau env var-nya di-set — instalasi
+yang hanya set `ADMIN_PASSWORD_HASH` (akun General) tetap berjalan seperti biasa.
+
+| Akun | Env var | Akses |
+| --- | --- | --- |
+| General | `ADMIN_PASSWORD_HASH` | Semua menu, semua cabor |
+| Admin Galeri | `ADMIN_PASSWORD_HASH_GALLERY` | Hanya upload/hapus foto di `/galeri`, tidak masuk ke dashboard admin |
+| Admin Tenis Meja | `ADMIN_PASSWORD_HASH_TABLE_TENNIS` | Dashboard, Scorekeeper, Edit Pertandingan — hanya untuk pertandingan Tenis Meja |
+| Admin Padel | `ADMIN_PASSWORD_HASH_PADEL` | Sama seperti di atas, untuk Padel |
+| Admin Badminton | `ADMIN_PASSWORD_HASH_BADMINTON` | Sama seperti di atas, untuk Badminton |
+
+Menu lintas-cabor (Sites, Peserta & Tim, Divisi & Cabor, Aturan Pertandingan, Generate Jadwal,
+Live & Pengumuman, Utilitas & Reset, Aktivasi Lisensi) hanya tersedia untuk akun General.
+Detail teknis mekanisme pembatasan akses per akun ada di `docs/MULTI_ROLE_ADMIN_ACCOUNTS.md`.
 
 Instalasi lokal ini membaca `.env` secara otomatis dan sudah memiliki kredensial awal berbentuk hash.
-Plaintext password tidak disimpan di repository. Untuk mengganti password:
+Plaintext password tidak disimpan di repository. Untuk mengganti atau menambah password akun:
 
 ```bash
 # Windows PowerShell
 $hash = python -c "from werkzeug.security import generate_password_hash; print(generate_password_hash('password-baru-yang-kuat'))"
-$env:ADMIN_PASSWORD_HASH = $hash
+$env:ADMIN_PASSWORD_HASH = $hash                    # General
+# $env:ADMIN_PASSWORD_HASH_GALLERY = $hash           # Admin Galeri
+# $env:ADMIN_PASSWORD_HASH_TABLE_TENNIS = $hash      # Admin Tenis Meja
+# $env:ADMIN_PASSWORD_HASH_PADEL = $hash             # Admin Padel
+# $env:ADMIN_PASSWORD_HASH_BADMINTON = $hash         # Admin Badminton
 $env:SECRET_KEY = "ganti-dengan-random-secret-minimal-32-byte"
 $env:SESSION_COOKIE_SECURE = "0" # hanya untuk localhost HTTP
 python app.py
 ```
 
-Untuk konfigurasi permanen, simpan hasil hash sebagai `ADMIN_PASSWORD_HASH` di `.env` lokal atau secret
-manager platform. Jangan memakai `ADMIN_PASSWORD` plaintext untuk production.
+Ulangi perintah `generate_password_hash(...)` dengan password berbeda untuk tiap akun yang ingin
+diaktifkan, lalu simpan tiap hash ke env var `ADMIN_PASSWORD_HASH_<NAMA>` masing-masing.
+
+Untuk konfigurasi permanen, simpan hasil hash di `.env` lokal atau secret manager platform. Jangan
+memakai `ADMIN_PASSWORD`/`ADMIN_PASSWORD_<NAMA>` plaintext untuk production.
 
 Untuk deployment HTTPS, jangan set `SESSION_COOKIE_SECURE=0`. Salin daftar konfigurasi
 dari `.env.example` ke secret/environment manager platform; jangan commit `.env`.

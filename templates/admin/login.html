@@ -27,7 +27,16 @@
     <p class="login-card-copy">Masukkan password operasional untuk membuka dashboard turnamen.</p>
     <form method="post" class="admin-login-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <label for="adminPassword">Password admin</label>
+      <label for="adminAccount">Akun</label>
+      <select id="adminAccount" name="account_key" required {{ 'disabled' if not accounts }}>
+        {% if not accounts %}
+        <option value="">Belum ada akun dikonfigurasi</option>
+        {% endif %}
+        {% for account in accounts %}
+        <option value="{{ account.key }}" {{ 'selected' if account.key == selected_account_key }}>{{ account.label }}</option>
+        {% endfor %}
+      </select>
+      <label for="adminPassword" style="margin-top:.9rem;">Password admin</label>
       <div class="password-control">
         <input id="adminPassword" type="password" name="password" placeholder="Masukkan password" autocomplete="current-password" required autofocus>
         <button type="button" class="password-toggle" data-password-toggle aria-controls="adminPassword" aria-label="Tampilkan password">Lihat</button>

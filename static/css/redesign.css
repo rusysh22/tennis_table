@@ -2206,6 +2206,7 @@ legend{ color:var(--blue-800); }
 .login-card-head h2{ margin:.18rem 0 0; color:var(--navy-950); font-size:1.5rem; letter-spacing:-.04em; }
 .login-card-copy{ margin:1.5rem 0; color:var(--muted); font-size:.78rem; line-height:1.65; }
 .admin-login-form label{ display:block; margin-bottom:.5rem; color:var(--blue-800); font-size:.64rem; font-weight:850; }
+.admin-login-form select{ width:100%; min-height:52px; margin:0; padding:.75rem .9rem; border:1px solid var(--line); border-radius:14px 7px 14px 7px; background:#fff; font-family:inherit; font-size:.85rem; color:var(--text); }
 .password-control{ position:relative; }
 .admin-gateway .login-card .password-control input{ width:100%; min-height:52px; margin:0; padding:.75rem 4rem .75rem .9rem; border-radius:14px 7px 14px 7px; }
 .password-toggle{ position:absolute; top:50%; right:.45rem; min-width:50px; min-height:36px; padding:.3rem .55rem; border:0; border-radius:9px 5px 9px 5px; color:var(--blue-800); background:var(--blue-100); font-family:inherit; font-size:.58rem; font-weight:850; cursor:pointer; transform:translateY(-50%); }

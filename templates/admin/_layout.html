@@ -15,7 +15,7 @@
       <span class="ac-brand-icon">⚙️</span>
       <div>
         <strong>Admin Panel</strong>
-        <small>{{ config.tournament_short_name }}</small>
+        <small>{{ admin_label or config.tournament_short_name }}</small>
       </div>
     </div>
 
@@ -27,6 +27,7 @@
         <span>Dashboard & Jadwal</span>
         {% if counts is defined %}<span class="ac-badge">{{ counts.scheduled }}</span>{% endif %}
       </a>
+      {% if admin_role != 'sport' %}
       <a href="{{ url_for('admin_sites') }}"
          class="ac-nav-item {{ 'active' if request.endpoint == 'admin_sites' }}">
         <span class="ac-nav-icon">📍</span>
@@ -52,6 +53,7 @@
         <span class="ac-nav-icon">⚡</span>
         <span>Generate Jadwal</span>
       </a>
+      {% endif %}
 
       <span class="ac-nav-label" style="margin-top:1.2rem;">Operasional</span>
       <a href="{{ url_for('scorekeeper_index') }}"
@@ -59,6 +61,7 @@
         <span class="ac-nav-icon">🏓</span>
         <span>Scorekeeper</span>
       </a>
+      {% if admin_role != 'sport' %}
       <a href="{{ url_for('admin_settings') }}"
          class="ac-nav-item {{ 'active' if request.endpoint == 'admin_settings' }}">
         <span class="ac-nav-icon">📹</span>
@@ -86,6 +89,7 @@
         <span class="ac-nav-icon">🔀</span>
         <span>Utilitas &amp; Reset</span>
       </a>
+      {% endif %}
       {% endif %}
     </nav>
 
@@ -134,7 +138,7 @@
 
     {# Page content #}
     <main class="ac-content">
-      {% if license and license.status != 'active' and request.endpoint != 'admin_license' %}
+      {% if admin_role != 'sport' and license and license.status != 'active' and request.endpoint != 'admin_license' %}
       <div style="margin-bottom:1.4rem; padding:0.9rem 1.2rem; background:#fffbeb; border:1px solid #fde68a; border-left:4px solid #f59e0b; border-radius:8px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
         <div style="display:flex; align-items:center; gap:10px; font-size:0.92rem; color:#92400e;">
           <span style="font-size:1.4rem;">⚠️</span>
