@@ -577,19 +577,11 @@ def list_sports():
 
     return [
         {
-            "key": "table-tennis",
-            "name": "Table Tennis",
-            "icon": "🏓",
-            "enabled": "table-tennis" in enabled_sports or counts.get("table-tennis", 0) > 0,
-            "display_order": 1,
-            "division_count": counts.get("table-tennis", 0),
-        },
-        {
             "key": "padel",
             "name": "Padel",
             "icon": "🎾",
             "enabled": "padel" in enabled_sports or counts.get("padel", 0) > 0,
-            "display_order": 2,
+            "display_order": 1,
             "division_count": counts.get("padel", 0),
         },
         {
@@ -597,8 +589,16 @@ def list_sports():
             "name": "Badminton",
             "icon": "🏸",
             "enabled": "badminton" in enabled_sports or counts.get("badminton", 0) > 0,
-            "display_order": 3,
+            "display_order": 2,
             "division_count": counts.get("badminton", 0),
+        },
+        {
+            "key": "table-tennis",
+            "name": "Table Tennis",
+            "icon": "🏓",
+            "enabled": "table-tennis" in enabled_sports or counts.get("table-tennis", 0) > 0,
+            "display_order": 3,
+            "division_count": counts.get("table-tennis", 0),
         },
     ]
 

@@ -227,10 +227,10 @@ class ApplicationSecurityAndScoreTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         sports = response.get_json()["data"]
         self.assertEqual([sport["key"] for sport in sports], [
-            "table-tennis", "padel", "badminton",
+            "padel", "badminton", "table-tennis",
         ])
-        self.assertTrue(sports[0]["enabled"])
-        self.assertFalse(sports[1]["enabled"])
+        self.assertTrue(sports[2]["enabled"])
+        self.assertFalse(sports[0]["enabled"])
 
     def test_v1_matches_filters_and_returns_stable_etag(self):
         response = self.client.get(
