@@ -61,10 +61,7 @@
   <div class="header-deck">
     <div class="header-inner">
       <a class="brand" href="{{ sport_url('index') }}" aria-label="{{ config.tournament_short_name }} — kembali ke beranda">
-        <span class="brand-emblem">
-          <img class="brand-logo" src="{{ url_for('static', filename='img/favicon-48.png') }}" alt="" width="48" height="48">
-          <span class="brand-edition" aria-hidden="true">26</span>
-        </span>
+        <img class="brand-logo-full" src="{{ url_for('static', filename='img/interport-synergy-cup-logo.png') }}" alt="">
         <span class="brand-text">
           <span class="brand-kicker">Tournament Series</span>
           <strong>{{ config.tournament_short_name }}</strong>
@@ -91,6 +88,8 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <button type="submit" class="nav-admin nav-logout-button"><span>Keluar</span></button>
         </form>
+        {% else %}
+        <a href="{{ url_for('admin_login') }}" class="nav-admin"><span>Admin</span></a>
         {% endif %}
         <button class="nav-bell bell-trigger" aria-label="Buka pusat pengumuman" title="Pusat pengumuman">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -178,22 +177,6 @@
         <a href="{{ sport_url('aturan') }}">Aturan bermain</a>
       </div>
     </nav>
-    <aside class="footer-operations" aria-labelledby="footerOpsTitle">
-      <span class="footer-ops-label"><i aria-hidden="true"></i>Akses khusus panitia</span>
-      <h2 id="footerOpsTitle">Tournament Command Center</h2>
-      <p>Kelola pertandingan, jadwal, skor, pengumuman, dan konsol scorekeeper dari satu ruang operasional.</p>
-      {% if is_admin %}
-      <a class="footer-admin-access" href="{{ url_for('admin_dashboard') }}">
-        <span><small>Sesi admin aktif</small><strong>Buka dashboard</strong></span><i aria-hidden="true">→</i>
-      </a>
-      <a class="footer-scorekeeper-link" href="{{ url_for('scorekeeper_index') }}">Masuk ke mode scorekeeper</a>
-      {% else %}
-      <div class="footer-admin-access footer-admin-locked">
-        <span><small>Panitia turnamen</small><strong>Jalur admin terpisah</strong></span><i aria-hidden="true">••</i>
-      </div>
-      <small class="footer-security-note">Alamat akses diberikan langsung kepada panitia dan tidak ditampilkan pada halaman publik.</small>
-      {% endif %}
-    </aside>
   </div>
 
   <div class="footer-bottom">

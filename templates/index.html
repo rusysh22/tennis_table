@@ -4,6 +4,12 @@
 {% block content %}
 
 <section class="hero">
+  <div class="hero-slideshow" aria-hidden="true">
+    <div class="hero-slide" style="background-image:url('{{ url_for('static', filename='img/interport-hero-image-1.JPG') }}')"></div>
+    <div class="hero-slide" style="background-image:url('{{ url_for('static', filename='img/interport-hero-image-2.JPG') }}')"></div>
+    <div class="hero-slide" style="background-image:url('{{ url_for('static', filename='img/interport-hero-image-3.JPG') }}')"></div>
+  </div>
+  <div class="hero-scrim" aria-hidden="true"></div>
   <div class="hero-kicker"><span></span> Tournament command center</div>
   <h1>{{ config.tournament_name }}</h1>
   <p class="hero-lead">Pantau pertandingan, skor langsung, klasemen, dan perjalanan menuju juara dalam satu arena digital.</p>
