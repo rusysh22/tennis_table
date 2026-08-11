@@ -3,7 +3,7 @@
     "site_code": "BBL",
     "category": "padel_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#166534",
     "text": "#ffffff",
     "members": [
       {
@@ -24,8 +24,8 @@
     "site_code": "BPP",
     "category": "padel_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
-    "text": "#ffffff",
+    "color": "#e8720c",
+    "text": "#000000",
     "members": [
       {
         "participant_id": "BPP-01",
@@ -45,7 +45,7 @@
     "site_code": "JKT",
     "category": "padel_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#be185d",
     "text": "#ffffff",
     "members": [
       {
@@ -66,7 +66,7 @@
     "site_code": "PSR",
     "category": "padel_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#7f1d1d",
     "text": "#ffffff",
     "members": [
       {
@@ -87,7 +87,7 @@
     "site_code": "SBY",
     "category": "padel_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#2563eb",
     "text": "#ffffff",
     "members": [
       {
@@ -104,7 +104,7 @@
     "site_code": "BBL",
     "category": "padel_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#166534",
     "text": "#ffffff",
     "members": [
       {
@@ -121,8 +121,8 @@
     "site_code": "BPP",
     "category": "padel_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
-    "text": "#ffffff",
+    "color": "#e8720c",
+    "text": "#000000",
     "members": [
       {
         "participant_id": "BPP-13",
@@ -142,7 +142,7 @@
     "site_code": "JKT",
     "category": "padel_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#be185d",
     "text": "#ffffff",
     "members": [
       {
@@ -163,7 +163,7 @@
     "site_code": "PSR",
     "category": "padel_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#7f1d1d",
     "text": "#ffffff",
     "members": [
       {
@@ -184,7 +184,7 @@
     "site_code": "BBL",
     "category": "badminton_ganda_putra",
     "group": "B",
-    "color": "#2a78d6",
+    "color": "#166534",
     "text": "#ffffff",
     "members": [
       {
@@ -205,8 +205,8 @@
     "site_code": "BPP",
     "category": "badminton_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
-    "text": "#ffffff",
+    "color": "#e8720c",
+    "text": "#000000",
     "members": [
       {
         "participant_id": "BPP-05",
@@ -226,7 +226,7 @@
     "site_code": "JKT",
     "category": "badminton_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#be185d",
     "text": "#ffffff",
     "members": [
       {
@@ -247,8 +247,8 @@
     "site_code": "MRW",
     "category": "badminton_ganda_putra",
     "group": "B",
-    "color": "#2a78d6",
-    "text": "#ffffff",
+    "color": "#eab308",
+    "text": "#000000",
     "members": [
       {
         "participant_id": "MRW-01",
@@ -268,7 +268,7 @@
     "site_code": "PSR",
     "category": "badminton_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#7f1d1d",
     "text": "#ffffff",
     "members": [
       {
@@ -289,7 +289,7 @@
     "site_code": "SBY",
     "category": "badminton_ganda_putra",
     "group": "B",
-    "color": "#2a78d6",
+    "color": "#2563eb",
     "text": "#ffffff",
     "members": [
       {
@@ -306,7 +306,7 @@
     "site_code": "BBL",
     "category": "badminton_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#166534",
     "text": "#ffffff",
     "members": [
       {
@@ -323,8 +323,8 @@
     "site_code": "BPP",
     "category": "badminton_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
-    "text": "#ffffff",
+    "color": "#e8720c",
+    "text": "#000000",
     "members": [
       {
         "participant_id": "BPP-07",
@@ -344,7 +344,7 @@
     "site_code": "JKT",
     "category": "badminton_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#be185d",
     "text": "#ffffff",
     "members": [
       {
@@ -365,7 +365,7 @@
     "site_code": "PSR",
     "category": "badminton_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#7f1d1d",
     "text": "#ffffff",
     "members": [
       {
@@ -386,7 +386,7 @@
     "site_code": "SBY",
     "category": "badminton_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#2563eb",
     "text": "#ffffff",
     "members": [
       {
@@ -403,7 +403,7 @@
     "site_code": "BBL",
     "category": "tenis_meja_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#166534",
     "text": "#ffffff",
     "members": [
       {
@@ -424,8 +424,8 @@
     "site_code": "BPP",
     "category": "tenis_meja_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
-    "text": "#ffffff",
+    "color": "#e8720c",
+    "text": "#000000",
     "members": [
       {
         "participant_id": "BPP-09",
@@ -445,7 +445,7 @@
     "site_code": "JKT",
     "category": "tenis_meja_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#be185d",
     "text": "#ffffff",
     "members": [
       {
@@ -462,7 +462,7 @@
     "site_code": "PSR",
     "category": "tenis_meja_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#7f1d1d",
     "text": "#ffffff",
     "members": [
       {
@@ -483,7 +483,7 @@
     "site_code": "SBY",
     "category": "tenis_meja_ganda_putra",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#2563eb",
     "text": "#ffffff",
     "members": [
       {
@@ -500,7 +500,7 @@
     "site_code": "BBL",
     "category": "tenis_meja_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#166534",
     "text": "#ffffff",
     "members": [
       {
@@ -517,8 +517,8 @@
     "site_code": "BPP",
     "category": "tenis_meja_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
-    "text": "#ffffff",
+    "color": "#e8720c",
+    "text": "#000000",
     "members": [
       {
         "participant_id": "BPP-11",
@@ -538,7 +538,7 @@
     "site_code": "JKT",
     "category": "tenis_meja_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#be185d",
     "text": "#ffffff",
     "members": [
       {
@@ -555,7 +555,7 @@
     "site_code": "PSR",
     "category": "tenis_meja_ganda_campuran",
     "group": "A",
-    "color": "#2a78d6",
+    "color": "#7f1d1d",
     "text": "#ffffff",
     "members": [
       {
