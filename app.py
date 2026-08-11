@@ -705,7 +705,7 @@ def index():
     
     next_match = None
     for m in upcoming:
-        if m["status"] == "scheduled":
+        if m["status"] == "scheduled" and m.get("time") and m.get("team_a") and m.get("team_b"):
             next_match = m
             break
             
