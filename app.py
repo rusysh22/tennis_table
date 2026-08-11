@@ -672,10 +672,22 @@ def index():
         matches, teams, config, sport_key=selected_sport
     )
 
-    upcoming = sorted(
-        [m for m in enriched if m["status"] in ("scheduled", "live") and m["date"] >= today],
-        key=lambda m: (m["date"], m["time"]),
-    )[:6]
+    upcoming_candidates = [
+        m for m in enriched if m["status"] in ("scheduled", "live") and m["date"] >= today
+    ]
+    if selected_sport == "all":
+        # Chronological-only would let whichever sport starts earliest (e.g. Padel
+        # on day 1) fill every slot before Badminton/Tenis Meja ever get a look in,
+        # so cap how many of the nearest matches each sport can contribute.
+        by_sport = {}
+        for m in sorted(upcoming_candidates, key=utils.match_sort_key):
+            by_sport.setdefault(m.get("sport_key", "table-tennis"), []).append(m)
+        upcoming = sorted(
+            [m for sport_matches in by_sport.values() for m in sport_matches[:2]],
+            key=utils.match_sort_key,
+        )
+    else:
+        upcoming = sorted(upcoming_candidates, key=utils.match_sort_key)[:6]
     live_now = [m for m in enriched if m["status"] == "live"]
     recent = sorted(
         [m for m in enriched if m["status"] == "completed"],
@@ -747,7 +759,7 @@ def index():
                 if match.get("status") in {"scheduled", "live"}
                 and (match.get("date") or "") >= today
             ],
-            key=lambda match: (match.get("date") or "", match.get("time") or ""),
+            key=utils.match_sort_key,
         )
         sport_cards.append(
             {
