@@ -869,10 +869,13 @@ def kalender():
     enriched = [enrich_match(m, teams) for m in matches]
 
     by_date = {}
+    final_dates = set()
     for m in enriched:
         by_date.setdefault(m["date"], []).append(m)
+        if m.get("stage_type") == "final":
+            final_dates.add(m["date"])
     for d in by_date:
-        by_date[d].sort(key=lambda m: (m["time"], m["court"]))
+        by_date[d].sort(key=utils.match_sort_key)
 
     start = datetime.strptime(config["start_date"], "%Y-%m-%d")
     end = datetime.strptime(config["end_date"], "%Y-%m-%d")
@@ -887,7 +890,7 @@ def kalender():
             "matches": by_date.get(key, []),
             "is_buffer": key in config.get("buffer_dates", []),
             "is_weekend": cur.weekday() >= 5,
-            "is_final": key == config.get("final_date"),
+            "is_final": key in final_dates,
             "is_closing": key == config.get("closing_date"),
         })
         cur += timedelta(days=1)
