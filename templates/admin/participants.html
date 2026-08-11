@@ -35,6 +35,7 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <input type="hidden" name="participant_id1" id="f_pid1" value="">
       <input type="hidden" name="participant_id2" id="f_pid2" value="">
+      <input type="hidden" name="reserve_participant_id" id="f_pid3" value="">
 
       {# ── Chip preview ── #}
       <div style="margin-bottom:1.4rem; padding:1rem 1.2rem; background:var(--surface-soft);
@@ -201,6 +202,23 @@
                    style="display:none;" onchange="previewPhoto(this, 'photo2Preview', 'photo2Placeholder')">
           </div>
         </div>
+
+        <div style="margin:1.2rem 0 .5rem; padding-bottom:.5rem; border-bottom:2px solid var(--blue-100);">
+          <strong style="font-size:.9rem; color:var(--navy-900);">🔁 Pemain Cadangan <small style="font-weight:500; color:var(--muted);">(Opsional — pengganti tim ini)</small></strong>
+        </div>
+
+        <div class="ac-form-row">
+          <div class="ac-form-field" style="grid-column: span 2;">
+            <label>Nama Lengkap Cadangan</label>
+            <input type="text" name="reserve_name" id="f_p3"
+                   placeholder="Nama lengkap pemain cadangan">
+          </div>
+          <div class="ac-form-field">
+            <label>NIK Cadangan</label>
+            <input type="text" name="reserve_id_number" id="f_id3"
+                   placeholder="mis. 12345678">
+          </div>
+        </div>
       </div>
 
       {# ═══════════════════════════════════════════════════════
@@ -259,6 +277,7 @@
           <th>NIK P1</th>
           <th>Pemain 2</th>
           <th>NIK P2</th>
+          <th>Cadangan</th>
           <th style="text-align:right;">Aksi</th>
         </tr>
       </thead>
@@ -380,6 +399,21 @@
                 {{ t.email2 }}
               </small>
               {% endif %}
+            {% endif %}
+          </td>
+          <td>
+            {% if t.entrant_type != 'roster' %}
+              {% if t.reserve_name %}
+              <span style="font-size:.82rem;">{{ t.reserve_name }}</span>
+              {% if t.reserve_id_number %}
+              <br><code style="background:var(--surface-soft); padding:.1rem .4rem; border-radius:4px;
+                           font-size:.72rem;">{{ t.reserve_id_number }}</code>
+              {% endif %}
+              {% else %}
+              <span style="color:var(--muted);">—</span>
+              {% endif %}
+            {% else %}
+            <span style="color:var(--muted);">—</span>
             {% endif %}
           </td>
           <td class="ac-td-actions">
@@ -554,6 +588,9 @@ function editTeamFromBtn(btn) {
     document.getElementById('f_email2').value   = t.email2 || '';
     document.getElementById('f_pid1').value     = t.participant_id1 || '';
     document.getElementById('f_pid2').value     = t.participant_id2 || '';
+    document.getElementById('f_p3').value       = t.reserve_name || '';
+    document.getElementById('f_id3').value      = t.reserve_id_number || '';
+    document.getElementById('f_pid3').value     = t.reserve_participant_id || '';
     // show existing photos
     ['photo1','photo2'].forEach(function(k) {
       var url = t[k] || '';

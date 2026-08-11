@@ -299,6 +299,12 @@ def _hydrate_team(team, participants):
         team[f"id_number{slot}"] = p.get("id_number", "")
         team[f"email{slot}"] = p.get("email", "")
         team[f"photo{slot}"] = p.get("photo", "")
+
+    reserve_pid = by_role.get("cadangan")
+    reserve = participants.get(reserve_pid, {}) if reserve_pid else {}
+    team["reserve_participant_id"] = reserve_pid
+    team["reserve_name"] = reserve.get("name", "")
+    team["reserve_id_number"] = reserve.get("id_number", "")
     return team
 
 
@@ -313,6 +319,7 @@ def load_teams():
 _HYDRATED_TEAM_FIELDS = (
     "player1", "player2", "id_number1", "id_number2", "email1", "email2",
     "photo1", "photo2", "participant_id1", "participant_id2", "reserves",
+    "reserve_participant_id", "reserve_name", "reserve_id_number",
 )
 
 

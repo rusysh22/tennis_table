@@ -13,6 +13,10 @@
       {
         "participant_id": "BBL-02",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "BBL-13",
+        "role": "cadangan"
       }
     ]
   },
@@ -30,6 +34,10 @@
       {
         "participant_id": "BPP-02",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-13",
+        "role": "cadangan"
       }
     ]
   },
@@ -47,6 +55,10 @@
       {
         "participant_id": "JKT-02",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "JKT-13",
+        "role": "cadangan"
       }
     ]
   },
@@ -64,6 +76,10 @@
       {
         "participant_id": "PSR-02",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "PSR-05",
+        "role": "cadangan"
       }
     ]
   },
@@ -115,6 +131,10 @@
       {
         "participant_id": "BPP-04",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-08",
+        "role": "cadangan"
       }
     ]
   },
@@ -132,6 +152,10 @@
       {
         "participant_id": "JKT-04",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "JKT-14",
+        "role": "cadangan"
       }
     ]
   },
@@ -149,6 +173,10 @@
       {
         "participant_id": "PSR-04",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "PSR-12",
+        "role": "cadangan"
       }
     ]
   },
@@ -166,6 +194,10 @@
       {
         "participant_id": "BBL-06",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "BBL-14",
+        "role": "cadangan"
       }
     ]
   },
@@ -183,6 +215,10 @@
       {
         "participant_id": "BPP-06",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-03",
+        "role": "cadangan"
       }
     ]
   },
@@ -200,6 +236,10 @@
       {
         "participant_id": "JKT-06",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "JKT-15",
+        "role": "cadangan"
       }
     ]
   },
@@ -217,6 +257,10 @@
       {
         "participant_id": "MRW-02",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "MRW-03",
+        "role": "cadangan"
       }
     ]
   },
@@ -234,6 +278,10 @@
       {
         "participant_id": "PSR-06",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "PSR-10",
+        "role": "cadangan"
       }
     ]
   },
@@ -285,6 +333,10 @@
       {
         "participant_id": "BPP-08",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-04",
+        "role": "cadangan"
       }
     ]
   },
@@ -302,6 +354,10 @@
       {
         "participant_id": "JKT-08",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "JKT-12",
+        "role": "cadangan"
       }
     ]
   },
@@ -319,6 +375,10 @@
       {
         "participant_id": "PSR-08",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "PSR-04",
+        "role": "cadangan"
       }
     ]
   },
@@ -353,6 +413,10 @@
       {
         "participant_id": "BBL-10",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "BBL-15",
+        "role": "cadangan"
       }
     ]
   },
@@ -370,6 +434,10 @@
       {
         "participant_id": "BPP-10",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-14",
+        "role": "cadangan"
       }
     ]
   },
@@ -404,6 +472,10 @@
       {
         "participant_id": "PSR-10",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "PSR-06",
+        "role": "cadangan"
       }
     ]
   },
@@ -455,6 +527,10 @@
       {
         "participant_id": "BPP-12",
         "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-08",
+        "role": "cadangan"
       }
     ]
   },
@@ -489,170 +565,10 @@
       {
         "participant_id": "PSR-12",
         "role": "pemain2"
-      }
-    ]
-  },
-  "BBL-PDLCAD": {
-    "site_code": "BBL",
-    "category": "padel_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "BBL-13",
-        "role": "putra"
-      }
-    ]
-  },
-  "BPP-PDLCAD": {
-    "site_code": "BPP",
-    "category": "padel_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "BPP-13",
-        "role": "putra"
-      },
-      {
-        "participant_id": "BPP-08",
-        "role": "putri"
-      }
-    ]
-  },
-  "JKT-PDLCAD": {
-    "site_code": "JKT",
-    "category": "padel_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "JKT-13",
-        "role": "putra"
-      },
-      {
-        "participant_id": "JKT-14",
-        "role": "putri"
-      }
-    ]
-  },
-  "PSR-PDLCAD": {
-    "site_code": "PSR",
-    "category": "padel_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "PSR-05",
-        "role": "putra"
-      },
-      {
-        "participant_id": "PSR-12",
-        "role": "putri"
-      }
-    ]
-  },
-  "BBL-BMCAD": {
-    "site_code": "BBL",
-    "category": "badminton_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "BBL-14",
-        "role": "putra"
-      }
-    ]
-  },
-  "BPP-BMCAD": {
-    "site_code": "BPP",
-    "category": "badminton_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "BPP-03",
-        "role": "putra"
-      },
-      {
-        "participant_id": "BPP-04",
-        "role": "putri"
-      }
-    ]
-  },
-  "JKT-BMCAD": {
-    "site_code": "JKT",
-    "category": "badminton_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "JKT-15",
-        "role": "putra"
-      },
-      {
-        "participant_id": "JKT-12",
-        "role": "putri"
-      }
-    ]
-  },
-  "MRW-BMCAD": {
-    "site_code": "MRW",
-    "category": "badminton_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "MRW-03",
-        "role": "putra"
-      }
-    ]
-  },
-  "PSR-BMCAD": {
-    "site_code": "PSR",
-    "category": "badminton_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "PSR-10",
-        "role": "putra"
-      },
-      {
-        "participant_id": "PSR-04",
-        "role": "putri"
-      }
-    ]
-  },
-  "BBL-TMCAD": {
-    "site_code": "BBL",
-    "category": "tenis_meja_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "BBL-15",
-        "role": "putra"
-      }
-    ]
-  },
-  "BPP-TMCAD": {
-    "site_code": "BPP",
-    "category": "tenis_meja_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "BPP-14",
-        "role": "putra"
-      },
-      {
-        "participant_id": "BPP-08",
-        "role": "putri"
-      }
-    ]
-  },
-  "PSR-TMCAD": {
-    "site_code": "PSR",
-    "category": "tenis_meja_cadangan",
-    "entrant_type": "roster",
-    "members": [
-      {
-        "participant_id": "PSR-06",
-        "role": "putra"
       },
       {
         "participant_id": "PSR-08",
-        "role": "putri"
+        "role": "cadangan"
       }
     ]
   }

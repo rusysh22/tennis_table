@@ -2021,6 +2021,16 @@ def admin_save_participant():
             existing_id=request.form.get("participant_id2") or None,
         )
         members.append({"participant_id": pid2, "role": "pemain2"})
+
+    reserve_name = request.form.get("reserve_name", "").strip()
+    reserve_id_number = request.form.get("reserve_id_number", "").strip()
+    if reserve_name:
+        pid3 = utils.upsert_participant(
+            participants, site_code, reserve_name, reserve_id_number,
+            existing_id=request.form.get("reserve_participant_id") or None,
+        )
+        members.append({"participant_id": pid3, "role": "cadangan"})
+
     utils.save_participants(participants)
 
     teams[code] = {

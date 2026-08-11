@@ -73,15 +73,6 @@
       "knockout_format": "semi_and_final"
     },
     {
-      "key": "padel_cadangan",
-      "label": "Padel — Cadangan",
-      "sport_key": "padel",
-      "entrant_type": "roster",
-      "groups": [],
-      "has_final": false,
-      "knockout_format": "no_knockout"
-    },
-    {
       "key": "tenis_meja_ganda_putra",
       "label": "Tenis Meja — Ganda Putra",
       "sport_key": "table-tennis",
@@ -102,15 +93,6 @@
       ],
       "has_final": true,
       "knockout_format": "semi_and_final"
-    },
-    {
-      "key": "tenis_meja_cadangan",
-      "label": "Tenis Meja — Cadangan",
-      "sport_key": "table-tennis",
-      "entrant_type": "roster",
-      "groups": [],
-      "has_final": false,
-      "knockout_format": "no_knockout"
     },
     {
       "key": "badminton_ganda_putra",
@@ -134,15 +116,6 @@
       ],
       "has_final": true,
       "knockout_format": "semi_and_final"
-    },
-    {
-      "key": "badminton_cadangan",
-      "label": "Badminton — Cadangan",
-      "sport_key": "badminton",
-      "entrant_type": "roster",
-      "groups": [],
-      "has_final": false,
-      "knockout_format": "no_knockout"
     }
   ]
 }
