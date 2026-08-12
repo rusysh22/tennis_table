@@ -1954,7 +1954,7 @@ def scorekeeper_index():
     filtered.sort(
         key=lambda match: (
             status_order.get(match.get("status"), 9),
-            match.get("date") or "", match.get("time") or "", match.get("court") or "",
+            utils.match_sort_key(match),
         )
     )
     cards = []
