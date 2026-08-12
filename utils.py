@@ -1016,10 +1016,15 @@ def dynamic_circle_rounds(codes):
 
 def _scoring_profile_for(sport_key, stage_type):
     """Return the per-match scoring profile fields (merged into the match dict)
-    for a given sport + stage. Padel plays a 21-point race per game in the
-    group stage, but switches to classic set/game (15-30-40) scoring in the
-    knockout stage. Badminton is 21 points/best of 3 with a 30-point cap at
-    every stage. Table tennis keeps the existing legacy default (no override)."""
+    for a given sport + stage. Padel group stage splits a single 21-point pool
+    between the two sides (whoever scores more of the 21 wins -- e.g. 11-10 or
+    19-2 both end the game). Padel knockout stage (semifinal/3rd place/final)
+    is Best of 5 games on the classic 0/15/30/40 tennis point ladder with
+    Golden Point at deuce (no advantage -- first to reach the target with any
+    lead wins the game outright); teams may optionally keep playing out all 5
+    games even after the match is already decided. Badminton is 21 points/best
+    of 3 with a 30-point cap at every stage. Table tennis keeps the existing
+    legacy default (no override)."""
     if sport_key == "badminton":
         return {
             "_profile_key": "badminton-21-bo3",
@@ -1030,18 +1035,15 @@ def _scoring_profile_for(sport_key, stage_type):
     if sport_key == "padel":
         if stage_type == "group":
             return {
-                "_profile_config": {"best_of": 1, "points_to_win": 21, "win_by": 2},
+                "_profile_config": {"best_of": 1, "points_to_win": 21},
                 "_segment_term": "game",
             }
         return {
-            "_profile_key": "padel-knockout-golden-point",
-            "_profile_version": 1,
             "_profile_config": {
-                "best_of": 1, "games_to_win_set": 5, "set_win_by": 1,
-                "tie_break_at_six_all": False, "game_scoring_method": "golden_point",
-                "deciding_set_policy": "standard",
+                "best_of": 5, "points_to_win": 40, "win_by": 1,
+                "game_scoring_method": "golden_point", "allow_continuation": True,
             },
-            "_segment_term": "set",
+            "_segment_term": "game",
         }
     return {}
 
@@ -1607,7 +1609,7 @@ def validate_match_segments(match, segments=None):
             candidate_segments,
         )
     profile_config = match.get("_profile_config") or {}
-    if match.get("sport_key") == "padel" and not profile_config.get("games_to_win_set"):
+    if match.get("sport_key") == "padel" and match.get("stage_type") == "group":
         # Babak grup Padel: satu game race di mana total skor kedua tim harus
         # pas mencapai target (mis. 11-10 atau 19-2 sama-sama menyelesaikan
         # game) -- bukan format "race-to-N, menang selisih M" seperti Badminton.
@@ -1621,6 +1623,7 @@ def validate_match_segments(match, segments=None):
         best_of=best_of,
         points_to_win=int(profile_config.get("points_to_win", 11)),
         win_by=int(profile_config.get("win_by", 2)),
+        allow_continuation=bool(profile_config.get("allow_continuation")),
     )
 
 
@@ -1711,7 +1714,7 @@ def scorekeeper_terms(match, current_segment=None):
         win_by = int(config.get("win_by", 2))
         cap = int(config.get("point_cap", 30))
     elif sport_key == "padel":
-        if not config.get("games_to_win_set"):
+        if match.get("stage_type") == "group":
             # Babak grup: satu game split-poin -- total skor kedua tim harus pas
             # mencapai target (bukan race-to-N menang selisih M).
             unit_label = "Poin"
@@ -1719,24 +1722,13 @@ def scorekeeper_terms(match, current_segment=None):
             win_by = None
             cap = None
         else:
-            completed = match.get("sets") or []
-            best_of = int(config.get("best_of", 3))
-            won_a, won_b = compute_sets_won(completed)
-            is_deciding_tiebreak = (
-                config.get("deciding_set_policy") == "match_tiebreak"
-                and len(completed) == best_of - 1
-                and won_a == won_b
-            )
-            if is_deciding_tiebreak:
-                unit_label = "Poin tie-break"
-                target = int(config.get("match_tiebreak_target", 10))
-                win_by = int(config.get("match_tiebreak_win_by", 2))
-                cap = None
-            else:
-                unit_label = "Game"
-                target = int(config.get("games_to_win_set", 6))
-                win_by = int(config.get("set_win_by", 2))
-                cap = 7 if config.get("tie_break_at", "6-6") else None
+            # Babak knockout: Best of 5 game bertitik tenis (0/15/30/40) dengan
+            # Golden Point di deuce -- lebih dulu mencapai target dengan
+            # keunggulan berapa pun langsung menang game (win_by=1).
+            unit_label = "Poin"
+            target = int(config.get("points_to_win", 40))
+            win_by = int(config.get("win_by", 1))
+            cap = None
 
     return {
         "segment_term": segment_term,

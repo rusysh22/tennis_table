@@ -47,11 +47,19 @@ def validate_match_score(
     best_of: int = 3,
     points_to_win: int = 11,
     win_by: int = 2,
+    allow_continuation: bool = False,
 ) -> ScoreValidation:
     """Validate a sequence of completed Table Tennis games.
 
     Supports the event's Best-of-3 and Best-of-5 profiles, including uncapped
     deuce. Empty score entry is valid but represents an incomplete match.
+
+    `allow_continuation` lets both sides keep playing (and recording) games
+    past the point the match is already decided -- e.g. a Best-of-5 match
+    finishing 4-1 or 3-2 instead of stopping dead at 3-0 -- used by Padel's
+    knockout-stage Golden Point format where teams may agree to play out the
+    remaining games. When False (the default, used by every other sport),
+    entering a game after the winning threshold is reached is an error.
     """
     errors: list[str] = []
     if best_of not in (1, 3, 5):
@@ -67,7 +75,7 @@ def validate_match_score(
         errors.append(f"Maksimal {best_of} game untuk pertandingan Best of {best_of}.")
 
     for index, game in enumerate(games, start=1):
-        if won_a >= games_needed or won_b >= games_needed:
+        if not allow_continuation and (won_a >= games_needed or won_b >= games_needed):
             errors.append(
                 f"Game {index} tidak boleh diisi karena pertandingan sudah selesai."
             )
@@ -102,9 +110,9 @@ def validate_match_score(
 
     winner_side: WinnerSide | None = None
     if not errors:
-        if won_a == games_needed:
+        if won_a >= games_needed and won_a > won_b:
             winner_side = "a"
-        elif won_b == games_needed:
+        elif won_b >= games_needed and won_b > won_a:
             winner_side = "b"
 
     return ScoreValidation(

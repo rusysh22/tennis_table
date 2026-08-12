@@ -292,17 +292,15 @@
     "walkover": false,
     "notes": "Semifinal 1 Padel — Ganda Putra: Peringkat 1 Group vs Peringkat 3 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
-    "_profile_key": "padel-knockout-golden-point",
-    "_profile_version": 1,
     "_profile_config": {
-      "best_of": 1,
-      "games_to_win_set": 5,
-      "set_win_by": 1,
-      "tie_break_at_six_all": false,
+      "best_of": 5,
+      "points_to_win": 40,
+      "win_by": 1,
       "game_scoring_method": "golden_point",
-      "deciding_set_policy": "standard"
+      "allow_continuation": true
     },
-    "_segment_term": "set"
+    "_segment_term": "game",
+    "version": 1
   },
   {
     "id": "M12",
@@ -327,17 +325,15 @@
     "walkover": false,
     "notes": "Semifinal 2 Padel — Ganda Putra: Peringkat 2 Group vs Peringkat 4 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
-    "_profile_key": "padel-knockout-golden-point",
-    "_profile_version": 1,
     "_profile_config": {
-      "best_of": 1,
-      "games_to_win_set": 5,
-      "set_win_by": 1,
-      "tie_break_at_six_all": false,
+      "best_of": 5,
+      "points_to_win": 40,
+      "win_by": 1,
       "game_scoring_method": "golden_point",
-      "deciding_set_policy": "standard"
+      "allow_continuation": true
     },
-    "_segment_term": "set"
+    "_segment_term": "game",
+    "version": 1
   },
   {
     "id": "M13",
@@ -366,17 +362,15 @@
     "walkover": false,
     "notes": "Perebutan Juara 3 Padel — Ganda Putra: Kalah Semifinal 1 vs Kalah Semifinal 2 Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
-    "_profile_key": "padel-knockout-golden-point",
-    "_profile_version": 1,
     "_profile_config": {
-      "best_of": 1,
-      "games_to_win_set": 5,
-      "set_win_by": 1,
-      "tie_break_at_six_all": false,
+      "best_of": 5,
+      "points_to_win": 40,
+      "win_by": 1,
       "game_scoring_method": "golden_point",
-      "deciding_set_policy": "standard"
+      "allow_continuation": true
     },
-    "_segment_term": "set"
+    "_segment_term": "game",
+    "version": 1
   },
   {
     "id": "M14",
@@ -405,17 +399,15 @@
     "walkover": false,
     "notes": "Grand Final Padel — Ganda Putra: Pemenang Semifinal 1 vs Pemenang Semifinal 2 Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
-    "_profile_key": "padel-knockout-golden-point",
-    "_profile_version": 1,
     "_profile_config": {
-      "best_of": 1,
-      "games_to_win_set": 5,
-      "set_win_by": 1,
-      "tie_break_at_six_all": false,
+      "best_of": 5,
+      "points_to_win": 40,
+      "win_by": 1,
       "game_scoring_method": "golden_point",
-      "deciding_set_policy": "standard"
+      "allow_continuation": true
     },
-    "_segment_term": "set"
+    "_segment_term": "game",
+    "version": 1
   },
   {
     "id": "M15",
@@ -602,17 +594,15 @@
     "walkover": false,
     "notes": "Semifinal 1 Padel — Ganda Campuran: Peringkat 1 Group vs Peringkat 3 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
-    "_profile_key": "padel-knockout-golden-point",
-    "_profile_version": 1,
     "_profile_config": {
-      "best_of": 1,
-      "games_to_win_set": 5,
-      "set_win_by": 1,
-      "tie_break_at_six_all": false,
+      "best_of": 5,
+      "points_to_win": 40,
+      "win_by": 1,
       "game_scoring_method": "golden_point",
-      "deciding_set_policy": "standard"
+      "allow_continuation": true
     },
-    "_segment_term": "set"
+    "_segment_term": "game",
+    "version": 1
   },
   {
     "id": "M22",
@@ -637,17 +627,15 @@
     "walkover": false,
     "notes": "Semifinal 2 Padel — Ganda Campuran: Peringkat 2 Group vs Peringkat 4 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
-    "_profile_key": "padel-knockout-golden-point",
-    "_profile_version": 1,
     "_profile_config": {
-      "best_of": 1,
-      "games_to_win_set": 5,
-      "set_win_by": 1,
-      "tie_break_at_six_all": false,
+      "best_of": 5,
+      "points_to_win": 40,
+      "win_by": 1,
       "game_scoring_method": "golden_point",
-      "deciding_set_policy": "standard"
+      "allow_continuation": true
     },
-    "_segment_term": "set"
+    "_segment_term": "game",
+    "version": 1
   },
   {
     "id": "M23",
@@ -676,17 +664,15 @@
     "walkover": false,
     "notes": "Perebutan Juara 3 Padel — Ganda Campuran: Kalah Semifinal 1 vs Kalah Semifinal 2 Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
-    "_profile_key": "padel-knockout-golden-point",
-    "_profile_version": 1,
     "_profile_config": {
-      "best_of": 1,
-      "games_to_win_set": 5,
-      "set_win_by": 1,
-      "tie_break_at_six_all": false,
+      "best_of": 5,
+      "points_to_win": 40,
+      "win_by": 1,
       "game_scoring_method": "golden_point",
-      "deciding_set_policy": "standard"
+      "allow_continuation": true
     },
-    "_segment_term": "set"
+    "_segment_term": "game",
+    "version": 1
   },
   {
     "id": "M24",
@@ -715,17 +701,15 @@
     "walkover": false,
     "notes": "Grand Final Padel — Ganda Campuran: Pemenang Semifinal 1 vs Pemenang Semifinal 2 Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
-    "_profile_key": "padel-knockout-golden-point",
-    "_profile_version": 1,
     "_profile_config": {
-      "best_of": 1,
-      "games_to_win_set": 5,
-      "set_win_by": 1,
-      "tie_break_at_six_all": false,
+      "best_of": 5,
+      "points_to_win": 40,
+      "win_by": 1,
       "game_scoring_method": "golden_point",
-      "deciding_set_policy": "standard"
+      "allow_continuation": true
     },
-    "_segment_term": "set"
+    "_segment_term": "game",
+    "version": 1
   },
   {
     "id": "M25",
