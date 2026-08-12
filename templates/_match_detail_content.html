@@ -1,4 +1,13 @@
 <div class="match-detail-shell">
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-wrap">
+    {% for category, msg in messages %}
+    <div class="flash flash-{{ category }}">{{ msg }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
 <section class="detail-hero match-arena">
   <header class="match-arena-head">
     <div class="match-arena-badges">

@@ -40,7 +40,7 @@
     <div class="scorekeeper-center-score">
       <span data-field="segment-number">{{ state.terms.segment_label }} {{ state.next_segment }}</span>
       <div><strong data-field="current-a">{{ state.current[0] }}</strong><b>:</b><strong data-field="current-b">{{ state.current[1] }}</strong></div>
-      <small data-field="score-hint">Target {{ state.terms.target }}, selisih {{ state.terms.win_by }}{% if state.terms.cap %}, batas {{ state.terms.cap }}{% endif %}</small>
+      <small data-field="score-hint">{% if state.terms.win_by %}Target {{ state.terms.target }}, selisih {{ state.terms.win_by }}{% if state.terms.cap %}, batas {{ state.terms.cap }}{% endif %}{% else %}Total {{ state.terms.target }} poin, skor tertinggi menang{% endif %}</small>
     </div>
 
     <div class="scorekeeper-team team-b">

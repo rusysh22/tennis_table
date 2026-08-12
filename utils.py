@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from domain.scoring import RuleProfile, validate_match_score, validate_score
+from domain.scoring import RuleProfile, validate_match_score, validate_point_split_score, validate_score
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 _LOCK = threading.Lock()
@@ -1606,8 +1606,16 @@ def validate_match_segments(match, segments=None):
             ),
             candidate_segments,
         )
-    best_of = sets_needed_to_win(match) * 2 - 1
     profile_config = match.get("_profile_config") or {}
+    if match.get("sport_key") == "padel" and not profile_config.get("games_to_win_set"):
+        # Babak grup Padel: satu game race di mana total skor kedua tim harus
+        # pas mencapai target (mis. 11-10 atau 19-2 sama-sama menyelesaikan
+        # game) -- bukan format "race-to-N, menang selisih M" seperti Badminton.
+        return validate_point_split_score(
+            candidate_segments,
+            total_points=int(profile_config.get("points_to_win", 21)),
+        )
+    best_of = sets_needed_to_win(match) * 2 - 1
     return validate_match_score(
         candidate_segments,
         best_of=best_of,
@@ -1704,10 +1712,11 @@ def scorekeeper_terms(match, current_segment=None):
         cap = int(config.get("point_cap", 30))
     elif sport_key == "padel":
         if not config.get("games_to_win_set"):
-            # Babak grup: satu game race-to-N poin yang langsung menentukan pertandingan.
+            # Babak grup: satu game split-poin -- total skor kedua tim harus pas
+            # mencapai target (bukan race-to-N menang selisih M).
             unit_label = "Poin"
             target = int(config.get("points_to_win", 21))
-            win_by = int(config.get("win_by", 2))
+            win_by = None
             cap = None
         else:
             completed = match.get("sets") or []

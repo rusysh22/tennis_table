@@ -151,3 +151,55 @@ def validate_match_score(
         sets_needed=sets_needed,
         winner_side=winner_side,
     )
+
+
+@dataclass(frozen=True)
+class PointSplitValidation:
+    """Result for the group-stage 'point split' format: a single race game
+    whose two scores must add up to exactly `total_points`; whichever side
+    scored more wins. There is no minimum score or winning margin beyond
+    that total (e.g. 11-10 or 19-2 both end the game)."""
+
+    errors: tuple[str, ...]
+    winner_side: WinnerSide | None
+
+    @property
+    def is_valid(self):
+        return not self.errors
+
+    @property
+    def is_complete(self):
+        return self.is_valid and self.winner_side is not None
+
+
+def validate_point_split_score(games: Sequence[Sequence[int]], total_points: int = 21):
+    errors = []
+    if total_points < 1:
+        errors.append("Total poin race Padel harus positif.")
+    if len(games) > 1:
+        errors.append("Maksimal 1 game untuk format race poin Padel babak grup.")
+
+    winner_side = None
+    for index, game in enumerate(games[:1], start=1):
+        if (
+            not isinstance(game, (list, tuple))
+            or len(game) != 2
+            or any(not isinstance(value, int) or isinstance(value, bool) for value in game)
+        ):
+            errors.append(f"Skor game {index} harus berisi dua bilangan bulat.")
+            continue
+        score_a, score_b = game
+        if score_a < 0 or score_b < 0:
+            errors.append(f"Skor game {index} tidak boleh negatif.")
+            continue
+        if score_a == score_b:
+            errors.append(f"Skor game {index} tidak boleh seri.")
+            continue
+        if score_a + score_b != total_points:
+            errors.append(
+                f"Game {index} belum selesai — total skor kedua tim harus {total_points} poin."
+            )
+            continue
+        winner_side = "a" if score_a > score_b else "b"
+
+    return PointSplitValidation(errors=tuple(errors), winner_side=winner_side)
