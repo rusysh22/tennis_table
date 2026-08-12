@@ -282,7 +282,7 @@
     "team_a": null,
     "team_b": null,
     "qualification_slot_a": "Peringkat 1 Group",
-    "qualification_slot_b": "Peringkat 3 Group",
+    "qualification_slot_b": "Peringkat 4 Group",
     "date": "2026-08-12",
     "time": "",
     "court": "Padeloom",
@@ -290,7 +290,7 @@
     "sets": [],
     "winner": null,
     "walkover": false,
-    "notes": "Semifinal 1 Padel — Ganda Putra: Peringkat 1 Group vs Peringkat 3 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
+    "notes": "Semifinal 1 Padel — Ganda Putra: Peringkat 1 Group vs Peringkat 4 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
     "_profile_config": {
       "best_of": 5,
@@ -300,7 +300,7 @@
       "allow_continuation": true
     },
     "_segment_term": "game",
-    "version": 1
+    "version": 2
   },
   {
     "id": "M12",
@@ -315,7 +315,7 @@
     "team_a": null,
     "team_b": null,
     "qualification_slot_a": "Peringkat 2 Group",
-    "qualification_slot_b": "Peringkat 4 Group",
+    "qualification_slot_b": "Peringkat 3 Group",
     "date": "2026-08-12",
     "time": "",
     "court": "Padeloom",
@@ -323,7 +323,7 @@
     "sets": [],
     "winner": null,
     "walkover": false,
-    "notes": "Semifinal 2 Padel — Ganda Putra: Peringkat 2 Group vs Peringkat 4 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
+    "notes": "Semifinal 2 Padel — Ganda Putra: Peringkat 2 Group vs Peringkat 3 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
     "_profile_config": {
       "best_of": 5,
@@ -333,7 +333,7 @@
       "allow_continuation": true
     },
     "_segment_term": "game",
-    "version": 1
+    "version": 2
   },
   {
     "id": "M13",
@@ -584,7 +584,7 @@
     "team_a": null,
     "team_b": null,
     "qualification_slot_a": "Peringkat 1 Group",
-    "qualification_slot_b": "Peringkat 3 Group",
+    "qualification_slot_b": "Peringkat 4 Group",
     "date": "2026-08-12",
     "time": "",
     "court": "Padeloom",
@@ -592,7 +592,7 @@
     "sets": [],
     "winner": null,
     "walkover": false,
-    "notes": "Semifinal 1 Padel — Ganda Campuran: Peringkat 1 Group vs Peringkat 3 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
+    "notes": "Semifinal 1 Padel — Ganda Campuran: Peringkat 1 Group vs Peringkat 4 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
     "_profile_config": {
       "best_of": 5,
@@ -602,7 +602,7 @@
       "allow_continuation": true
     },
     "_segment_term": "game",
-    "version": 1
+    "version": 2
   },
   {
     "id": "M22",
@@ -617,7 +617,7 @@
     "team_a": null,
     "team_b": null,
     "qualification_slot_a": "Peringkat 2 Group",
-    "qualification_slot_b": "Peringkat 4 Group",
+    "qualification_slot_b": "Peringkat 3 Group",
     "date": "2026-08-12",
     "time": "",
     "court": "Padeloom",
@@ -625,7 +625,7 @@
     "sets": [],
     "winner": null,
     "walkover": false,
-    "notes": "Semifinal 2 Padel — Ganda Campuran: Peringkat 2 Group vs Peringkat 4 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
+    "notes": "Semifinal 2 Padel — Ganda Campuran: Peringkat 2 Group vs Peringkat 3 Group Jam menyusul, menyesuaikan hasil klasemen babak grup",
     "reschedule_history": [],
     "_profile_config": {
       "best_of": 5,
@@ -635,7 +635,7 @@
       "allow_continuation": true
     },
     "_segment_term": "game",
-    "version": 1
+    "version": 2
   },
   {
     "id": "M23",
@@ -1344,7 +1344,7 @@
     "team_a": null,
     "team_b": null,
     "qualification_slot_a": "Peringkat 1 Group",
-    "qualification_slot_b": "Peringkat 3 Group",
+    "qualification_slot_b": "Peringkat 4 Group",
     "date": "2026-08-13",
     "time": "19:30",
     "court": "Saintuary Sport · Lapangan 1",
@@ -1352,7 +1352,7 @@
     "sets": [],
     "winner": null,
     "walkover": false,
-    "notes": "Semifinal 1 Badminton — Ganda Campuran: Peringkat 1 Group vs Peringkat 3 Group",
+    "notes": "Semifinal 1 Badminton — Ganda Campuran: Peringkat 1 Group vs Peringkat 4 Group",
     "reschedule_history": [],
     "_profile_key": "badminton-21-bo3",
     "_profile_version": 1,
@@ -1362,7 +1362,8 @@
       "win_by": 2,
       "point_cap": 30
     },
-    "_segment_term": "game"
+    "_segment_term": "game",
+    "version": 1
   },
   {
     "id": "M46",
@@ -1377,7 +1378,7 @@
     "team_a": null,
     "team_b": null,
     "qualification_slot_a": "Peringkat 2 Group",
-    "qualification_slot_b": "Peringkat 4 Group",
+    "qualification_slot_b": "Peringkat 3 Group",
     "date": "2026-08-13",
     "time": "19:30",
     "court": "Saintuary Sport · Lapangan 3",
@@ -1385,7 +1386,7 @@
     "sets": [],
     "winner": null,
     "walkover": false,
-    "notes": "Semifinal 2 Badminton — Ganda Campuran: Peringkat 2 Group vs Peringkat 4 Group",
+    "notes": "Semifinal 2 Badminton — Ganda Campuran: Peringkat 2 Group vs Peringkat 3 Group",
     "reschedule_history": [],
     "_profile_key": "badminton-21-bo3",
     "_profile_version": 1,
@@ -1395,7 +1396,8 @@
       "win_by": 2,
       "point_cap": 30
     },
-    "_segment_term": "game"
+    "_segment_term": "game",
+    "version": 1
   },
   {
     "id": "M47",
@@ -1694,7 +1696,7 @@
     "team_a": null,
     "team_b": null,
     "qualification_slot_a": "Peringkat 1 Group",
-    "qualification_slot_b": "Peringkat 3 Group",
+    "qualification_slot_b": "Peringkat 4 Group",
     "date": "2026-08-14",
     "time": "22:00",
     "court": "Synergy Room Lantai 7",
@@ -1702,8 +1704,9 @@
     "sets": [],
     "winner": null,
     "walkover": false,
-    "notes": "Semifinal 1 Tenis Meja — Ganda Putra: Peringkat 1 Group vs Peringkat 3 Group Jam pasti belum tersedia dari panitia — akan diinformasikan lebih lanjut.",
-    "reschedule_history": []
+    "notes": "Semifinal 1 Tenis Meja — Ganda Putra: Peringkat 1 Group vs Peringkat 4 Group Jam pasti belum tersedia dari panitia — akan diinformasikan lebih lanjut.",
+    "reschedule_history": [],
+    "version": 1
   },
   {
     "id": "M60",
@@ -1718,7 +1721,7 @@
     "team_a": null,
     "team_b": null,
     "qualification_slot_a": "Peringkat 2 Group",
-    "qualification_slot_b": "Peringkat 4 Group",
+    "qualification_slot_b": "Peringkat 3 Group",
     "date": "2026-08-14",
     "time": "22:20",
     "court": "Synergy Room Lantai 7",
@@ -1726,8 +1729,9 @@
     "sets": [],
     "winner": null,
     "walkover": false,
-    "notes": "Semifinal 2 Tenis Meja — Ganda Putra: Peringkat 2 Group vs Peringkat 4 Group Jam pasti belum tersedia dari panitia — akan diinformasikan lebih lanjut.",
-    "reschedule_history": []
+    "notes": "Semifinal 2 Tenis Meja — Ganda Putra: Peringkat 2 Group vs Peringkat 3 Group Jam pasti belum tersedia dari panitia — akan diinformasikan lebih lanjut.",
+    "reschedule_history": [],
+    "version": 1
   },
   {
     "id": "M61",
@@ -1924,7 +1928,7 @@
     "team_a": null,
     "team_b": null,
     "qualification_slot_a": "Peringkat 1 Group",
-    "qualification_slot_b": "Peringkat 3 Group",
+    "qualification_slot_b": "Peringkat 4 Group",
     "date": "2026-08-14",
     "time": "21:20",
     "court": "Synergy Room Lantai 7",
@@ -1932,8 +1936,9 @@
     "sets": [],
     "winner": null,
     "walkover": false,
-    "notes": "Semifinal 1 Tenis Meja — Ganda Campuran: Peringkat 1 Group vs Peringkat 3 Group Jam pasti belum tersedia dari panitia — akan diinformasikan lebih lanjut.",
-    "reschedule_history": []
+    "notes": "Semifinal 1 Tenis Meja — Ganda Campuran: Peringkat 1 Group vs Peringkat 4 Group Jam pasti belum tersedia dari panitia — akan diinformasikan lebih lanjut.",
+    "reschedule_history": [],
+    "version": 1
   },
   {
     "id": "M70",
@@ -1948,7 +1953,7 @@
     "team_a": null,
     "team_b": null,
     "qualification_slot_a": "Peringkat 2 Group",
-    "qualification_slot_b": "Peringkat 4 Group",
+    "qualification_slot_b": "Peringkat 3 Group",
     "date": "2026-08-14",
     "time": "21:40",
     "court": "Synergy Room Lantai 7",
@@ -1956,8 +1961,9 @@
     "sets": [],
     "winner": null,
     "walkover": false,
-    "notes": "Semifinal 2 Tenis Meja — Ganda Campuran: Peringkat 2 Group vs Peringkat 4 Group Jam pasti belum tersedia dari panitia — akan diinformasikan lebih lanjut.",
-    "reschedule_history": []
+    "notes": "Semifinal 2 Tenis Meja — Ganda Campuran: Peringkat 2 Group vs Peringkat 3 Group Jam pasti belum tersedia dari panitia — akan diinformasikan lebih lanjut.",
+    "reschedule_history": [],
+    "version": 1
   },
   {
     "id": "M71",

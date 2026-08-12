@@ -1148,10 +1148,10 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
         final_profile = _scoring_profile_for(sport_key, "final")
         if knockout_format == "semi_and_final":
             sf1_a, sf1_b = _qual_slot_pair(
-                groups, ("Juara Group A", "Runner-up Group B"), ("Peringkat 1 Group", "Peringkat 3 Group")
+                groups, ("Juara Group A", "Runner-up Group B"), ("Peringkat 1 Group", "Peringkat 4 Group")
             )
             sf2_a, sf2_b = _qual_slot_pair(
-                groups, ("Juara Group B", "Runner-up Group A"), ("Peringkat 2 Group", "Peringkat 4 Group")
+                groups, ("Juara Group B", "Runner-up Group A"), ("Peringkat 2 Group", "Peringkat 3 Group")
             )
             sf1_id = get_next_id()
             matches.append({
@@ -1358,10 +1358,10 @@ def auto_seed_knockout(category_key, matches=None, teams=None, config=None, forc
                 rows = standings_by_group.get("A", [])
                 if m.get("round_label") == "Semifinal 1" and len(rows) >= 4:
                     if not m.get("team_a"): m["team_a"] = rows[0]["code"]; changed = True
-                    if not m.get("team_b"): m["team_b"] = rows[2]["code"]; changed = True
+                    if not m.get("team_b"): m["team_b"] = rows[3]["code"]; changed = True
                 elif m.get("round_label") == "Semifinal 2" and len(rows) >= 4:
                     if not m.get("team_a"): m["team_a"] = rows[1]["code"]; changed = True
-                    if not m.get("team_b"): m["team_b"] = rows[3]["code"]; changed = True
+                    if not m.get("team_b"): m["team_b"] = rows[2]["code"]; changed = True
 
         elif m.get("stage_type") == "third_place":
             depends = m.get("depends_on", [])
