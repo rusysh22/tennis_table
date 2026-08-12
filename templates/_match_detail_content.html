@@ -382,13 +382,13 @@
         <label>Jam Baru
           <input type="time" name="new_time" value="{{ raw.time }}" required>
         </label>
-        <label>Meja
-          <input type="text" value="Meja 1" disabled style="opacity:.7;">
-          <input type="hidden" name="new_court" value="Meja 1">
+        <label>Lokasi &amp; Meja
+          <input type="text" value="{{ raw.court }}" disabled style="opacity:.7;">
+          <input type="hidden" name="new_court" value="{{ raw.court }}">
         </label>
       </div>
       <p style="font-size:.78rem; color:#a0677a; margin-top:-.4rem;">Hanya tersedia 1 meja, jadi seluruh laga berjalan
-        berurutan di Meja 1.</p>
+        berurutan di {{ raw.court }}.</p>
       <label>Alasan reschedule (opsional)
         <input type="text" name="reason" placeholder="mis. Meja rusak, salah satu pemain berhalangan, dsb.">
       </label>
