@@ -919,6 +919,48 @@ def delete_gallery_photo(photo_id):
     return target.get("url")
 
 
+LIVE_CHAT_MAX_MESSAGES = 300
+
+
+def list_live_chat_messages(after_id=None):
+    """Recent live-chat messages, standalone (site-wide, not tied to a match).
+    `after_id` lets pollers ask for only what's new since the last message
+    they already have, instead of re-fetching the whole recent window."""
+    config = load_config()
+    messages = config.get("live_chat_messages", [])
+    if after_id:
+        idx = next((i for i, m in enumerate(messages) if m["id"] == after_id), None)
+        if idx is not None:
+            return messages[idx + 1:]
+    return messages[-100:]
+
+
+def add_live_chat_message(name, message):
+    config = load_config()
+    messages = config.setdefault("live_chat_messages", [])
+    entry = {
+        "id": uuid.uuid4().hex,
+        "name": name,
+        "message": message,
+        "at": now_wib(config.get("timezone")).isoformat(timespec="seconds"),
+    }
+    messages.append(entry)
+    if len(messages) > LIVE_CHAT_MAX_MESSAGES:
+        del messages[: len(messages) - LIVE_CHAT_MAX_MESSAGES]
+    save_config(config)
+    return entry
+
+
+def delete_live_chat_message(message_id):
+    config = load_config()
+    messages = config.get("live_chat_messages", [])
+    if not any(m.get("id") == message_id for m in messages):
+        return False
+    config["live_chat_messages"] = [m for m in messages if m.get("id") != message_id]
+    save_config(config)
+    return True
+
+
 def clean_youtube_embed_url(url):
     if not url or not url.strip():
         return ""

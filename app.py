@@ -184,6 +184,24 @@ app.config.setdefault("LOGIN_MAX_ATTEMPTS", 5)
 app.config.setdefault("LOGIN_WINDOW_SECONDS", 15 * 60)
 app.config.setdefault("LOGIN_LOCK_SECONDS", 15 * 60)
 
+_RATE_BUCKETS = {}
+_RATE_LOCK = threading.Lock()
+
+
+def _rate_limited(key, max_events, window_seconds):
+    """True if `key` has hit max_events within window_seconds; records this
+    call as an event either way, so only call this once per attempt, right
+    before acting on it."""
+    now = time.monotonic()
+    with _RATE_LOCK:
+        bucket = _RATE_BUCKETS.setdefault(key, deque())
+        while bucket and bucket[0] <= now - window_seconds:
+            bucket.popleft()
+        if len(bucket) >= max_events:
+            return True
+        bucket.append(now)
+        return False
+
 
 def get_csrf_token():
     token = session.get(CSRF_SESSION_KEY)
@@ -311,6 +329,7 @@ GENERAL_ONLY_ENDPOINTS = {
     "admin_settings", "admin_announcement", "admin_live_stream",
     "admin_utilities", "admin_reset", "admin_shuffle_putra", "admin_shuffle_campuran",
     "admin_license", "admin_activate_license", "admin_validate_license", "admin_deactivate_license",
+    "admin_delete_live_chat_message",
 }
 GALLERY_ENDPOINTS = {"admin_upload_gallery_photos", "admin_delete_gallery_photo"}
 
@@ -1193,7 +1212,37 @@ def live():
     return render_template(
         "live.html", live_now=live_now, today_matches=today_matches,
         youtube_video_id=youtube_video_id, embed_domain=embed_domain,
+        live_chat_messages=utils.list_live_chat_messages(),
     )
+
+
+@app.route("/api/v1/live-chat")
+def api_v1_live_chat():
+    after_id = request.args.get("after", "").strip() or None
+    return jsonify({"data": utils.list_live_chat_messages(after_id=after_id)})
+
+
+@app.route("/live-chat/send", methods=["POST"])
+def send_live_chat_message():
+    name = utils.censor_text(request.form.get("name", "").strip()[:24])
+    message = utils.censor_text(request.form.get("message", "").strip()[:120])
+    if not name or not message:
+        return jsonify({"ok": False, "error": "Nama dan pesan wajib diisi."}), 400
+    if _rate_limited(f"chat:{request.remote_addr or 'unknown'}", 8, 30):
+        return jsonify({"ok": False, "error": "Terlalu banyak pesan, coba lagi sebentar."}), 429
+    entry = utils.add_live_chat_message(name, message)
+    return jsonify({"ok": True, "message": entry})
+
+
+@app.route("/admin/live-chat/delete", methods=["POST"])
+@login_required
+def admin_delete_live_chat_message():
+    message_id = request.form.get("message_id", "").strip()
+    if message_id and utils.delete_live_chat_message(message_id):
+        flash("Pesan chat berhasil dihapus.", "success")
+    else:
+        flash("Pesan chat tidak ditemukan.", "error")
+    return redirect(url_for("live"))
 
 
 @app.route("/rekap")

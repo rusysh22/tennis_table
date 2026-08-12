@@ -2,6 +2,7 @@
 {% block title %}Live Score — {{ config.tournament_short_name }}{% endblock %}
 {% block og_title %}🔴 Live Score — {{ config.tournament_short_name }}{% endblock %}
 {% block og_image %}{{ url_for('og_default_image', title='Live Score', subtitle='Pantau skor pertandingan secara real-time', tag='LIVE', _external=True) }}{% endblock %}
+{% block bodyclass %}live-body{% endblock %}
 {% block content %}
 
 <div class="live-banner">
@@ -21,34 +22,52 @@
     <span class="badge badge-live">INTERPORT TV LIVE</span>
   </div>
   <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: stretch;">
-    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 14px; background: #000; box-shadow: var(--shadow-md); flex: 3 1 480px;">
-      <iframe id="ytLiveEmbed" src="{{ config.youtube_embed_url }}{{ '&' if '?' in config.youtube_embed_url else '?' }}autoplay=1&mute=1&rel=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <div style="position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 14px; background: #000; box-shadow: var(--shadow-md); flex: 3 1 480px;">
+      <iframe id="ytLiveEmbed" src="{{ config.youtube_embed_url }}{{ '&' if '?' in config.youtube_embed_url else '?' }}autoplay=1&mute=1&rel=0" style="position: absolute; inset: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
       <div id="ytLiveFallback" class="live-embed-fallback">
         <span aria-hidden="true">📡</span>
         <p><strong>Video tidak dapat dimuat.</strong><br>YouTube sedang diblokir di jaringan Anda. Silakan gunakan jaringan pribadi (hotspot/data seluler) atau jaringan lain.</p>
       </div>
     </div>
-    {% if youtube_video_id %}
     <div style="flex: 1 1 300px; min-width: 280px; display: flex; flex-direction: column;">
       <div style="font-size: .82rem; font-weight: 600; color: var(--navy-900); margin-bottom: .4rem; display: flex; align-items: center; gap: .4rem;">
         💬 Live Chat — beri dukungan!
       </div>
-      <div style="position: relative; flex: 1 1 auto; min-height: 360px; border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-md);">
-        <iframe
-          id="ytLiveChatEmbed"
-          src="https://www.youtube.com/live_chat?v={{ youtube_video_id }}&embed_domain={{ embed_domain }}"
-          style="position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff;"
-          title="Live chat">
-        </iframe>
-        <div id="ytLiveChatFallback" class="live-embed-fallback">
-          <span aria-hidden="true">💬</span>
-          <p><strong>Live chat tidak dapat dimuat.</strong><br>YouTube sedang diblokir di jaringan Anda.</p>
+      <div class="live-chat-box" id="liveChatBox"
+           data-chat-api="{{ url_for('api_v1_live_chat') }}"
+           data-send-url="{{ url_for('send_live_chat_message') }}"
+           data-delete-url="{{ url_for('admin_delete_live_chat_message') }}"
+           data-is-admin="{{ '1' if admin_role == 'general' else '' }}">
+        <div class="live-chat-messages" id="liveChatMessages">
+          {% for msg in live_chat_messages %}
+          <div class="live-chat-msg" data-msg-id="{{ msg.id }}">
+            <strong>{{ msg.name }}</strong><span>{{ msg.message }}</span>
+            {% if admin_role == 'general' %}
+            <button type="button" class="live-chat-delete" data-msg-id="{{ msg.id }}" title="Hapus pesan">✕</button>
+            {% endif %}
+          </div>
+          {% else %}
+          <p class="live-chat-empty">Belum ada pesan. Jadilah yang pertama memberi dukungan!</p>
+          {% endfor %}
         </div>
+        <form class="live-chat-form" id="liveChatForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="text" name="name" maxlength="24" placeholder="Nama" required>
+          <div class="live-chat-input-wrap">
+            <input type="text" name="message" maxlength="120" placeholder="Tulis dukungan..." required>
+            <button type="button" class="live-chat-emoji-toggle" id="liveChatEmojiToggle" aria-label="Pilih emoji" aria-expanded="false" aria-controls="liveChatEmojiPopup">🙂</button>
+            <div class="live-chat-emoji-popup" id="liveChatEmojiPopup" role="menu" aria-label="Pilih emoji" hidden>
+              {% for e in ['🔥','👏','❤️','😂','👍','🎉','💪','😍','🙌','🏆','⚡','😱','👌','🥳','😢','💯','🤩','😅'] %}
+              <button type="button" class="live-chat-emoji" data-emoji="{{ e }}" role="menuitem">{{ e }}</button>
+              {% endfor %}
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Kirim</button>
+        </form>
       </div>
     </div>
-    {% endif %}
   </div>
-  <p class="live-embed-hint">Video atau chat tidak muncul? YouTube mungkin diblokir di jaringan Anda — coba jaringan pribadi/data seluler.</p>
+  <p class="live-embed-hint">Video tidak muncul? YouTube mungkin diblokir di jaringan Anda — coba jaringan pribadi/data seluler.</p>
 </div>
 {% endif %}
 

@@ -450,10 +450,9 @@
   // (kadang browser tetap fire "load" walau isinya halaman error dari
   // jaringan yang memblokir youtube.com), jadi dipakai timeout: kalau
   // "load" belum juga terjadi dalam beberapa detik, tampilkan pesan.
-  // Dipasang untuk video utama dan panel live chat.
-  function watchYoutubeEmbed(frameId, fallbackId) {
-    var frame = document.getElementById(frameId);
-    var fallback = document.getElementById(fallbackId);
+  (function () {
+    var frame = document.getElementById("ytLiveEmbed");
+    var fallback = document.getElementById("ytLiveFallback");
     if (!frame || !fallback) return;
 
     var timer = setTimeout(function () {
@@ -463,9 +462,151 @@
     frame.addEventListener("load", function () {
       clearTimeout(timer);
     });
-  }
-  watchYoutubeEmbed("ytLiveEmbed", "ytLiveFallback");
-  watchYoutubeEmbed("ytLiveChatEmbed", "ytLiveChatFallback");
+  })();
+
+  // ---------- live chat (first-party, polling-based) ----------
+  (function () {
+    var box = document.getElementById("liveChatBox");
+    var list = document.getElementById("liveChatMessages");
+    var form = document.getElementById("liveChatForm");
+    if (!box || !list || !form) return;
+
+    var apiUrl = box.getAttribute("data-chat-api");
+    var sendUrl = box.getAttribute("data-send-url");
+    var deleteUrl = box.getAttribute("data-delete-url");
+    var isAdmin = box.getAttribute("data-is-admin") === "1";
+    var isSending = false;
+    var lastId = null;
+    var existing = list.querySelectorAll("[data-msg-id]");
+    if (existing.length) lastId = existing[existing.length - 1].getAttribute("data-msg-id");
+
+    function escapeAndAppend(msg) {
+      var empty = list.querySelector(".live-chat-empty");
+      if (empty) empty.remove();
+
+      var row = document.createElement("div");
+      row.className = "live-chat-msg";
+      row.setAttribute("data-msg-id", msg.id);
+
+      var nameEl = document.createElement("strong");
+      nameEl.textContent = msg.name;
+      var textEl = document.createElement("span");
+      textEl.textContent = msg.message;
+      row.appendChild(nameEl);
+      row.appendChild(textEl);
+
+      if (isAdmin) {
+        var del = document.createElement("button");
+        del.type = "button";
+        del.className = "live-chat-delete";
+        del.title = "Hapus pesan";
+        del.setAttribute("data-msg-id", msg.id);
+        del.textContent = "✕";
+        row.appendChild(del);
+      }
+
+      list.appendChild(row);
+      lastId = msg.id;
+      list.scrollTop = list.scrollHeight;
+    }
+
+    function poll() {
+      var url = apiUrl + (lastId ? "?after=" + encodeURIComponent(lastId) : "");
+      fetch(url, { cache: "no-store" })
+        .then(function (r) { return r.json(); })
+        .then(function (payload) { (payload.data || []).forEach(escapeAndAppend); })
+        .catch(function () {});
+    }
+    setInterval(poll, 4000);
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (isSending) return; // hard guard against double-submit races
+      isSending = true;
+
+      var submitBtn = form.querySelector('button[type="submit"]');
+      var originalLabel = submitBtn ? submitBtn.textContent : "";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Mengirim...";
+      }
+
+      var formData = new FormData(form);
+      fetch(sendUrl, { method: "POST", body: formData })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.ok) {
+            escapeAndAppend(data.message);
+            form.querySelector('[name="message"]').value = "";
+            form.querySelector('[name="message"]').focus();
+          } else {
+            alert(data.error || "Gagal mengirim pesan.");
+          }
+        })
+        .catch(function () {
+          alert("Gagal mengirim pesan. Periksa koneksi Anda.");
+        })
+        .finally(function () {
+          isSending = false;
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalLabel;
+          }
+        });
+    });
+
+    var emojiToggle = document.getElementById("liveChatEmojiToggle");
+    var emojiPopup = document.getElementById("liveChatEmojiPopup");
+    if (emojiToggle && emojiPopup) {
+      function closeEmojiPopup() {
+        emojiPopup.hidden = true;
+        emojiToggle.setAttribute("aria-expanded", "false");
+      }
+      function openEmojiPopup() {
+        emojiPopup.hidden = false;
+        emojiToggle.setAttribute("aria-expanded", "true");
+      }
+      emojiToggle.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (emojiPopup.hidden) openEmojiPopup(); else closeEmojiPopup();
+      });
+      emojiPopup.addEventListener("click", function (e) {
+        var btn = e.target.closest(".live-chat-emoji");
+        if (!btn) return;
+        var input = form.querySelector('[name="message"]');
+        if (!input) return;
+        var emoji = btn.getAttribute("data-emoji") || "";
+        var next = (input.value ? input.value + " " : "") + emoji;
+        input.value = next.slice(0, input.maxLength > 0 ? input.maxLength : next.length);
+        closeEmojiPopup();
+        input.focus();
+      });
+      document.addEventListener("click", function (e) {
+        if (!emojiPopup.hidden && !emojiPopup.contains(e.target) && e.target !== emojiToggle) {
+          closeEmojiPopup();
+        }
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !emojiPopup.hidden) closeEmojiPopup();
+      });
+    }
+
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest(".live-chat-delete");
+      if (!btn || !deleteUrl) return;
+      if (!confirm("Hapus pesan ini?")) return;
+      var formData = new FormData();
+      formData.append("message_id", btn.getAttribute("data-msg-id"));
+      var csrfInput = form.querySelector('[name="csrf_token"]');
+      if (csrfInput) formData.append("csrf_token", csrfInput.value);
+      fetch(deleteUrl, { method: "POST", body: formData })
+        .then(function () {
+          var row = btn.closest(".live-chat-msg");
+          if (row) row.remove();
+        })
+        .catch(function () {});
+    });
+  })();
 
 })();
 

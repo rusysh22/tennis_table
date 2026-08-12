@@ -117,5 +117,55 @@
       "has_final": true,
       "knockout_format": "semi_and_final"
     }
+  ],
+  "live_chat_messages": [
+    {
+      "id": "67b7b5ff0e3540aabed02a8913fb5797",
+      "name": "Dani",
+      "message": "Semangat",
+      "at": "2026-08-12T14:30:54+07:00"
+    },
+    {
+      "id": "2f47e9cacc144328873724527594192b",
+      "name": "Dani",
+      "message": "Semangat",
+      "at": "2026-08-12T14:31:00+07:00"
+    },
+    {
+      "id": "5afa5421df644d578f3235466e58463e",
+      "name": "Ucy",
+      "message": "Dani Semangatttt!!!!!",
+      "at": "2026-08-12T14:31:11+07:00"
+    },
+    {
+      "id": "ab3a147abde14e57a796b5b1f1c9283e",
+      "name": "Ucy",
+      "message": "Test",
+      "at": "2026-08-12T14:36:02+07:00"
+    },
+    {
+      "id": "de0edadf7de74f7c93e31414a3fba326",
+      "name": "Ucy",
+      "message": "Ayo semangat",
+      "at": "2026-08-12T14:36:07+07:00"
+    },
+    {
+      "id": "d028b209651b4a05aa83c6ca31874182",
+      "name": "Ucy",
+      "message": "Jangan goyah",
+      "at": "2026-08-12T14:36:11+07:00"
+    },
+    {
+      "id": "f32b418c5471429499153ce01b50c363",
+      "name": "Ucy",
+      "message": "jangan gegabah",
+      "at": "2026-08-12T14:36:17+07:00"
+    },
+    {
+      "id": "a1d8f95460124ca98b0dcb2fcb216901",
+      "name": "Ucy",
+      "message": "berikan dukunganmu",
+      "at": "2026-08-12T14:36:23+07:00"
+    }
   ]
 }
