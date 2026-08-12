@@ -934,6 +934,13 @@ def clean_youtube_embed_url(url):
     return url
 
 
+def extract_youtube_video_id(embed_url):
+    if not embed_url:
+        return ""
+    match = re.search(r'youtube\.com/embed/([\w-]+)', embed_url)
+    return match.group(1) if match else ""
+
+
 def update_live_streaming_config(url, title=""):
     if USE_NORMALIZED_DB and hasattr(_NORMALIZED_REPOSITORY, "update_live_stream"):
         _NORMALIZED_REPOSITORY.update_live_stream(url, title)

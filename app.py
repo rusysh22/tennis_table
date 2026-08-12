@@ -1188,7 +1188,12 @@ def live():
         [m for m in enriched if m["date"] == today],
         key=lambda m: (m["time"], m["court"]),
     )
-    return render_template("live.html", live_now=live_now, today_matches=today_matches)
+    youtube_video_id = utils.extract_youtube_video_id(config.get("youtube_embed_url", ""))
+    embed_domain = request.host.split(":")[0]
+    return render_template(
+        "live.html", live_now=live_now, today_matches=today_matches,
+        youtube_video_id=youtube_video_id, embed_domain=embed_domain,
+    )
 
 
 @app.route("/rekap")
