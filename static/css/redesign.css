@@ -981,6 +981,29 @@ table.standings.standings-putra th,table.standings.standings-campuran th{ backgr
   animation:none;
 }
 .live-banner .pulse-ring{ background:var(--green-300); box-shadow:0 0 0 6px rgba(110,231,183,.14); }
+.live-embed-fallback{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:.6rem;
+  padding:1.5rem;
+  text-align:center;
+  color:#fff;
+  background:linear-gradient(150deg,rgba(3,32,47,.96),rgba(7,89,133,.94));
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .3s ease;
+}
+.live-embed-fallback.show{ opacity:1; visibility:visible; }
+.live-embed-fallback span{ font-size:2rem; }
+.live-embed-fallback p{ margin:0; max-width:420px; font-size:.85rem; line-height:1.55; color:rgba(255,255,255,.85); }
+.live-embed-fallback strong{ color:#fff; }
+.live-embed-hint{ margin:.7rem 0 0; color:var(--muted); font-size:.72rem; text-align:center; }
 .empty-state{
   border:1px dashed rgba(7,89,133,.22);
   border-radius:18px;

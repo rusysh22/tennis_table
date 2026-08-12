@@ -445,6 +445,28 @@
     });
   })();
 
+  // ---------- youtube live embed fallback (jaringan diblokir) ----------
+  // Iframe cross-origin tidak selalu bisa dideteksi gagal-muat via onerror
+  // (kadang browser tetap fire "load" walau isinya halaman error dari
+  // jaringan yang memblokir youtube.com), jadi dipakai timeout: kalau
+  // "load" belum juga terjadi dalam beberapa detik, tampilkan pesan.
+  // Dipasang untuk video utama dan panel live chat.
+  function watchYoutubeEmbed(frameId, fallbackId) {
+    var frame = document.getElementById(frameId);
+    var fallback = document.getElementById(fallbackId);
+    if (!frame || !fallback) return;
+
+    var timer = setTimeout(function () {
+      fallback.classList.add("show");
+    }, 7000);
+
+    frame.addEventListener("load", function () {
+      clearTimeout(timer);
+    });
+  }
+  watchYoutubeEmbed("ytLiveEmbed", "ytLiveFallback");
+  watchYoutubeEmbed("ytLiveChatEmbed", "ytLiveChatFallback");
+
 })();
 
 // Global function for voting
