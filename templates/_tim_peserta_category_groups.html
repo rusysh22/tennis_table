@@ -1,0 +1,74 @@
+{% for group in section.category_groups %}
+<div class="roster-category-group">
+  <div class="roster-category-head">
+    <span class="roster-category-label">{{ group.label }}</span>
+    <span class="roster-category-count">{{ group.teams|length }} tim</span>
+  </div>
+
+  {% if group.entrant_type == 'roster' %}
+  <div class="roster-team-grid">
+    {% for t in group.teams %}
+    <div class="roster-team-tile roster-team-tile-pool">
+      <div class="roster-team-tile-head" style="background:{{ t.color or '#9c9c9c' }};color:{{ t.text or '#fff' }};">
+        <span>{{ t.id }}</span>{% if t.group %}<span class="roster-team-group">Grup {{ t.group }}</span>{% endif %}
+      </div>
+      <div class="roster-pool-list">
+        {% for reserve in t.reserves %}
+        <div class="roster-pool-member">
+          {% if reserve.photo %}
+          <img class="roster-avatar public-doc-img" src="{{ reserve.photo }}" data-full-src="{{ reserve.photo }}" alt="Foto {{ reserve.name }}">
+          {% else %}
+          <span class="roster-avatar roster-avatar-empty">{{ (reserve.name or '?')[0] }}</span>
+          {% endif %}
+          <span class="roster-player-name">{{ reserve.name or 'TBD' }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="roster-team-grid">
+    {% for t in group.teams %}
+    <div class="roster-team-tile">
+      <div class="roster-team-tile-head" style="background:{{ t.color or '#9c9c9c' }};color:{{ t.text or '#fff' }};">
+        <span>{{ t.id }}</span>{% if t.group %}<span class="roster-team-group">Grup {{ t.group }}</span>{% endif %}
+      </div>
+      <div class="roster-pair">
+        <div class="roster-player">
+          {% if t.photo1 %}
+          <img class="roster-avatar public-doc-img" src="{{ t.photo1 }}" data-full-src="{{ t.photo1 }}" alt="Foto {{ t.player1 }}">
+          {% else %}
+          <span class="roster-avatar roster-avatar-empty">{{ (t.player1 or '?')[0] }}</span>
+          {% endif %}
+          <span class="roster-player-name">{{ t.player1 or 'TBD' }}</span>
+        </div>
+        {% if t.player2 %}
+        <span class="roster-pair-divider" aria-hidden="true"></span>
+        <div class="roster-player">
+          {% if t.photo2 %}
+          <img class="roster-avatar public-doc-img" src="{{ t.photo2 }}" data-full-src="{{ t.photo2 }}" alt="Foto {{ t.player2 }}">
+          {% else %}
+          <span class="roster-avatar roster-avatar-empty">{{ t.player2[0] }}</span>
+          {% endif %}
+          <span class="roster-player-name">{{ t.player2 }}</span>
+        </div>
+        {% endif %}
+      </div>
+      {% if t.reserve_name %}
+      <div class="roster-reserve">
+        {% if t.reserve_photo %}
+        <img class="roster-avatar roster-avatar-sm public-doc-img" src="{{ t.reserve_photo }}" data-full-src="{{ t.reserve_photo }}" alt="Foto {{ t.reserve_name }}">
+        {% else %}
+        <span class="roster-avatar roster-avatar-sm roster-avatar-empty">{{ t.reserve_name[0] }}</span>
+        {% endif %}
+        <span class="roster-player-name">{{ t.reserve_name }}</span>
+        <span class="roster-reserve-tag">Cadangan</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endfor %}

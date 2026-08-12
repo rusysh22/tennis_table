@@ -80,6 +80,7 @@
           <span>Live</span><span class="live-dot" aria-hidden="true"></span>
         </a>
         <a href="{{ sport_url('klasemen') }}" class="{{ 'active' if request.endpoint in ('klasemen','bracket') }}" aria-current="{{ 'page' if request.endpoint in ('klasemen','bracket') else 'false' }}"><span>Klasemen</span></a>
+        <a href="{{ sport_url('tim_peserta') }}" class="{{ 'active' if request.endpoint == 'tim_peserta' }}" aria-current="{{ 'page' if request.endpoint == 'tim_peserta' else 'false' }}"><span>Tim Peserta</span></a>
         <a href="{{ sport_url('galeri') }}" class="{{ 'active' if request.endpoint == 'galeri' }}" aria-current="{{ 'page' if request.endpoint == 'galeri' else 'false' }}"><span>Galeri</span></a>
         <a href="{{ sport_url('aturan') }}" class="{{ 'active' if request.endpoint == 'aturan' }}" aria-current="{{ 'page' if request.endpoint == 'aturan' else 'false' }}"><span>Aturan</span></a>
         {% if is_admin %}

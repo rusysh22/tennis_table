@@ -469,6 +469,8 @@ def competition_context(matches, teams, config, sport_key=None):
         division["champion_team"] = champion_display(
             teams, division.get("champion")
         )
+        division["silver_team"] = champion_display(teams, division.get("silver"))
+        division["bronze_team"] = champion_display(teams, division.get("bronze"))
         division["has_elimination_stage"] = any(
             stage.get("type") not in {"group", "round_robin"}
             for stage in division.get("stages_view", [])
@@ -1005,14 +1007,94 @@ def aturan():
     )
 
 
+@app.route("/tim-peserta")
+def tim_peserta():
+    teams = utils.load_teams()
+    config = utils.load_config()
+    sites = config.get("sites", [])
+    categories = config.get("categories", [])
+    sports = [sport for sport in utils.list_sports() if sport.get("enabled")]
+    selected = _selected_sport()
+
+    teams_by_site = {}
+    for team_id, team in teams.items():
+        teams_by_site.setdefault(team.get("site_code"), []).append({**team, "id": team_id})
+
+    site_cards = []
+    for site in sites:
+        site_teams = teams_by_site.get(site["code"], [])
+        sport_sections = []
+        for sport in sports:
+            if selected != "all" and sport["key"] != selected:
+                continue
+            category_groups = []
+            for cat in categories:
+                if cat.get("sport_key") != sport["key"]:
+                    continue
+                cat_teams = sorted(
+                    (t for t in site_teams if t.get("category") == cat["key"]),
+                    key=lambda t: (t.get("group") or "", t.get("id") or ""),
+                )
+                if cat_teams:
+                    category_groups.append({
+                        "label": cat.get("label", cat["key"]),
+                        "entrant_type": cat.get("entrant_type", "pair"),
+                        "teams": cat_teams,
+                    })
+            if category_groups:
+                sport_sections.append({
+                    "key": sport["key"],
+                    "name": sport["name"],
+                    "icon": sport["icon"],
+                    "category_groups": category_groups,
+                })
+        if sport_sections:
+            site_cards.append({
+                "code": site["code"],
+                "name": site["name"],
+                "team_count": sum(
+                    len(group["teams"])
+                    for section in sport_sections
+                    for group in section["category_groups"]
+                ),
+                "sport_count": len(sport_sections),
+                "sport_sections": sport_sections,
+            })
+
+    participant_ids = set()
+    for site_teams in teams_by_site.values():
+        for t in site_teams:
+            for key in ("participant_id1", "participant_id2", "reserve_participant_id"):
+                if t.get(key):
+                    participant_ids.add(t[key])
+            for reserve in t.get("reserves") or []:
+                if reserve.get("participant_id"):
+                    participant_ids.add(reserve["participant_id"])
+
+    stats = {
+        "site_count": len(site_cards),
+        "team_count": sum(site["team_count"] for site in site_cards),
+        "participant_count": len(participant_ids),
+    }
+
+    return render_template("tim_peserta.html", site_cards=site_cards, stats=stats)
+
+
 @app.route("/klasemen")
 def klasemen():
     teams, matches, config = data_context()
-    matches = _filter_matches_by_selected_sport(matches)
+    selected = _selected_sport()
+    filtered_matches = _filter_matches_by_selected_sport(matches)
     competition = competition_context(
-        matches, teams, config, sport_key=_selected_sport()
+        filtered_matches, teams, config, sport_key=selected
     )
-    return render_template("klasemen.html", competition=competition)
+    medal_tally = (
+        utils.compute_medal_tally(competition.get("divisions", []), teams, config)
+        if selected == "all" else None
+    )
+    return render_template(
+        "klasemen.html", competition=competition, medal_tally=medal_tally
+    )
 
 
 @app.route("/admin/juara/<category>/<group>", methods=["POST"])

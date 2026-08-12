@@ -7,6 +7,40 @@
 
 {% include "_subnav_klasemen.html" %}
 
+{% if medal_tally is not none %}
+<div class="section-head"><h2>🏅 Juara Umum — Perolehan Medali Antar Site</h2></div>
+{% if medal_tally %}
+<div class="table-wrap medal-tally-wrap">
+  <table class="standings medal-tally-table">
+    <thead>
+      <tr>
+        <th>Peringkat</th>
+        <th>Site</th>
+        <th>🥇 Emas</th>
+        <th>🥈 Perak</th>
+        <th>🥉 Perunggu</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in medal_tally %}
+      <tr class="{{ 'rank-1' if entry.rank == 1 }}">
+        <td><span class="rank-pill {{ 'gold' if entry.rank == 1 }}">{{ entry.rank }}</span></td>
+        <td class="medal-site-cell"><span class="roster-jump-code medal-site-code">{{ entry.code }}</span>{{ entry.name }}</td>
+        <td class="medal-count-cell">{{ entry.gold }}</td>
+        <td class="medal-count-cell">{{ entry.silver }}</td>
+        <td class="medal-count-cell">{{ entry.bronze }}</td>
+        <td class="medal-count-cell medal-total-cell">{{ entry.total }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="medal-tally-empty">Klasemen juara umum akan tampil begitu partai final dan perebutan juara 3 di setiap divisi selesai dimainkan.</p>
+{% endif %}
+{% endif %}
+
 <div class="section-head"><h2>📊 Klasemen per Divisi dan Grup</h2></div>
 
 {% if competition.divisions %}

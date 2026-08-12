@@ -667,6 +667,242 @@ fieldset form > label input:focus,fieldset form > label textarea:focus,
 .rule-profile summary{ color:var(--blue-800); }
 .rule-config-list dt{ color:var(--muted); }
 
+/* Tim Peserta */
+.roster-intro{ margin-bottom:1.8rem; }
+.roster-page-lead{ max-width:640px; margin:.5rem 0 1.3rem; color:var(--muted); font-size:.92rem; }
+.roster-stat-row{ display:flex; flex-wrap:wrap; gap:.7rem; margin-bottom:1.2rem; }
+.roster-stat{
+  min-width:104px;
+  padding:.75rem 1.1rem;
+  display:flex;
+  flex-direction:column;
+  gap:.1rem;
+  border:1px solid var(--line);
+  border-radius:16px 7px 16px 7px;
+  background:linear-gradient(150deg,var(--surface),var(--surface-soft));
+  box-shadow:var(--shadow-sm);
+}
+.roster-stat strong{ font-size:1.4rem; font-weight:900; color:var(--navy-950); letter-spacing:-.03em; line-height:1.1; }
+.roster-stat span{ color:var(--muted); font-size:.64rem; font-weight:750; letter-spacing:.06em; text-transform:uppercase; }
+.roster-jump-nav{ display:flex; flex-wrap:wrap; gap:.5rem; }
+.roster-jump-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  padding:.42rem .85rem .42rem .5rem;
+  border:1px solid var(--line);
+  border-radius:99px;
+  background:var(--surface);
+  color:var(--text);
+  font-size:.74rem;
+  font-weight:650;
+  box-shadow:var(--shadow-sm);
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
+}
+.roster-jump-pill:hover{ transform:translateY(-1px); border-color:var(--blue-500); box-shadow:var(--shadow-md); }
+.roster-jump-code{
+  display:grid;
+  place-items:center;
+  min-width:34px;
+  height:22px;
+  padding:0 .4rem;
+  border-radius:99px;
+  background:var(--grad-accent);
+  color:#fff;
+  font-size:.62rem;
+  font-weight:900;
+  letter-spacing:.02em;
+}
+
+.roster-site-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(380px,1fr)); gap:1.4rem; }
+.roster-site-card{
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:26px 12px 26px 12px;
+  background:var(--surface);
+  box-shadow:var(--shadow-md);
+  scroll-margin-top:calc(var(--header-h, 72px) + 84px);
+}
+.roster-site-banner{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  padding:1.15rem 1.3rem;
+  background:linear-gradient(120deg,var(--navy-950),var(--blue-800) 62%,var(--green-700));
+  overflow:hidden;
+}
+.roster-site-banner::after{
+  content:"";
+  position:absolute;
+  right:-38px;
+  top:-46px;
+  width:150px;
+  height:150px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.08),transparent 66%);
+}
+.roster-site-code{
+  position:relative;
+  z-index:1;
+  flex:none;
+  display:grid;
+  place-items:center;
+  width:52px;
+  height:52px;
+  border-radius:16px 7px 16px 7px;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.28);
+  color:#fff;
+  font-weight:900;
+  font-size:.82rem;
+  letter-spacing:.02em;
+  backdrop-filter:blur(6px);
+}
+.roster-site-heading{ position:relative; z-index:1; min-width:0; }
+.roster-site-heading h3{ margin:0; color:#fff; font-size:1.12rem; font-weight:800; letter-spacing:-.02em; }
+.roster-site-meta{ display:flex; align-items:center; gap:.4rem; margin-top:.2rem; color:rgba(255,255,255,.72); font-size:.7rem; font-weight:650; }
+
+.roster-tabgroup{ padding:1.2rem 1.3rem 1.4rem; }
+.roster-tab-input{ position:absolute; opacity:0; pointer-events:none; }
+.roster-tab-bar{ display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:1.1rem; }
+.roster-tab-label{
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  padding:.45rem .85rem;
+  border:1px solid var(--line);
+  border-radius:99px;
+  color:var(--muted);
+  font-size:.74rem;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .15s ease,color .15s ease,border-color .15s ease;
+}
+.roster-tab-input:nth-of-type(1):checked ~ .roster-tab-bar .roster-tab-label:nth-of-type(1),
+.roster-tab-input:nth-of-type(2):checked ~ .roster-tab-bar .roster-tab-label:nth-of-type(2),
+.roster-tab-input:nth-of-type(3):checked ~ .roster-tab-bar .roster-tab-label:nth-of-type(3){
+  border-color:transparent;
+  color:#fff;
+}
+.roster-tab-label.sport-table-tennis{ background:transparent; }
+.roster-tab-input:nth-of-type(1):checked ~ .roster-tab-bar .roster-tab-label.sport-table-tennis:nth-of-type(1),
+.roster-tab-input:nth-of-type(2):checked ~ .roster-tab-bar .roster-tab-label.sport-table-tennis:nth-of-type(2),
+.roster-tab-input:nth-of-type(3):checked ~ .roster-tab-bar .roster-tab-label.sport-table-tennis:nth-of-type(3){ background:linear-gradient(120deg,#0284c7,#3b82f6); }
+.roster-tab-input:nth-of-type(1):checked ~ .roster-tab-bar .roster-tab-label.sport-padel:nth-of-type(1),
+.roster-tab-input:nth-of-type(2):checked ~ .roster-tab-bar .roster-tab-label.sport-padel:nth-of-type(2),
+.roster-tab-input:nth-of-type(3):checked ~ .roster-tab-bar .roster-tab-label.sport-padel:nth-of-type(3){ background:linear-gradient(120deg,#059669,#10b981); }
+.roster-tab-input:nth-of-type(1):checked ~ .roster-tab-bar .roster-tab-label.sport-badminton:nth-of-type(1),
+.roster-tab-input:nth-of-type(2):checked ~ .roster-tab-bar .roster-tab-label.sport-badminton:nth-of-type(2),
+.roster-tab-input:nth-of-type(3):checked ~ .roster-tab-bar .roster-tab-label.sport-badminton:nth-of-type(3){ background:linear-gradient(120deg,#7c3aed,#a855f7); }
+.roster-panel{ display:none; }
+.roster-tab-input:nth-of-type(1):checked ~ .roster-panels .roster-panel:nth-of-type(1),
+.roster-tab-input:nth-of-type(2):checked ~ .roster-panels .roster-panel:nth-of-type(2),
+.roster-tab-input:nth-of-type(3):checked ~ .roster-panels .roster-panel:nth-of-type(3){ display:block; animation:rosterPanelIn .25s ease; }
+@keyframes rosterPanelIn{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:none; } }
+
+.roster-single-sport{ padding:1.2rem 1.3rem 1.4rem; }
+.roster-solo-sport-tag{
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  margin-bottom:1.1rem;
+  padding:.4rem .8rem;
+  border-radius:99px;
+  color:#fff;
+  font-size:.72rem;
+  font-weight:750;
+}
+.roster-solo-sport-tag.sport-table-tennis{ background:linear-gradient(120deg,#0284c7,#3b82f6); }
+.roster-solo-sport-tag.sport-padel{ background:linear-gradient(120deg,#059669,#10b981); }
+.roster-solo-sport-tag.sport-badminton{ background:linear-gradient(120deg,#7c3aed,#a855f7); }
+
+.roster-category-group{ margin-bottom:1.2rem; }
+.roster-category-group:last-child{ margin-bottom:0; }
+.roster-category-head{ display:flex; align-items:baseline; justify-content:space-between; gap:.6rem; margin-bottom:.65rem; }
+.roster-category-label{ color:var(--navy-950); font-size:.76rem; font-weight:800; letter-spacing:-.01em; }
+.roster-category-count{ color:var(--muted); font-size:.64rem; font-weight:650; white-space:nowrap; }
+
+.roster-team-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:.65rem; }
+.roster-team-tile{
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:16px 8px 16px 8px;
+  background:var(--surface-soft);
+  transition:transform .15s ease,box-shadow .15s ease;
+}
+.roster-team-tile:hover{ transform:translateY(-2px); box-shadow:var(--shadow-sm); }
+.roster-team-tile-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.5rem;
+  padding:.4rem .65rem;
+  font-size:.68rem;
+  font-weight:800;
+  letter-spacing:.02em;
+}
+.roster-team-group{ opacity:.85; font-weight:650; }
+.roster-pair{ display:flex; align-items:center; padding:.7rem .65rem; gap:.5rem; }
+.roster-pair-divider{ flex:none; width:1px; align-self:stretch; background:var(--line); }
+.roster-player{ display:flex; flex-direction:column; align-items:center; gap:.35rem; min-width:0; flex:1; text-align:center; }
+.roster-avatar{
+  flex:none;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  object-fit:cover;
+  background:var(--surface);
+  box-shadow:0 0 0 2px rgba(2,132,199,.14);
+}
+img.roster-avatar{ cursor:pointer; transition:transform .2s ease; }
+img.roster-avatar:hover{ transform:scale(1.08); }
+.roster-avatar-empty{
+  display:grid;
+  place-items:center;
+  color:#fff;
+  background:var(--grad-accent);
+  font-size:.9rem;
+  font-weight:800;
+  text-transform:uppercase;
+}
+.roster-avatar-sm{ width:26px; height:26px; font-size:.68rem; }
+.roster-player-name{ max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.72rem; font-weight:650; color:var(--text); }
+.roster-reserve{
+  display:flex;
+  align-items:center;
+  gap:.4rem;
+  padding:.5rem .65rem;
+  border-top:1px dashed var(--line);
+  background:rgba(2,132,199,.04);
+}
+.roster-reserve .roster-player-name{ flex:1; }
+.roster-reserve-tag{
+  flex:none;
+  padding:.12rem .42rem;
+  border-radius:5px 3px 5px 3px;
+  background:var(--blue-100);
+  color:var(--blue-800);
+  font-size:.56rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.roster-team-tile-pool .roster-pool-list{ display:flex; flex-direction:column; gap:.55rem; padding:.7rem .65rem; }
+.roster-team-tile-pool .roster-pool-member{ display:flex; align-items:center; gap:.5rem; }
+.roster-team-tile-pool .roster-avatar{ width:32px; height:32px; font-size:.72rem; }
+.roster-team-tile-pool .roster-player-name{ white-space:normal; text-align:left; }
+
+@media (max-width:600px){
+  .roster-site-grid{ grid-template-columns:1fr; }
+  .roster-stat{ min-width:88px; padding:.6rem .85rem; }
+  .roster-team-grid{ grid-template-columns:1fr 1fr; }
+}
+@media (max-width:420px){
+  .roster-team-grid{ grid-template-columns:1fr; }
+}
+
 /* Tournament data surfaces */
 .table-wrap{
   border:1px solid rgba(255,255,255,.9);
@@ -690,6 +926,16 @@ table.standings tbody tr.rank-1{ background:linear-gradient(90deg,rgba(209,250,2
 table.standings.standings-putra th,table.standings.standings-campuran th{ background:linear-gradient(135deg,var(--navy-900),var(--blue-800),var(--green-700)); }
 .rank-pill{ background:var(--blue-100); color:var(--blue-800); }
 .rank-pill.gold{ background:var(--grad-accent); }
+
+.medal-tally-wrap{ margin-bottom:1.4rem; }
+.medal-tally-table th:nth-child(n+3),
+.medal-tally-table td.medal-count-cell{ text-align:center; }
+.medal-site-cell{ display:flex; align-items:center; gap:.6rem; font-weight:700; color:var(--navy-950); }
+.medal-site-code{ min-width:38px; height:24px; font-size:.6rem; }
+.medal-count-cell{ font-size:.98rem; font-weight:800; color:var(--navy-950); font-variant-numeric:tabular-nums; }
+.medal-total-cell{ color:var(--blue-800); }
+.medal-tally-table tbody tr.rank-1 .medal-site-cell{ color:var(--green-700); }
+.medal-tally-empty{ margin:-.4rem 0 1.6rem; color:var(--muted); font-size:.85rem; }
 .group-block h3,.champion-info-name{ color:var(--blue-800); }
 .champion-tag{ background:var(--grad-accent); }
 .champion-showcase{ border-radius:18px; }

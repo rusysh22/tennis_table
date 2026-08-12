@@ -285,6 +285,7 @@ def _hydrate_team(team, participants):
                 "participant_id": m.get("participant_id"),
                 "name": p.get("name", ""),
                 "id_number": p.get("id_number", ""),
+                "photo": p.get("photo", ""),
                 "role": m.get("role", "putra"),
             })
         team["reserves"] = reserves
@@ -305,6 +306,7 @@ def _hydrate_team(team, participants):
     team["reserve_participant_id"] = reserve_pid
     team["reserve_name"] = reserve.get("name", "")
     team["reserve_id_number"] = reserve.get("id_number", "")
+    team["reserve_photo"] = reserve.get("photo", "")
     return team
 
 
@@ -2251,6 +2253,32 @@ def build_competition_view(matches, teams, config, sport_key=None):
         photo_key = (
             f"{division['key']}_{champion_target}" if champion_target else None
         )
+
+        # Silver = losing finalist; bronze = winner of the 3rd-place playoff.
+        # Only knockout_format "semi_and_final" divisions produce a 3rd-place
+        # match, so bronze stays None for "final_only" divisions.
+        final_match = next(
+            (
+                match for match in division_matches
+                if match.get("group") == "FINAL" or match.get("stage_type") == "final"
+            ),
+            None,
+        )
+        silver = None
+        if final_match and is_valid_completed_match(final_match) and final_match.get("winner"):
+            silver = (
+                final_match["team_b"]
+                if final_match["winner"] == final_match["team_a"]
+                else final_match["team_a"]
+            )
+        third_place_match = next(
+            (match for match in division_matches if match.get("stage_type") == "third_place"),
+            None,
+        )
+        bronze = None
+        if third_place_match and is_valid_completed_match(third_place_match):
+            bronze = third_place_match.get("winner")
+
         division.update(
             {
                 "matches": division_matches,
@@ -2262,7 +2290,42 @@ def build_competition_view(matches, teams, config, sport_key=None):
                     champions.get(photo_key, {}).get("photo_url")
                     if photo_key else None
                 ),
+                "silver": silver,
+                "bronze": bronze,
             }
         )
         divisions.append(division)
     return {**structure, "divisions": divisions}
+
+
+def compute_medal_tally(divisions, teams, config):
+    """Olympic-style medal table: aggregate gold/silver/bronze per site across
+    every division's champion/silver/bronze, ranked gold > silver > bronze."""
+    site_lookup = {site["code"]: site["name"] for site in config.get("sites", [])}
+    tally = {}
+    for division in divisions:
+        for medal, code in (
+            ("gold", division.get("champion")),
+            ("silver", division.get("silver")),
+            ("bronze", division.get("bronze")),
+        ):
+            if not code:
+                continue
+            team = teams.get(code)
+            site_code = team.get("site_code") if team else None
+            if not site_code:
+                continue
+            entry = tally.setdefault(
+                site_code,
+                {"code": site_code, "name": site_lookup.get(site_code, site_code), "gold": 0, "silver": 0, "bronze": 0},
+            )
+            entry[medal] += 1
+
+    ranked = sorted(
+        tally.values(),
+        key=lambda entry: (-entry["gold"], -entry["silver"], -entry["bronze"], entry["name"]),
+    )
+    for index, entry in enumerate(ranked, start=1):
+        entry["rank"] = index
+        entry["total"] = entry["gold"] + entry["silver"] + entry["bronze"]
+    return ranked

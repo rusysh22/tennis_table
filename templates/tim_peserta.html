@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Tim Peserta — {{ config.tournament_short_name }}{% endblock %}
+{% block content %}
+
+<div class="roster-intro">
+  <div class="section-head" style="margin:0;"><h2>👥 Tim Peserta</h2></div>
+  <p class="roster-page-lead">Daftar tim peserta per site, dikelompokkan menurut cabang olahraga dan kategori pertandingan.</p>
+
+  {% if site_cards %}
+  <div class="roster-stat-row">
+    <div class="roster-stat"><strong>{{ stats.site_count }}</strong><span>Site</span></div>
+    <div class="roster-stat"><strong>{{ stats.team_count }}</strong><span>Tim</span></div>
+    <div class="roster-stat"><strong>{{ stats.participant_count }}</strong><span>Peserta</span></div>
+  </div>
+
+  <nav class="roster-jump-nav" aria-label="Lompat ke site">
+    {% for site in site_cards %}
+    <a href="#site-{{ site.code }}" class="roster-jump-pill">
+      <span class="roster-jump-code">{{ site.code }}</span>{{ site.name }}
+    </a>
+    {% endfor %}
+  </nav>
+  {% endif %}
+</div>
+
+{% if site_cards %}
+<div class="roster-site-grid">
+  {% for site in site_cards %}
+  <section class="roster-site-card" id="site-{{ site.code }}">
+    <header class="roster-site-banner">
+      <span class="roster-site-code">{{ site.code }}</span>
+      <div class="roster-site-heading">
+        <h3>{{ site.name }}</h3>
+        <div class="roster-site-meta">
+          <span>{{ site.team_count }} tim</span>
+          <span aria-hidden="true">·</span>
+          <span>{{ site.sport_count }} cabor</span>
+        </div>
+      </div>
+    </header>
+
+    {% if site.sport_sections|length > 1 %}
+    <div class="roster-tabgroup">
+      {% for section in site.sport_sections %}
+      <input type="radio" class="roster-tab-input" name="tabs-{{ site.code }}" id="tab-{{ site.code }}-{{ loop.index0 }}" {{ 'checked' if loop.first }}>
+      {% endfor %}
+
+      <div class="roster-tab-bar" role="tablist">
+        {% for section in site.sport_sections %}
+        <label class="roster-tab-label sport-{{ section.key }}" for="tab-{{ site.code }}-{{ loop.index0 }}">
+          <span aria-hidden="true">{{ section.icon }}</span>{{ section.name }}
+        </label>
+        {% endfor %}
+      </div>
+
+      <div class="roster-panels">
+        {% for section in site.sport_sections %}
+        <div class="roster-panel">
+          {% include "_tim_peserta_category_groups.html" %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    {% for section in site.sport_sections %}
+    <div class="roster-single-sport">
+      <span class="roster-solo-sport-tag sport-{{ section.key }}"><span aria-hidden="true">{{ section.icon }}</span>{{ section.name }}</span>
+      {% include "_tim_peserta_category_groups.html" %}
+    </div>
+    {% endfor %}
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% else %}
+<div class="ac-empty" style="margin-top:1.5rem;">
+  <span class="ac-empty-icon">👥</span>
+  <h3>Belum ada tim peserta</h3>
+  <p>Data tim akan tampil di sini setelah panitia mendaftarkan peserta dari setiap site.</p>
+</div>
+{% endif %}
+
+{% endblock %}
