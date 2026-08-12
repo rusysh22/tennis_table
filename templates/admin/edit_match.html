@@ -168,11 +168,9 @@
           <input type="time" name="new_time" value="{{ raw.time }}" required>
         </label>
         <label>Lokasi &amp; Meja
-          <input type="text" value="{{ raw.court }}" disabled style="opacity:.7;">
-          <input type="hidden" name="new_court" value="{{ raw.court }}">
+          <input type="text" name="new_court" value="{{ raw.court }}" required placeholder="mis. Synergy Room Lantai 7, Padeloom · Court 3">
         </label>
       </div>
-      <p style="font-size:.78rem; color:#a0677a; margin-top:-.4rem;">Hanya tersedia 1 meja, jadi seluruh laga berjalan berurutan di {{ raw.court }}.</p>
       <label>Alasan reschedule (opsional)
         <input type="text" name="reason" placeholder="mis. Meja rusak, salah satu pemain berhalangan, dsb.">
       </label>
