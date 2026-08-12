@@ -1186,7 +1186,7 @@ def live():
     today = utils.now_wib(config.get("timezone")).strftime("%Y-%m-%d")
     today_matches = sorted(
         [m for m in enriched if m["date"] == today],
-        key=lambda m: (m["time"], m["court"]),
+        key=lambda m: (m["time"] == "", m["time"], m["court"]),
     )
     youtube_video_id = utils.extract_youtube_video_id(config.get("youtube_embed_url", ""))
     embed_domain = request.host.split(":")[0]
