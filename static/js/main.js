@@ -481,6 +481,7 @@
     var lastId = null;
     var existing = list.querySelectorAll("[data-msg-id]");
     if (existing.length) lastId = existing[existing.length - 1].getAttribute("data-msg-id");
+    list.scrollTop = list.scrollHeight;
 
     function clearNewBadge() {
       if (newBadge) newBadge.hidden = true;
