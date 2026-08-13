@@ -470,6 +470,7 @@
     var list = document.getElementById("liveChatMessages");
     var form = document.getElementById("liveChatForm");
     var newBadge = document.getElementById("liveChatNewBadge");
+    var jumpNew = document.getElementById("liveChatJumpNew");
     if (!box || !list || !form) return;
 
     var apiUrl = box.getAttribute("data-chat-api");
@@ -491,7 +492,22 @@
       box.addEventListener("click", clearNewBadge);
     }
 
-    function escapeAndAppend(msg) {
+    function isNearBottom() {
+      return list.scrollHeight - list.scrollTop - list.clientHeight < 48;
+    }
+    function scrollToBottom() {
+      list.scrollTop = list.scrollHeight;
+      if (jumpNew) jumpNew.hidden = true;
+    }
+    if (jumpNew) {
+      jumpNew.addEventListener("click", scrollToBottom);
+      list.addEventListener("scroll", function () {
+        if (isNearBottom()) jumpNew.hidden = true;
+      });
+    }
+
+    function escapeAndAppend(msg, forceScroll) {
+      var wasNearBottom = isNearBottom();
       var empty = list.querySelector(".live-chat-empty");
       if (empty) empty.remove();
 
@@ -518,7 +534,11 @@
 
       list.appendChild(row);
       lastId = msg.id;
-      list.scrollTop = list.scrollHeight;
+      if (forceScroll || wasNearBottom) {
+        scrollToBottom();
+      } else if (jumpNew) {
+        jumpNew.hidden = false;
+      }
     }
 
     function poll() {
@@ -527,7 +547,7 @@
         .then(function (r) { return r.json(); })
         .then(function (payload) {
           var incoming = payload.data || [];
-          incoming.forEach(escapeAndAppend);
+          incoming.forEach(function (m) { escapeAndAppend(m); });
           if (incoming.length && newBadge && document.hidden) newBadge.hidden = false;
         })
         .catch(function () {});
@@ -551,7 +571,7 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (data.ok) {
-            escapeAndAppend(data.message);
+            escapeAndAppend(data.message, true);
             form.querySelector('[name="message"]').value = "";
             form.querySelector('[name="message"]').focus();
           } else {

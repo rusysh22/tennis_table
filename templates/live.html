@@ -40,17 +40,20 @@
            data-send-url="{{ url_for('send_live_chat_message') }}"
            data-delete-url="{{ url_for('admin_delete_live_chat_message') }}"
            data-is-admin="{{ '1' if admin_role == 'general' else '' }}">
-        <div class="live-chat-messages" id="liveChatMessages">
-          {% for msg in live_chat_messages %}
-          <div class="live-chat-msg" data-msg-id="{{ msg.id }}">
-            <strong>{{ msg.name }}</strong><span>{{ msg.message }}</span>
-            {% if admin_role == 'general' %}
-            <button type="button" class="live-chat-delete" data-msg-id="{{ msg.id }}" title="Hapus pesan">✕</button>
-            {% endif %}
+        <div class="live-chat-messages-wrap">
+          <div class="live-chat-messages" id="liveChatMessages">
+            {% for msg in live_chat_messages %}
+            <div class="live-chat-msg" data-msg-id="{{ msg.id }}">
+              <strong>{{ msg.name }}</strong><span>{{ msg.message }}</span>
+              {% if admin_role == 'general' %}
+              <button type="button" class="live-chat-delete" data-msg-id="{{ msg.id }}" title="Hapus pesan">✕</button>
+              {% endif %}
+            </div>
+            {% else %}
+            <p class="live-chat-empty">Belum ada pesan. Jadilah yang pertama memberi dukungan!</p>
+            {% endfor %}
           </div>
-          {% else %}
-          <p class="live-chat-empty">Belum ada pesan. Jadilah yang pertama memberi dukungan!</p>
-          {% endfor %}
+          <button type="button" class="live-chat-jump-new" id="liveChatJumpNew" hidden>⬇ Pesan baru</button>
         </div>
         <form class="live-chat-form" id="liveChatForm">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

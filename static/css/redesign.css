@@ -1037,6 +1037,12 @@ table.standings.standings-putra th,table.standings.standings-campuran th{ backgr
   box-shadow:var(--shadow-md);
   border:1px solid var(--line);
 }
+.live-chat-messages-wrap{
+  position:relative;
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+}
 .live-chat-messages{
   flex:1 1 auto;
   min-height:0;
@@ -1048,6 +1054,29 @@ table.standings.standings-putra th,table.standings.standings-campuran th{ backgr
   gap:.55rem;
   border-radius:13px 13px 0 0;
 }
+.live-chat-jump-new{
+  position:absolute;
+  left:50%;
+  bottom:.6rem;
+  transform:translateX(-50%);
+  z-index:3;
+  display:flex;
+  align-items:center;
+  gap:.3rem;
+  padding:.32rem .75rem;
+  border:0;
+  border-radius:999px;
+  background:var(--blue-700,#1d4ed8);
+  color:#fff;
+  font-size:.7rem;
+  font-weight:700;
+  white-space:nowrap;
+  box-shadow:var(--shadow-md);
+  cursor:pointer;
+  animation:liveChatBadgePulse 1.4s ease-in-out infinite;
+}
+.live-chat-jump-new[hidden]{ display:none; }
+.live-chat-jump-new:hover{ background:var(--blue-800,#1e3a8a); }
 .live-chat-empty{ margin:auto; color:var(--muted); font-size:.78rem; text-align:center; }
 .live-chat-msg{
   position:relative;
