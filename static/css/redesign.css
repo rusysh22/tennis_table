@@ -496,6 +496,8 @@ fieldset form > label input:focus,fieldset form > label textarea:focus,
   opacity:.7;
 }
 .match-card.completed{ border-color:rgba(16,185,129,.17); background:rgba(240,253,250,.8); }
+.match-card.match-card-exhibition{ border-color:rgba(234,179,8,.35); background:rgba(254,249,195,.5); }
+.match-card.match-card-exhibition::before{ background:linear-gradient(#eab308,#f59e0b); opacity:1; }
 .match-card .cat-row{ gap:.75rem; }
 .vs-team{ color:var(--navy-900); }
 .vs-team small,.match-meta,.bracket-node small,.standing-policy-note,.sport-next-match,.rule-profile p{ color:var(--muted); }
@@ -514,6 +516,7 @@ fieldset form > label input:focus,fieldset form > label textarea:focus,
 .badge-completed{ background:var(--green-100); color:var(--green-700); }
 .badge-postponed{ background:#fef3c7; color:#92400e; }
 .badge-wo{ background:var(--navy-950); }
+.badge-exhibition{ background:#fef9c3; color:#854d0e; }
 .badge-sport{ background:var(--blue-100); color:var(--blue-800); }
 .badge-sport.sport-table-tennis{ background:var(--green-100); color:var(--green-700); }
 .badge-sport.sport-padel{ background:#dbeafe; color:#1d4ed8; }

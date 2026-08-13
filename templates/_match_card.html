@@ -1,4 +1,4 @@
-<a class="match-card competition-match-card {{ 'completed' if m.status == 'completed' else '' }}"
+<a class="match-card competition-match-card {{ 'completed' if m.status == 'completed' else '' }} {{ 'match-card-exhibition' if m.group == 'EXHIBITION' else '' }}"
    href="{{ sport_url('match_detail', match_id=m.id) }}"
    data-match-id="{{ m.id }}"
    data-modal-match="{{ sport_url('match_fragment', match_id=m.id) }}">
@@ -11,6 +11,7 @@
       </div>
     </div>
     <div class="match-status-cluster">
+      {% if m.group == 'EXHIBITION' %}<span class="badge badge-exhibition">Eksibisi</span>{% endif %}
       <span class="badge badge-status badge-{{ m.status }}" data-field="status">{{ m.status_label }}</span>
       {% if m.is_walkover %}<span class="badge badge-wo">WO</span>{% endif %}
       {% if m.status == 'completed' and not m.score_is_valid %}<span class="badge badge-status badge-postponed">Perlu koreksi</span>{% endif %}

@@ -12,6 +12,7 @@
   <header class="match-arena-head">
     <div class="match-arena-badges">
       <span class="badge badge-sport sport-{{ m.sport_key }}">{{ m.category_label }}</span>
+      {% if m.group == 'EXHIBITION' %}<span class="badge badge-exhibition">Eksibisi</span>{% endif %}
       <span class="badge badge-status badge-{{ m.status }}">{{ m.status_label }}</span>
       {% if m.is_walkover %}<span class="badge badge-wo">WO</span>{% endif %}
       {% if m.status == 'completed' and not m.score_is_valid %}<span class="badge badge-status badge-postponed">Perlu koreksi</span>{% endif %}
