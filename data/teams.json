@@ -571,5 +571,77 @@
         "role": "cadangan"
       }
     ]
+  },
+  "EXH-BM1": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Roki (Kideco)",
+    "player2": "Herry (Kideco)"
+  },
+  "EXH-BM2": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Pak Ari (IMU)",
+    "player2": "Mba Mita (IMU)"
+  },
+  "EXH-BM3": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Rochman (IMU)",
+    "player2": "Novandi (IMU)"
+  },
+  "EXH-BM4": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Yusa (INVI)",
+    "player2": "Yahya (INVI)"
+  },
+  "EXH-BM5": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Pak Omon",
+    "player2": "Gede Surya"
+  },
+  "EXH-BM6": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Fadil (EMITS)",
+    "player2": "Faath (EMITS)"
+  },
+  "EXH-BM7": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Sari (Kalista)",
+    "player2": "Auliya (Kalista)"
+  },
+  "EXH-BM8": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Mba Mita (IMU)",
+    "player2": "Paw (IMU)"
+  },
+  "EXH-BM9": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Leonardus (Indika Nature)",
+    "player2": "Candra (Indika Nature)"
   }
 }
