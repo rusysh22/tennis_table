@@ -507,6 +507,8 @@
       });
     }
 
+    var latestNewBadge = null;
+
     function escapeAndAppend(msg, forceScroll) {
       var wasNearBottom = isNearBottom();
       var empty = list.querySelector(".live-chat-empty");
@@ -518,9 +520,17 @@
 
       var nameEl = document.createElement("strong");
       nameEl.textContent = msg.name;
+      row.appendChild(nameEl);
+
+      if (latestNewBadge) latestNewBadge.remove();
+      var badge = document.createElement("span");
+      badge.className = "live-chat-msg-badge";
+      badge.textContent = "baru";
+      row.appendChild(badge);
+      latestNewBadge = badge;
+
       var textEl = document.createElement("span");
       textEl.textContent = msg.message;
-      row.appendChild(nameEl);
       row.appendChild(textEl);
 
       if (isAdmin) {
