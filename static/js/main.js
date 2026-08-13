@@ -469,6 +469,7 @@
     var box = document.getElementById("liveChatBox");
     var list = document.getElementById("liveChatMessages");
     var form = document.getElementById("liveChatForm");
+    var newBadge = document.getElementById("liveChatNewBadge");
     if (!box || !list || !form) return;
 
     var apiUrl = box.getAttribute("data-chat-api");
@@ -479,6 +480,16 @@
     var lastId = null;
     var existing = list.querySelectorAll("[data-msg-id]");
     if (existing.length) lastId = existing[existing.length - 1].getAttribute("data-msg-id");
+
+    function clearNewBadge() {
+      if (newBadge) newBadge.hidden = true;
+    }
+    if (newBadge) {
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) clearNewBadge();
+      });
+      box.addEventListener("click", clearNewBadge);
+    }
 
     function escapeAndAppend(msg) {
       var empty = list.querySelector(".live-chat-empty");
@@ -514,7 +525,11 @@
       var url = apiUrl + (lastId ? "?after=" + encodeURIComponent(lastId) : "");
       fetch(url, { cache: "no-store" })
         .then(function (r) { return r.json(); })
-        .then(function (payload) { (payload.data || []).forEach(escapeAndAppend); })
+        .then(function (payload) {
+          var incoming = payload.data || [];
+          incoming.forEach(escapeAndAppend);
+          if (incoming.length && newBadge && document.hidden) newBadge.hidden = false;
+        })
         .catch(function () {});
     }
     setInterval(poll, 4000);

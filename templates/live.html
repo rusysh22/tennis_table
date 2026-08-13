@@ -29,9 +29,11 @@
         <p><strong>Video tidak dapat dimuat.</strong><br>YouTube sedang diblokir di jaringan Anda. Silakan gunakan jaringan pribadi (hotspot/data seluler) atau jaringan lain.</p>
       </div>
     </div>
+    {% if config.live_chat_enabled is not sameas false %}
     <div style="flex: 1 1 300px; min-width: 280px; display: flex; flex-direction: column;">
       <div style="font-size: .82rem; font-weight: 600; color: var(--navy-900); margin-bottom: .4rem; display: flex; align-items: center; gap: .4rem;">
         💬 Live Chat — beri dukungan!
+        <span class="live-chat-new-badge" id="liveChatNewBadge" hidden>pesan baru</span>
       </div>
       <div class="live-chat-box" id="liveChatBox"
            data-chat-api="{{ url_for('api_v1_live_chat') }}"
@@ -66,6 +68,7 @@
         </form>
       </div>
     </div>
+    {% endif %}
   </div>
   <p class="live-embed-hint">Video tidak muncul? YouTube mungkin diblokir di jaringan Anda — coba jaringan pribadi/data seluler.</p>
 </div>

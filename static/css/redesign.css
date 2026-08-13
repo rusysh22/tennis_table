@@ -1008,6 +1008,23 @@ table.standings.standings-putra th,table.standings.standings-campuran th{ backgr
 .live-embed-fallback strong{ color:#fff; }
 .live-embed-hint{ margin:.7rem 0 0; color:var(--muted); font-size:.72rem; text-align:center; }
 
+.live-chat-new-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:.1rem .5rem;
+  border-radius:999px;
+  background:var(--red-600, #dc2626);
+  color:#fff;
+  font-size:.62rem;
+  font-weight:700;
+  letter-spacing:.02em;
+  animation:liveChatBadgePulse 1.4s ease-in-out infinite;
+}
+.live-chat-new-badge[hidden]{ display:none; }
+@keyframes liveChatBadgePulse{
+  0%, 100%{ opacity:1; }
+  50%{ opacity:.55; }
+}
 .live-chat-box{
   position:relative;
   flex:1 1 auto;

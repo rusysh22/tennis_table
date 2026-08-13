@@ -2146,7 +2146,8 @@ def admin_announcement():
 def admin_live_stream():
     embed_url = request.form.get("youtube_embed_url", "").strip()
     title = request.form.get("youtube_embed_title", "").strip()
-    utils.update_live_streaming_config(embed_url, title)
+    live_chat_enabled = request.form.get("live_chat_enabled") == "on"
+    utils.update_live_streaming_config(embed_url, title, live_chat_enabled)
     flash("Konfigurasi Live Streaming YouTube berhasil disimpan.", "success")
     return redirect(url_for("admin_dashboard"))
 

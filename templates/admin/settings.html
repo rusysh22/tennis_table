@@ -35,6 +35,13 @@
                    placeholder="https://www.youtube.com/watch?v=...">
             <small>Tempel URL biasa, sistem akan mengubahnya menjadi embed secara otomatis.</small>
           </div>
+          <div class="ac-form-field">
+            <label style="display:flex; align-items:center; gap:.5rem; cursor:pointer;">
+              <input type="checkbox" name="live_chat_enabled"
+                     {% if config.live_chat_enabled is not sameas false %}checked{% endif %}>
+              💬 Aktifkan Live Chat di halaman Live Score
+            </label>
+          </div>
         </div>
         <div class="ac-form-actions">
           <button type="submit" class="ac-btn ac-btn-primary">💾 Simpan Siaran</button>

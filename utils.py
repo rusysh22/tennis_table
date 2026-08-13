@@ -983,13 +983,15 @@ def extract_youtube_video_id(embed_url):
     return match.group(1) if match else ""
 
 
-def update_live_streaming_config(url, title=""):
+def update_live_streaming_config(url, title="", live_chat_enabled=None):
     if USE_NORMALIZED_DB and hasattr(_NORMALIZED_REPOSITORY, "update_live_stream"):
-        _NORMALIZED_REPOSITORY.update_live_stream(url, title)
+        _NORMALIZED_REPOSITORY.update_live_stream(url, title, live_chat_enabled)
         return
     config = load_config()
     config["youtube_embed_url"] = clean_youtube_embed_url(url)
     config["youtube_embed_title"] = title.strip() if title else ""
+    if live_chat_enabled is not None:
+        config["live_chat_enabled"] = live_chat_enabled
     save_json("config.json", config)
 
 
