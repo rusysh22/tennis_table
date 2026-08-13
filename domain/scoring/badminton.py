@@ -15,6 +15,12 @@ class BadmintonProfile:
     points_to_win: int = 21
     win_by: int = 2
     point_cap: int = 30
+    # Optional override for the rubber/deciding game (the last possible game
+    # in the series, e.g. game 3 of a Best-of-3) -- some tournaments shorten
+    # it to a sudden-victory race instead of the full 21-point deuce game.
+    decider_points_to_win: int | None = None
+    decider_win_by: int | None = None
+    decider_point_cap: int | None = None
 
 
 @dataclass(frozen=True)
@@ -45,14 +51,23 @@ def _profile_errors(profile):
         errors.append("Target poin dan margin kemenangan Badminton harus positif.")
     if profile.point_cap < profile.points_to_win:
         errors.append("Batas poin Badminton tidak boleh di bawah target game.")
+    decider_fields = (
+        profile.decider_points_to_win,
+        profile.decider_win_by,
+        profile.decider_point_cap,
+    )
+    if any(value is not None for value in decider_fields):
+        if not all(value is not None for value in decider_fields):
+            errors.append("Profil game rubber Badminton harus mengisi target, margin, dan batas poin sekaligus.")
+        elif profile.decider_points_to_win < 1 or profile.decider_win_by < 1:
+            errors.append("Target poin dan margin kemenangan game rubber Badminton harus positif.")
+        elif profile.decider_point_cap < profile.decider_points_to_win:
+            errors.append("Batas poin game rubber Badminton tidak boleh di bawah target game.")
     return errors
 
 
-def _game_is_complete(score_a, score_b, profile):
+def _game_is_complete(score_a, score_b, target, win_by, cap):
     high, low = max(score_a, score_b), min(score_a, score_b)
-    target = profile.points_to_win
-    cap = profile.point_cap
-    win_by = profile.win_by
 
     if high > cap or high < target:
         return False
@@ -96,7 +111,11 @@ def validate_match_score(
         if score_a == score_b:
             errors.append(f"Skor game {index} tidak boleh seri.")
             continue
-        if not _game_is_complete(score_a, score_b, profile):
+        is_decider = index == profile.best_of and profile.decider_points_to_win is not None
+        target = profile.decider_points_to_win if is_decider else profile.points_to_win
+        win_by = profile.decider_win_by if is_decider else profile.win_by
+        cap = profile.decider_point_cap if is_decider else profile.point_cap
+        if not _game_is_complete(score_a, score_b, target, win_by, cap):
             errors.append(
                 f"Game {index} belum memiliki skor akhir yang sah untuk profil "
                 f"{profile.profile_key} v{profile.version}."

@@ -2422,6 +2422,7 @@ def admin_generate_group_to_knockout():
     court = request.form.get("court", "Meja 1").strip()
     knockout_format = request.form.get("knockout_format", "final_only").strip()
     try:
+        utils.backup_data_files("matches.json")
         g_count, k_count = utils.generate_group_to_knockout_schedule(
             category_key, start_date=start_date or None, court=court, knockout_format=knockout_format
         )

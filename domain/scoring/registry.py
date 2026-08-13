@@ -39,6 +39,9 @@ def validate_score(profile: RuleProfile, segments):
 
     if profile.sport_key == "badminton":
         try:
+            decider_points_to_win = config.get("decider_points_to_win")
+            decider_win_by = config.get("decider_win_by")
+            decider_point_cap = config.get("decider_point_cap")
             badminton_profile = BadmintonProfile(
                 profile_key=profile.profile_key,
                 version=profile.version,
@@ -46,6 +49,9 @@ def validate_score(profile: RuleProfile, segments):
                 points_to_win=int(config["points_to_win"]),
                 win_by=int(config["win_by"]),
                 point_cap=int(config["point_cap"]),
+                decider_points_to_win=int(decider_points_to_win) if decider_points_to_win is not None else None,
+                decider_win_by=int(decider_win_by) if decider_win_by is not None else None,
+                decider_point_cap=int(decider_point_cap) if decider_point_cap is not None else None,
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise UnsupportedScoringProfile(

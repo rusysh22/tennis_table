@@ -1025,13 +1025,18 @@ def _scoring_profile_for(sport_key, stage_type):
     Golden Point at deuce (no advantage -- first to reach the target with any
     lead wins the game outright); teams may optionally keep playing out all 5
     games even after the match is already decided. Badminton is 21 points/best
-    of 3 with a 30-point cap at every stage. Table tennis keeps the existing
-    legacy default (no override)."""
+    of 3 with a 30-point cap at every stage, except the rubber (3rd) game,
+    which is shortened to a sudden-victory race to 11 -- first to 11 wins
+    outright, no deuce. Table tennis keeps the existing legacy default (no
+    override)."""
     if sport_key == "badminton":
         return {
             "_profile_key": "badminton-21-bo3",
             "_profile_version": 1,
-            "_profile_config": {"best_of": 3, "points_to_win": 21, "win_by": 2, "point_cap": 30},
+            "_profile_config": {
+                "best_of": 3, "points_to_win": 21, "win_by": 2, "point_cap": 30,
+                "decider_points_to_win": 11, "decider_win_by": 1, "decider_point_cap": 11,
+            },
             "_segment_term": "game",
         }
     if sport_key == "padel":
@@ -1696,7 +1701,7 @@ def _scorekeeper_effective_events(match):
     ]
 
 
-def scorekeeper_terms(match, current_segment=None):
+def scorekeeper_terms(match, current_segment=None, segment_index=None):
     """Return sport/profile-aware labels and current-segment scoring limits."""
     current_segment = current_segment or [0, 0]
     sport_key = match.get("sport_key", "table-tennis")
@@ -1712,9 +1717,18 @@ def scorekeeper_terms(match, current_segment=None):
     is_deciding_tiebreak = False
 
     if sport_key == "badminton":
-        target = int(config.get("points_to_win", 21))
-        win_by = int(config.get("win_by", 2))
-        cap = int(config.get("point_cap", 30))
+        is_decider_game = (
+            segment_index == int(config.get("best_of", 3))
+            and config.get("decider_points_to_win") is not None
+        )
+        if is_decider_game:
+            target = int(config.get("decider_points_to_win"))
+            win_by = int(config.get("decider_win_by", 1))
+            cap = int(config.get("decider_point_cap", target))
+        else:
+            target = int(config.get("points_to_win", 21))
+            win_by = int(config.get("win_by", 2))
+            cap = int(config.get("point_cap", 30))
     elif sport_key == "padel":
         if match.get("stage_type") == "group":
             # Babak grup: satu game split-poin -- total skor kedua tim harus pas
@@ -1770,7 +1784,7 @@ def scorekeeper_state(match):
 
     validation = validate_match_segments(match, completed_sets)
     sets_a, sets_b = compute_sets_won(completed_sets)
-    terms = scorekeeper_terms(match, current)
+    terms = scorekeeper_terms(match, current, segment_index=len(completed_sets) + 1)
     ready_to_finish = (
         match.get("status") == "live"
         and current == [0, 0]
