@@ -1097,29 +1097,29 @@ table.standings.standings-putra th,table.standings.standings-campuran th{ backgr
 }
 .live-chat-form input[name="name"]{ flex:0 1 90px; }
 .live-chat-input-wrap{ position:relative; flex:1 1 auto; min-width:0; display:flex; }
-.live-chat-input-wrap input[type="text"]{ width:100%; padding-right:2.1rem; }
+.live-chat-input-wrap input[type="text"]{ width:100%; padding-right:2.3rem; }
 .live-chat-emoji-toggle{
   position:absolute;
   top:50%;
   right:.3rem;
   transform:translateY(-50%);
-  width:26px;
-  height:26px;
+  width:28px;
+  height:28px;
   box-sizing:border-box;
   padding:0;
-  display:grid;
-  place-items:center;
-  overflow:hidden;
-  border:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--line);
   border-radius:50%;
-  background:transparent;
+  background:var(--surface);
   font-size:1rem;
   line-height:1;
   cursor:pointer;
-  transition:background .12s ease;
+  transition:background .12s ease,border-color .12s ease,transform .12s ease;
 }
 .live-chat-emoji-toggle:hover,
-.live-chat-emoji-toggle[aria-expanded="true"]{ background:var(--blue-100); }
+.live-chat-emoji-toggle[aria-expanded="true"]{ background:var(--blue-100); border-color:var(--blue-100); transform:translateY(-50%) scale(1.06); }
 .live-chat-emoji-popup{
   position:absolute;
   z-index:5;
