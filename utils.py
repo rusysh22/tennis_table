@@ -1037,8 +1037,16 @@ def _scoring_profile_for(sport_key, stage_type):
     games even after the match is already decided. Badminton is 21 points/best
     of 3 with a 30-point cap at every stage, except the rubber (3rd) game,
     which is shortened to a sudden-victory race to 11 -- first to 11 wins
-    outright, no deuce. Table tennis keeps the existing legacy default (no
-    override)."""
+    outright, no deuce. Table tennis is Best of 3 games in the group stage,
+    and Best of 5 games in the knockout stage (semifinal, 3rd-place playoff,
+    and final)."""
+    if sport_key == "table-tennis" and stage_type in ("semifinal", "third_place", "final"):
+        return {
+            "_profile_key": "table-tennis-bo5",
+            "_profile_version": 1,
+            "_profile_config": {"best_of": 5, "points_to_win": 11, "win_by": 2},
+            "_segment_term": "game",
+        }
     if sport_key == "badminton":
         return {
             "_profile_key": "badminton-21-bo3",
