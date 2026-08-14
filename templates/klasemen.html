@@ -8,7 +8,7 @@
 {% include "_subnav_klasemen.html" %}
 
 {% if medal_tally is not none %}
-<div class="section-head"><h2>🏅 Juara Umum — Perolehan Medali Antar Site</h2></div>
+<div class="section-head"><h2>🏅 Juara Umum — Perolehan Poin Antar Site</h2></div>
 {% if medal_tally %}
 <div class="table-wrap medal-tally-wrap">
   <table class="standings medal-tally-table">
@@ -16,21 +16,23 @@
       <tr>
         <th>Peringkat</th>
         <th>Site</th>
-        <th>🥇 Emas</th>
-        <th>🥈 Perak</th>
-        <th>🥉 Perunggu</th>
-        <th>Total</th>
+        <th>🥇 Juara 1 (10 poin)</th>
+        <th>🥈 Juara 2 (7 poin)</th>
+        <th>🥉 Juara 3 (5 poin)</th>
+        <th>Juara 4 (3 poin)</th>
+        <th>Total Poin</th>
       </tr>
     </thead>
     <tbody>
       {% for entry in medal_tally %}
       <tr class="{{ 'rank-1' if entry.rank == 1 }}">
         <td><span class="rank-pill {{ 'gold' if entry.rank == 1 }}">{{ entry.rank }}</span></td>
-        <td class="medal-site-cell"><span class="roster-jump-code medal-site-code">{{ entry.code }}</span>{{ entry.name }}</td>
+        <td class="medal-site-cell"><span class="team-chip sm medal-site-code" style="background:{{ entry.color or '#9c9c9c' }};color:{{ entry.text or '#fff' }};">{{ entry.code }}</span>{{ entry.name }}</td>
         <td class="medal-count-cell">{{ entry.gold }}</td>
         <td class="medal-count-cell">{{ entry.silver }}</td>
         <td class="medal-count-cell">{{ entry.bronze }}</td>
-        <td class="medal-count-cell medal-total-cell">{{ entry.total }}</td>
+        <td class="medal-count-cell">{{ entry.fourth }}</td>
+        <td class="medal-count-cell medal-total-cell">{{ entry.points }}</td>
       </tr>
       {% endfor %}
     </tbody>

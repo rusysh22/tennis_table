@@ -2437,8 +2437,15 @@ def build_competition_view(matches, teams, config, sport_key=None):
             None,
         )
         bronze = None
+        fourth = None
         if third_place_match and is_valid_completed_match(third_place_match):
             bronze = third_place_match.get("winner")
+            if bronze and third_place_match.get("winner"):
+                fourth = (
+                    third_place_match["team_b"]
+                    if third_place_match["winner"] == third_place_match["team_a"]
+                    else third_place_match["team_a"]
+                )
 
         division.update(
             {
@@ -2453,22 +2460,34 @@ def build_competition_view(matches, teams, config, sport_key=None):
                 ),
                 "silver": silver,
                 "bronze": bronze,
+                "fourth": fourth,
             }
         )
         divisions.append(division)
     return {**structure, "divisions": divisions}
 
 
+MEDAL_POINTS = {"gold": 10, "silver": 7, "bronze": 5, "fourth": 3}
+
+
 def compute_medal_tally(divisions, teams, config):
-    """Olympic-style medal table: aggregate gold/silver/bronze per site across
-    every division's champion/silver/bronze, ranked gold > silver > bronze."""
+    """Juara umum table: aggregate points per site across every division's
+    champion/silver/bronze/fourth, ranked by total points (gold=10, silver=7,
+    bronze=5, fourth=3), tie-broken by medal counts."""
     site_lookup = {site["code"]: site["name"] for site in config.get("sites", [])}
+    site_colors = {}
+    for team in teams.values():
+        site_code = team.get("site_code")
+        if site_code and site_code not in site_colors:
+            site_colors[site_code] = (team.get("color"), team.get("text"))
+
     tally = {}
     for division in divisions:
         for medal, code in (
             ("gold", division.get("champion")),
             ("silver", division.get("silver")),
             ("bronze", division.get("bronze")),
+            ("fourth", division.get("fourth")),
         ):
             if not code:
                 continue
@@ -2476,17 +2495,29 @@ def compute_medal_tally(divisions, teams, config):
             site_code = team.get("site_code") if team else None
             if not site_code:
                 continue
+            color, text = site_colors.get(site_code, (None, None))
             entry = tally.setdefault(
                 site_code,
-                {"code": site_code, "name": site_lookup.get(site_code, site_code), "gold": 0, "silver": 0, "bronze": 0},
+                {
+                    "code": site_code,
+                    "name": site_lookup.get(site_code, site_code),
+                    "color": color,
+                    "text": text,
+                    "gold": 0, "silver": 0, "bronze": 0, "fourth": 0,
+                    "points": 0,
+                },
             )
             entry[medal] += 1
+            entry["points"] += MEDAL_POINTS[medal]
 
     ranked = sorted(
         tally.values(),
-        key=lambda entry: (-entry["gold"], -entry["silver"], -entry["bronze"], entry["name"]),
+        key=lambda entry: (
+            -entry["points"], -entry["gold"], -entry["silver"],
+            -entry["bronze"], -entry["fourth"], entry["name"],
+        ),
     )
     for index, entry in enumerate(ranked, start=1):
         entry["rank"] = index
-        entry["total"] = entry["gold"] + entry["silver"] + entry["bronze"]
+        entry["total"] = entry["gold"] + entry["silver"] + entry["bronze"] + entry["fourth"]
     return ranked
