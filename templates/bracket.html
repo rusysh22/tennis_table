@@ -20,6 +20,16 @@
       </div>
     </div>
 
+    {% if division.bracket_format == 'single_elimination' %}
+      {% set rounds = division.stages_view|selectattr('type', 'ne', 'third_place')|list %}
+      {% set third_place = division.stages_view|selectattr('type', 'eq', 'third_place')|first %}
+      {% if rounds %}
+      {% include "_bracket_tree.html" %}
+      {% else %}
+      <div class="empty-state compact">Bagan bracket belum dibuat untuk divisi ini.</div>
+      {% endif %}
+    {% else %}
+
     {% for stage in division.stages_view %}
       {% if stage.type in ('group', 'round_robin') and stage.qualification_policy.qualifiers_per_group %}
       <div class="qualification-block">
@@ -58,6 +68,7 @@
       </div>
       {% endif %}
     {% endfor %}
+    {% endif %}
 
     {% if division.champion_team %}
     <div class="group-block bracket-champion-block">

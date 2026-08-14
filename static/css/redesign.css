@@ -2860,3 +2860,102 @@ legend{ color:var(--blue-800); }
   .admin-console-grid{ grid-template-columns:1fr; gap:1.2rem; }
   .admin-sidebar-box{ position:relative; top:0; padding:1.1rem; }
 }
+
+/* ---- Single-elimination bracket tree (Capsa Susun, etc.) ---- */
+.bracket-tree-wrap{ display:flex; flex-direction:column; gap:1.5rem; }
+.bracket-tree{
+  display:flex;
+  align-items:stretch;
+  gap:2.4rem;
+  overflow-x:auto;
+  padding:.4rem .2rem 1rem;
+}
+.bracket-round{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-around;
+  flex:1 0 230px;
+  min-width:230px;
+  position:relative;
+}
+.bracket-round-head{
+  text-align:center;
+  font-weight:700;
+  font-size:.82rem;
+  letter-spacing:.02em;
+  color:var(--blue-700);
+  text-transform:uppercase;
+  margin-bottom:.6rem;
+}
+.bracket-slot{
+  position:relative;
+  padding:.5rem 0;
+}
+.bracket-round:not(:last-child) .bracket-slot::after{
+  content:"";
+  position:absolute;
+  top:0;
+  right:-1.2rem;
+  width:1.2rem;
+  height:50%;
+  border-right:2px solid var(--line);
+  border-color:rgba(14,116,144,.35);
+}
+.bracket-round:not(:last-child) .bracket-slot:nth-child(even)::after{
+  top:auto; bottom:0;
+  border-top:2px solid rgba(14,116,144,.35);
+  border-right:2px solid rgba(14,116,144,.35);
+}
+.bracket-round:not(:last-child) .bracket-slot:nth-child(odd)::after{
+  border-bottom:2px solid rgba(14,116,144,.35);
+}
+.bracket-match{
+  display:block;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--surface);
+  box-shadow:var(--shadow-sm);
+  padding:.65rem .75rem;
+  text-decoration:none;
+  color:inherit;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.bracket-match:hover{ transform:translateY(-2px); box-shadow:var(--shadow-md); }
+.bracket-match.completed{ border-color:rgba(16,185,129,.3); background:rgba(240,253,250,.85); }
+.bracket-team{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  padding:.2rem 0;
+  opacity:.85;
+}
+.bracket-team.team-winner{ opacity:1; font-weight:700; }
+.bracket-team.team-loser{ opacity:.55; }
+.bracket-team-name{
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:.86rem;
+}
+.bracket-team-score{ font-weight:700; font-size:.9rem; min-width:1.1rem; text-align:right; }
+.bracket-match-meta{
+  display:flex;
+  flex-direction:column;
+  gap:.15rem;
+  margin-top:.4rem;
+  padding-top:.4rem;
+  border-top:1px dashed var(--line);
+  font-size:.72rem;
+  color:var(--muted);
+}
+.bracket-third-place{
+  align-self:flex-start;
+  width:min(320px, 100%);
+}
+.bracket-third-place .bracket-slot::after{ display:none; }
+@media (max-width:720px){
+  .bracket-round{ flex:0 0 220px; }
+  .bracket-round:not(:last-child) .bracket-slot::after{ display:none; }
+}

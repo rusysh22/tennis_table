@@ -690,6 +690,7 @@ def load_competition_structure():
                 "id": None,
                 "key": category["key"],
                 "name": category.get("label", category["key"]),
+                "bracket_format": category.get("bracket_format"),
                 "sport_key": category.get("sport_key", "table-tennis"),
                 "sport_name": {
                     "table-tennis": "Table Tennis",
@@ -2275,6 +2276,52 @@ def _terminal_stage_champion(stage_matches):
     return final_match.get("winner")
 
 
+_SINGLE_ELIM_STAGE_ORDER = {
+    "round_64": 10, "round_32": 20, "round_16": 30, "quarterfinal": 40,
+    "semifinal": 50, "third_place": 55, "final": 60,
+}
+
+
+def _single_elimination_stage_views(division_matches):
+    """Straight-knockout divisions (e.g. Capsa Susun) carry their whole
+    bracket as flat matches with stage_key/stage_type/round already set by
+    the schedule generator, with no group stage to derive standings from.
+    Rebuild stage_views straight off those fields instead of the fixed
+    group-stage/final structure used by group-to-knockout divisions."""
+    buckets = {}
+    order = []
+    for match in division_matches:
+        stage_key = match.get("stage_key") or match.get("stage_type") or "final"
+        if stage_key not in buckets:
+            buckets[stage_key] = {
+                "stage_type": match.get("stage_type") or stage_key,
+                "round_label": match.get("round_label") or stage_key.replace("_", " ").title(),
+                "round": match.get("round") or 0,
+                "matches": [],
+            }
+            order.append(stage_key)
+        buckets[stage_key]["matches"].append(match)
+
+    stage_views = []
+    for stage_key in order:
+        bucket = buckets[stage_key]
+        stage_type = bucket["stage_type"]
+        sequence = _SINGLE_ELIM_STAGE_ORDER.get(stage_type, 100 + bucket["round"])
+        stage_views.append({
+            "id": None,
+            "key": stage_key,
+            "type": stage_type,
+            "name": bucket["round_label"],
+            "sequence": sequence,
+            "qualification_policy": {},
+            "groups": [],
+            "groups_view": [],
+            "matches": sorted(bucket["matches"], key=lambda m: m.get("id") or ""),
+        })
+    stage_views.sort(key=lambda item: item["sequence"])
+    return stage_views
+
+
 def build_competition_view(matches, teams, config, sport_key=None):
     """Build a stage-driven view used by standings, brackets, and champions."""
     structure = load_competition_structure()
@@ -2294,7 +2341,9 @@ def build_competition_view(matches, teams, config, sport_key=None):
         policy = (division.get("standing_policy") or {}).get("config") or {}
         stage_views = []
         group_winners = {}
-        for stage in sorted(
+        if division.get("bracket_format") == "single_elimination":
+            stage_views = _single_elimination_stage_views(division_matches)
+        for stage in [] if division.get("bracket_format") == "single_elimination" else sorted(
             division.get("stages", []), key=lambda item: item.get("sequence", 0)
         ):
             stage_view = dict(stage)
