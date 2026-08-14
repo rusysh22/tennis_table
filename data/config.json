@@ -21,7 +21,8 @@
   "enabled_sports": [
     "table-tennis",
     "padel",
-    "badminton"
+    "badminton",
+    "capsa-susun"
   ],
   "sites": [
     {
@@ -116,6 +117,15 @@
       ],
       "has_final": true,
       "knockout_format": "semi_and_final"
+    },
+    {
+      "key": "capsa_susun",
+      "label": "Capsa Susun — Eksibisi Berpasangan",
+      "sport_key": "capsa-susun",
+      "entrant_type": "pair",
+      "groups": [],
+      "has_final": true,
+      "bracket_format": "single_elimination"
     }
   ],
   "live_chat_messages": [

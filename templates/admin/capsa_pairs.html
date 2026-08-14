@@ -1,0 +1,121 @@
+{% extends "admin/_layout.html" %}
+{% set page_title = "Pasangan Capsa Susun" %}
+{% set page_subtitle = "Daftarkan pasangan setelah lapor di briefing, lalu tempatkan ke meja/bagan lewat halaman kelola pertandingan" %}
+
+{% block admin_content %}
+
+<div class="ac-card" style="margin-bottom:1.4rem;">
+  <div class="ac-card-header">
+    <h2>➕ Daftarkan Pasangan Baru</h2>
+  </div>
+  <div class="ac-card-body">
+    <form method="post" action="{{ url_for('admin_save_capsa_pair') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="ac-form-row">
+        <div class="ac-form-field">
+          <label>Nama Pemain 1 *</label>
+          <input type="text" name="player1" required placeholder="mis. Jannata">
+        </div>
+        <div class="ac-form-field">
+          <label>Entity Pemain 1</label>
+          <input type="text" name="entity1" placeholder="mis. IMN">
+        </div>
+      </div>
+      <div class="ac-form-row">
+        <div class="ac-form-field">
+          <label>Nama Pemain 2 *</label>
+          <input type="text" name="player2" required placeholder="mis. Hendra Gunawan">
+        </div>
+        <div class="ac-form-field">
+          <label>Entity Pemain 2</label>
+          <input type="text" name="entity2" placeholder="mis. IMU">
+        </div>
+      </div>
+      <div class="ac-form-actions">
+        <button type="submit" class="ac-btn ac-btn-primary">💾 Daftarkan Pasangan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="ac-card" style="margin-bottom:1.4rem;">
+  <div class="ac-card-header">
+    <h2>🃏 Pasangan Terdaftar</h2>
+    <span class="badge" style="background:var(--blue-100); color:var(--blue-800); font-weight:800;">
+      {{ pairs|length }} pasangan
+    </span>
+  </div>
+  {% if pairs %}
+  <div class="ac-table-wrap">
+    <table class="ac-table">
+      <thead>
+        <tr>
+          <th>Kode</th>
+          <th>Pemain 1</th>
+          <th>Pemain 2</th>
+          <th>Status</th>
+          <th style="text-align:right;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for code, t in pairs.items() %}
+        <tr>
+          <td><span class="team-chip sm" style="background:{{ t.color }}; color:{{ t.text }};">{{ code }}</span></td>
+          <td>{{ t.player1 }}</td>
+          <td>{{ t.player2 }}</td>
+          <td>{% if code in used_codes %}<span class="badge badge-status badge-completed">Sudah di bagan</span>{% else %}<span class="badge badge-status badge-scheduled">Belum ditempatkan</span>{% endif %}</td>
+          <td style="text-align:right;">
+            {% if code not in used_codes %}
+            <form method="post" action="{{ url_for('admin_delete_capsa_pair', code=code) }}" style="display:inline;" onsubmit="return confirm('Hapus pasangan {{ code }}?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="ac-btn ac-btn-ghost ac-btn-sm">🗑️ Hapus</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="ac-card-body"><p>Belum ada pasangan terdaftar.</p></div>
+  {% endif %}
+</div>
+
+<div class="ac-card">
+  <div class="ac-card-header">
+    <h2>🏆 Bagan Match</h2>
+  </div>
+  {% if capsa_matches %}
+  <div class="ac-table-wrap">
+    <table class="ac-table">
+      <thead>
+        <tr>
+          <th>Match</th>
+          <th>Babak</th>
+          <th>Pasangan A</th>
+          <th>Pasangan B</th>
+          <th>Status</th>
+          <th style="text-align:right;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in capsa_matches %}
+        <tr>
+          <td><strong>{{ m.id }}</strong></td>
+          <td>{{ m.round_label }}</td>
+          <td>{{ teams.get(m.team_a, {}).player1 or (m.team_a or '—') }}{% if teams.get(m.team_a) %} / {{ teams[m.team_a].player2 }}{% endif %}</td>
+          <td>{{ teams.get(m.team_b, {}).player1 or (m.team_b or '—') }}{% if teams.get(m.team_b) %} / {{ teams[m.team_b].player2 }}{% endif %}</td>
+          <td>{{ m.status }}</td>
+          <td style="text-align:right;"><a class="ac-btn ac-btn-ghost ac-btn-sm" href="{{ url_for('admin_edit_match', match_id=m.id) }}">Kelola →</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="ac-card-body"><p>Belum ada match Capsa Susun di jadwal.</p></div>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from domain.scoring import RuleProfile, validate_match_score, validate_point_split_score, validate_score
+from domain.scoring.capsa_susun import validate_match_score as validate_capsa_score
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 _LOCK = threading.Lock()
@@ -572,12 +573,20 @@ def list_sports():
     config = load_config()
     categories = config.get("categories", [])
     enabled_sports = config.get("enabled_sports", ["table-tennis"])
-    counts = {"table-tennis": 0, "padel": 0, "badminton": 0}
+    counts = {"table-tennis": 0, "padel": 0, "badminton": 0, "capsa-susun": 0}
     for cat in categories:
         s_key = cat.get("sport_key", "table-tennis")
         counts[s_key] = counts.get(s_key, 0) + 1
 
     return [
+        {
+            "key": "capsa-susun",
+            "name": "Capsa Susun",
+            "icon": "🃏",
+            "enabled": "capsa-susun" in enabled_sports or counts.get("capsa-susun", 0) > 0,
+            "display_order": 0,
+            "division_count": counts.get("capsa-susun", 0),
+        },
         {
             "key": "padel",
             "name": "Padel",
@@ -1305,6 +1314,38 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
     return len(group_matches_queue), knockout_count
 
 
+def advance_single_elimination_bracket(category_key, matches=None):
+    """Generic straight-knockout advancement: any match with `depends_on`
+    pointing at two prior matches in the same category gets its team_a/team_b
+    auto-filled once those matches have a valid winner -- winner's slot takes
+    the winner, unless the match is stage_type 'third_place' (takes the
+    loser instead). Works for any bracket depth (R16, QF, SF, Final, 3rd)."""
+    if matches is None:
+        matches = load_matches()
+    cat_matches = [m for m in matches if m.get("category") == category_key]
+    by_id = {m.get("id"): m for m in cat_matches}
+    changed = False
+    for m in cat_matches:
+        depends = m.get("depends_on") or []
+        if len(depends) < 2:
+            continue
+        d1 = by_id.get(depends[0])
+        d2 = by_id.get(depends[1])
+        take_loser = m.get("stage_type") == "third_place"
+        for dep, slot in ((d1, "team_a"), (d2, "team_b")):
+            if not dep or not dep.get("winner") or not dep.get("team_a") or not dep.get("team_b"):
+                continue
+            candidate = dep["winner"]
+            if take_loser:
+                candidate = dep["team_a"] if dep["winner"] == dep["team_b"] else dep["team_b"]
+            if m.get(slot) != candidate:
+                m[slot] = candidate
+                changed = True
+    if changed:
+        save_matches(matches)
+    return changed
+
+
 def auto_seed_knockout(category_key, matches=None, teams=None, config=None, force=False):
     if matches is None:
         matches = load_matches()
@@ -1316,6 +1357,9 @@ def auto_seed_knockout(category_key, matches=None, teams=None, config=None, forc
     category = next((c for c in config.get("categories", []) if c.get("key") == category_key), None)
     if not category:
         return False
+
+    if category.get("bracket_format") == "single_elimination":
+        return advance_single_elimination_bracket(category_key, matches)
 
     cat_matches = [m for m in matches if m.get("category") == category_key]
     group_matches = [m for m in cat_matches if m.get("stage_type") in ("group", "round_robin") and m.get("group") not in ("FINAL", "KNOCKOUT", "SEMIFINAL")]
@@ -1605,6 +1649,8 @@ def sets_needed_to_win(match):
 
 def validate_match_segments(match, segments=None):
     candidate_segments = match.get("sets") or [] if segments is None else segments
+    if match.get("sport_key") == "capsa-susun" or match.get("category") == "capsa_susun":
+        return validate_capsa_score(candidate_segments)
     if match.get("_profile_key"):
         return validate_score(
             RuleProfile(

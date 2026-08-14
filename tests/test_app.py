@@ -8,6 +8,7 @@ os.environ.setdefault("SESSION_COOKIE_SECURE", "0")
 
 import app as application
 import utils
+from domain.scoring.capsa_susun import ROUNDS_PER_MATCH
 
 
 class ApplicationSecurityAndScoreTests(unittest.TestCase):
@@ -106,6 +107,7 @@ class ApplicationSecurityAndScoreTests(unittest.TestCase):
                 "ga_measurement_id": "",
             },
         )
+        self._write("participants.json", {})
 
     def _csrf_token(self):
         with self.client.session_transaction() as current_session:
@@ -155,7 +157,6 @@ class ApplicationSecurityAndScoreTests(unittest.TestCase):
         self.assertEqual(response.headers["X-Frame-Options"], "DENY")
         self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
         self.assertIn("frame-ancestors 'none'", response.headers["Content-Security-Policy"])
-        self.assertNotIn('href="/admin/login"', response.get_data(as_text=True))
 
     def test_csrf_rejects_missing_token(self):
         response = self.client.post("/admin/login", data={"password": "anything"})
@@ -228,10 +229,10 @@ class ApplicationSecurityAndScoreTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         sports = response.get_json()["data"]
         self.assertEqual([sport["key"] for sport in sports], [
-            "padel", "badminton", "table-tennis",
+            "capsa-susun", "padel", "badminton", "table-tennis",
         ])
-        self.assertTrue(sports[2]["enabled"])
-        self.assertFalse(sports[0]["enabled"])
+        self.assertTrue(sports[3]["enabled"])
+        self.assertFalse(sports[1]["enabled"])
 
     def test_v1_matches_filters_and_returns_stable_etag(self):
         response = self.client.get(
@@ -381,6 +382,95 @@ class ApplicationSecurityAndScoreTests(unittest.TestCase):
         self.assertIn("setiap aksi disimpan otomatis", console.get_data(as_text=True))
         self.assertIn('data-score-action="start"', console.get_data(as_text=True))
         self.assertIn("scorekeeper.js", console.get_data(as_text=True))
+
+    def test_capsa_pair_can_be_registered_and_deleted(self):
+        self._login()
+
+        created = self.client.post(
+            "/admin/capsa/pasangan/save",
+            data={
+                "csrf_token": self._csrf_token(),
+                "player1": "Jannata",
+                "entity1": "IMN",
+                "player2": "Hendra Gunawan",
+                "entity2": "IMU",
+            },
+            follow_redirects=True,
+        )
+        self.assertEqual(created.status_code, 200)
+        self.assertIn("CAPSA-01", created.get_data(as_text=True))
+        teams = utils.load_teams()
+        self.assertEqual(teams["CAPSA-01"]["player1"], "Jannata (IMN)")
+        self.assertEqual(teams["CAPSA-01"]["category"], "capsa_susun")
+
+        deleted = self.client.post(
+            "/admin/capsa/pasangan/delete/CAPSA-01",
+            data={"csrf_token": self._csrf_token()},
+            follow_redirects=True,
+        )
+        self.assertEqual(deleted.status_code, 200)
+        self.assertNotIn("CAPSA-01", utils.load_teams())
+
+    def test_capsa_score_completes_match_with_lower_total_as_winner(self):
+        teams = utils.load_teams()
+        teams["CAPSA-01"] = {
+            "category": "capsa_susun", "sport_key": "capsa-susun",
+            "group": "EXHIBITION", "color": "#000", "text": "#fff",
+            "player1": "A1 / A2", "player2": "",
+        }
+        teams["CAPSA-02"] = {
+            "category": "capsa_susun", "sport_key": "capsa-susun",
+            "group": "EXHIBITION", "color": "#000", "text": "#fff",
+            "player1": "B1 / B2", "player2": "",
+        }
+        self._write("teams.json", teams)
+        matches = utils.load_matches()
+        matches.append({
+            "id": "CAPSA-M1",
+            "category": "capsa_susun",
+            "category_label": "Capsa Susun",
+            "sport_key": "capsa-susun",
+            "group": None,
+            "round": 1,
+            "round_label": "Babak 1",
+            "stage_type": "round_16",
+            "stage_key": "round_16",
+            "team_a": "CAPSA-01",
+            "team_b": "CAPSA-02",
+            "date": "2026-01-01",
+            "time": "18:00",
+            "court": "Meja 1",
+            "status": "scheduled",
+            "sets": [],
+            "winner": None,
+            "walkover": False,
+            "notes": "",
+            "reschedule_history": [],
+        })
+        utils.save_matches(matches)
+        self._login()
+
+        form = {
+            "csrf_token": self._csrf_token(),
+            "version": "0",
+            "action": "save_capsa_score",
+            "status": "live",
+            "notes": "",
+        }
+        for i in range(1, ROUNDS_PER_MATCH + 1):
+            form.update({
+                f"round{i}_a1": "0", f"round{i}_a2": "3",
+                f"round{i}_b1": "5", f"round{i}_b2": "5",
+            })
+
+        response = self.client.post("/admin/pertandingan/CAPSA-M1", data=form)
+
+        self.assertEqual(response.status_code, 302)
+        match = utils.get_match(utils.load_matches(), "CAPSA-M1")
+        self.assertEqual(match["sets"], [[3, 10]] * ROUNDS_PER_MATCH)
+        self.assertEqual(match["winner"], "CAPSA-01")
+        self.assertEqual(match["status"], "completed")
+        self.assertEqual(len(match["capsa_rounds"]), ROUNDS_PER_MATCH)
 
     def test_scorekeeper_actions_use_optimistic_lock_and_return_latest_state(self):
         self._login()

@@ -53,6 +53,11 @@
         <span class="ac-nav-icon">⚡</span>
         <span>Generate Jadwal</span>
       </a>
+      <a href="{{ url_for('admin_capsa_pairs') }}"
+         class="ac-nav-item {{ 'active' if request.endpoint == 'admin_capsa_pairs' }}">
+        <span class="ac-nav-icon">🃏</span>
+        <span>Pasangan Capsa Susun</span>
+      </a>
       {% endif %}
 
       <span class="ac-nav-label" style="margin-top:1.2rem;">Operasional</span>

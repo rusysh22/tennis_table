@@ -452,4 +452,144 @@
 </div>
 {% endif %}
 
+{% if selected_sport in ('all', 'capsa-susun') %}
+<div class="section-head"><h2>🃏 Pedoman Aturan Capsa Susun</h2></div>
+
+<div class="admin-shell" style="margin-bottom:1.6rem;">
+  <p style="color:#a0677a; font-size:.85rem; margin-bottom:0;">
+    <strong>Capsa Susun · {{ config.tournament_short_name }}</strong> — Berpasangan, meja diacak, sistem gugur
+    5 ronde per match; pasangan dengan <strong>total poin terendah</strong> yang melaju.
+  </p>
+  <div class="table-wrap" style="margin-top:1rem;">
+    <table class="standings rules-table">
+      <tbody>
+        <tr><td><strong>Briefing</strong></td><td>17.00 WIB di Lobby (alokasi 30 menit)</td></tr>
+        <tr><td><strong>Lapor pasangan</strong></td><td>Setelah briefing, tulis pasangan di sticky note → serahkan ke wasit untuk diacak ke meja</td></tr>
+        <tr><td><strong>Meja tersedia</strong></td><td>Hanya 4 meja — permainan berjalan bergelombang per 4 meja</td></tr>
+        <tr><td><strong>Media info</strong></td><td>TV di Lobby utama menampilkan rules permainan sekaligus klasemen</td></tr>
+        <tr><td><strong>Lokasi bermain</strong></td><td>Ruang Determination-Integrity &amp; Ruang Excellence</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="admin-shell">
+
+  <fieldset>
+    <legend>1. Sebelum Bermain</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Permainan dilakukan secara berpasangan. Pemain memilih pasangan sendiri — boleh campur entity.</li>
+      <li>Lapor pasangan ke wasit sebelum permainan dimulai.</li>
+      <li>Penempatan ke meja dilakukan secara acak setelah pasangan terbentuk.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>2. Format &amp; Pemenang</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Sistem poin: pasangan dengan poin terendah lanjut ke babak berikutnya.</li>
+      <li>Sistem gugur — satu meja memainkan 5 game (ronde); poin pasangan dijumlahkan pada akhir ronde ke-5.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>3. Selama Permainan</legend>
+    <ul style="list-style:disc; padding-left:1.3rem; margin:.4rem 0; font-size:.9rem; line-height:1.7;">
+      <li>Shuffle kartu dilakukan mandiri oleh masing-masing meja — tentukan sendiri siapa yang shuffle (biasanya pemain/pasangan yang kalah).</li>
+      <li>Pemain yang tidak shuffle bertugas mengecek ulang (crosscheck) perhitungan poin: sisa kartu lawan maupun sisa kartu pasangannya sendiri.</li>
+      <li>Wasit mencatat hasil perhitungan poin.</li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>4. Aturan Permainan Kartu</legend>
+    <p style="font-size:.9rem; line-height:1.6; margin:.2rem 0 .6rem;">
+      52 kartu · 4 pemain per meja · 13 kartu per orang · pemegang kartu 3 Wajik membuka permainan.
+    </p>
+    <p style="font-size:.9rem; line-height:1.6; margin:.2rem 0 .4rem;"><strong>Urutan nilai kartu (terendah → tertinggi):</strong> 3‑4‑5‑6‑7‑8‑9‑10‑J‑Q‑K‑A‑2 (2 adalah kartu tertinggi).</p>
+    <p style="font-size:.9rem; line-height:1.6; margin:.2rem 0 .4rem;"><strong>Urutan jenis kartu</strong> (penentu hanya bila nilai sama, terendah → tertinggi): Wajik ♦ &lt; Keriting ♣ &lt; Hati ♥ &lt; Sekop ♠.</p>
+    <div class="table-wrap" style="margin-top:.6rem;">
+      <table class="standings rules-table">
+        <thead><tr><th>#</th><th>Kombinasi</th><th>Keterangan</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Tunggal</td><td>1 kartu</td></tr>
+          <tr><td>2</td><td>Pasangan</td><td>2 kartu senilai</td></tr>
+          <tr><td>3</td><td>Tris</td><td>3 kartu senilai</td></tr>
+          <tr><td>4</td><td>Seri (Straight)</td><td>5 kartu berurutan</td></tr>
+          <tr><td>5</td><td>Flush</td><td>5 kartu sejenis</td></tr>
+          <tr><td>6</td><td>Full House</td><td>3 + 2 kartu</td></tr>
+          <tr><td>7</td><td>4 of a Kind 💣</td><td>4 kartu senilai + 1 (BOM)</td></tr>
+          <tr><td>8</td><td>Straight Flush 💣</td><td>5 kartu urut &amp; sejenis (BOM)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.85rem; line-height:1.6; margin-top:.6rem; color:#a0677a;">
+      Bantingan harus sejenis kombinasi dan bernilai lebih tinggi dari kartu sebelumnya; kombinasi 5 kartu dikalahkan
+      kombinasi 5 kartu berperingkat lebih atas. 4 of a Kind dan Straight Flush berstatus BOM.
+    </p>
+  </fieldset>
+
+  <fieldset>
+    <legend>5. Perhitungan Poin</legend>
+    <p style="font-size:.9rem; line-height:1.6; margin:.2rem 0 .6rem;">
+      Poin match = sisa kartu × pengali, dijumlahkan selama 5 ronde. 1 kartu tersisa = 1 poin dasar. Pemain yang
+      lebih dulu menghabiskan kartunya mendapat 0 poin di ronde itu. Pasangan dengan <strong>total poin terkecil
+      memenangkan match</strong>.
+    </p>
+    <div class="table-wrap">
+      <table class="standings rules-table">
+        <thead><tr><th>Sisa Kartu</th><th>Pengali</th></tr></thead>
+        <tbody>
+          <tr><td>1–9 kartu</td><td>×1</td></tr>
+          <tr><td>10–12 kartu</td><td>×2</td></tr>
+          <tr><td>13 kartu</td><td>×3</td></tr>
+          <tr><td>Tiap kartu "2" tersisa</td><td>×2 (tambahan)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.85rem; line-height:1.6; margin-top:.8rem;"><strong>Contoh perhitungan (Pasangan A menang 67–78):</strong></p>
+    <div class="table-wrap">
+      <table class="standings rules-table">
+        <thead><tr><th>Ronde</th><th>A1</th><th>A2</th><th>Total A</th><th>B1</th><th>B2</th><th>Total B</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>0</td><td>6</td><td><strong>6</strong></td><td>9</td><td>4</td><td><strong>13</strong></td></tr>
+          <tr><td>2</td><td>3</td><td>39 (13×3)</td><td><strong>42</strong></td><td>0</td><td>5</td><td><strong>5</strong></td></tr>
+          <tr><td>3</td><td>0</td><td>2</td><td><strong>2</strong></td><td>7</td><td>20 (10×2)</td><td><strong>27</strong></td></tr>
+          <tr><td>4</td><td>8</td><td>0</td><td><strong>8</strong></td><td>3</td><td>6</td><td><strong>9</strong></td></tr>
+          <tr><td>5</td><td>5</td><td>4</td><td><strong>9</strong></td><td>0</td><td>24 (12×2)</td><td><strong>24</strong></td></tr>
+          <tr><td><strong>Total Match</strong></td><td></td><td></td><td><strong>67</strong></td><td></td><td></td><td><strong>78</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>6. Bagan Gugur</legend>
+    <p style="font-size:.9rem; line-height:1.7;">
+      16 pasangan · 16 match (termasuk perebutan peringkat 3) · setiap match 5 ronde · pemenang = total poin
+      terkecil. Babak 1 (8 match) → Perempat Final (4 match) → Semifinal (2 match) → Final &amp; Perebutan
+      Peringkat 3. Bagan lengkap dengan nama pasangan tersedia di TV Lobby dan menyusul setelah lapor pasangan
+      selesai diacak wasit.
+    </p>
+  </fieldset>
+
+</div>
+
+<div class="admin-shell" style="margin-top:1.6rem;">
+  <div class="section-head detail-section-head" style="margin-bottom:.8rem;">
+    <div><span>Roster</span><h2>Daftar Peserta Capsa Susun</h2></div>
+  </div>
+  <div class="table-wrap">
+    <table class="standings rules-table">
+      <thead><tr><th>#</th><th>Nama</th><th>Entity</th></tr></thead>
+      <tbody>
+        {% for p in capsa_participants %}
+        <tr><td>{{ loop.index }}</td><td>{{ p.name }}</td><td>{{ p.entity }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}

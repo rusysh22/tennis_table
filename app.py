@@ -425,15 +425,27 @@ def enrich_match(m, teams):
     )
     m["status_label"] = STATUS_LABELS.get(m["status"], m["status"])
     m["is_walkover"] = bool(m.get("walkover"))
-    sa, sb = utils.compute_sets_won(m["sets"]) if m["sets"] else (0, 0)
+    is_capsa = m.get("sport_key") == "capsa-susun"
+    if is_capsa:
+        sa = sum(s[0] for s in m["sets"]) if m["sets"] else 0
+        sb = sum(s[1] for s in m["sets"]) if m["sets"] else 0
+    else:
+        sa, sb = utils.compute_sets_won(m["sets"]) if m["sets"] else (0, 0)
     m["sets_a"] = sa
     m["sets_b"] = sb
-    m["sets_needed"] = utils.sets_needed_to_win(m)
-    m["best_of_label"] = f"Best of {m['sets_needed'] * 2 - 1}"
-    score_terms = utils.scorekeeper_terms(m)
-    m["segment_term"] = score_terms["segment_term"]
-    m["segment_label"] = score_terms["segment_label"]
-    m["scoring_unit_label"] = score_terms["unit_label"]
+    if is_capsa:
+        m["sets_needed"] = 5
+        m["best_of_label"] = "5 Ronde — Total Poin Terendah Menang"
+        m["segment_term"] = "ronde"
+        m["segment_label"] = "Ronde"
+        m["scoring_unit_label"] = "Poin"
+    else:
+        m["sets_needed"] = utils.sets_needed_to_win(m)
+        m["best_of_label"] = f"Best of {m['sets_needed'] * 2 - 1}"
+        score_terms = utils.scorekeeper_terms(m)
+        m["segment_term"] = score_terms["segment_term"]
+        m["segment_label"] = score_terms["segment_label"]
+        m["scoring_unit_label"] = score_terms["unit_label"]
     _, score_errors = utils.validate_recorded_result(m)
     m["score_errors"] = score_errors
     m["score_is_valid"] = not score_errors
@@ -684,6 +696,53 @@ def _parse_score_form(max_games, segment_label="Game"):
                 f"Skor {segment_label} {index} harus berupa bilangan bulat."
             )
     return games, errors
+
+
+def _parse_capsa_score_form():
+    """Parse per-round remaining-card counts into ([points_a, points_b], ...)
+    round segments plus the raw per-player breakdown for crosscheck display."""
+    from domain.scoring.capsa_susun import round_points, validate_round_hand, ROUNDS_PER_MATCH
+
+    segments = []
+    breakdown = []
+    errors = []
+    gap_found = False
+    for index in range(1, ROUNDS_PER_MATCH + 1):
+        raw = {
+            key: request.form.get(f"round{index}_{key}", "").strip()
+            for key in ("a1", "a2", "b1", "b2")
+        }
+        if not any(raw.values()):
+            gap_found = True
+            continue
+        if not all(raw.values()):
+            errors.append(f"Ronde {index}: sisa kartu keempat pemain harus diisi semua.")
+            continue
+        if gap_found:
+            errors.append("Ronde harus diisi berurutan tanpa melewati ronde kosong.")
+        try:
+            cards = {key: int(value) for key, value in raw.items()}
+        except ValueError:
+            errors.append(f"Ronde {index}: sisa kartu harus berupa bilangan bulat.")
+            continue
+        hand_errors = validate_round_hand(cards["a1"], cards["a2"], cards["b1"], cards["b2"])
+        if hand_errors:
+            errors.extend(f"Ronde {index}: {msg}" for msg in hand_errors)
+            continue
+        twos = {}
+        for key in ("a1", "a2", "b1", "b2"):
+            raw_twos = request.form.get(f"round{index}_{key}_twos", "").strip()
+            try:
+                twos[key] = int(raw_twos) if raw_twos else 0
+            except ValueError:
+                twos[key] = 0
+        points_a, points_b = round_points(
+            cards["a1"], cards["a2"], cards["b1"], cards["b2"],
+            twos["a1"], twos["a2"], twos["b1"], twos["b2"],
+        )
+        segments.append([points_a, points_b])
+        breakdown.append({**cards, "points_a": points_a, "points_b": points_b})
+    return segments, breakdown, errors
 
 
 def data_context():
@@ -1098,7 +1157,8 @@ def aturan():
         if selected == "all" or division.get("sport_key") == selected
     ]
     return render_template(
-        "aturan.html", rule_sports=rule_sports, rule_divisions=divisions
+        "aturan.html", rule_sports=rule_sports, rule_divisions=divisions,
+        capsa_participants=CAPSA_PARTICIPANTS,
     )
 
 
@@ -1629,7 +1689,11 @@ def _api_match_document(match, teams, timezone_name, detail=False):
     team_b = teams.get(match.get("team_b"), {})
     winner = teams.get(match.get("winner"), {})
     _, score_errors = utils.validate_recorded_result(match)
-    segments_a, segments_b = utils.compute_sets_won(match.get("sets") or [])
+    if match.get("sport_key") == "capsa-susun":
+        segments_a = sum(s[0] for s in match.get("sets") or [])
+        segments_b = sum(s[1] for s in match.get("sets") or [])
+    else:
+        segments_a, segments_b = utils.compute_sets_won(match.get("sets") or [])
     document = {
         "id": match["id"],
         "sport": {"key": match.get("sport_key", "table-tennis")},
@@ -2490,6 +2554,132 @@ def admin_delete_site(code):
     return redirect(url_for("admin_sites"))
 
 
+CAPSA_CATEGORY_KEY = "capsa_susun"
+CAPSA_SPORT_KEY = "capsa-susun"
+CAPSA_PARTICIPANTS = [
+    {"name": "Jannata", "entity": "IMN"},
+    {"name": "Hendra Gunawan", "entity": "IMU"},
+    {"name": "Pawestri", "entity": "IMU"},
+    {"name": "Casal", "entity": "ISB"},
+    {"name": "Dody Indra", "entity": "IMU"},
+    {"name": "YIN", "entity": "ISB"},
+    {"name": "Linda", "entity": "ISB"},
+    {"name": "Indah H", "entity": "IMU"},
+    {"name": "Mitarani", "entity": "IMU"},
+    {"name": "Rizki Fore", "entity": "Indis"},
+    {"name": "Steven", "entity": "ISB"},
+    {"name": "Daffa", "entity": "ISB"},
+    {"name": "Pak Joko", "entity": "Indis"},
+    {"name": "Faisal", "entity": "Indis"},
+    {"name": "Sades W", "entity": "ILSS Babelan"},
+    {"name": "Januar A", "entity": "ILSS Babelan"},
+    {"name": "Rendy R Z", "entity": "ILSS Babelan"},
+    {"name": "Rona Kartiko", "entity": "ILSS Babelan"},
+    {"name": "Tito", "entity": "IMU"},
+    {"name": "Dayat", "entity": "EMITS"},
+    {"name": "Mughira", "entity": "EMITS"},
+    {"name": "Andre", "entity": "EMITS"},
+    {"name": "Fajar", "entity": "Kalista"},
+    {"name": "Tito", "entity": "IMU"},
+    {"name": "Dino", "entity": "INVI"},
+    {"name": "Aldi", "entity": "INVI"},
+    {"name": "Raihan", "entity": "INVI"},
+    {"name": "Galang", "entity": "INVI"},
+    {"name": "Alif", "entity": "INVI"},
+    {"name": "Kana", "entity": "INVI"},
+    {"name": "Henry", "entity": "INVI"},
+    {"name": "Billy", "entity": "INVI"},
+    {"name": "Pak Adi Shima", "entity": "IMU"},
+    {"name": "Gusna A", "entity": "IMN"},
+]
+CAPSA_TEAM_COLORS = [
+    ("#475569", "#ffffff"), ("#7c3aed", "#ffffff"), ("#0e7490", "#ffffff"),
+    ("#b45309", "#ffffff"), ("#be123c", "#ffffff"), ("#166534", "#ffffff"),
+]
+
+
+@app.route("/admin/capsa/pasangan")
+@login_required
+def admin_capsa_pairs():
+    teams = utils.load_teams()
+    matches = utils.load_matches()
+    pairs = {
+        code: t for code, t in teams.items()
+        if t.get("category") == CAPSA_CATEGORY_KEY
+    }
+    used_codes = {
+        m.get(slot) for m in matches
+        if m.get("category") == CAPSA_CATEGORY_KEY
+        for slot in ("team_a", "team_b")
+        if m.get(slot)
+    }
+    capsa_matches = sorted(
+        (m for m in matches if m.get("category") == CAPSA_CATEGORY_KEY),
+        key=lambda m: m.get("id", ""),
+    )
+    return render_template(
+        "admin/capsa_pairs.html", pairs=pairs, used_codes=used_codes,
+        capsa_matches=capsa_matches, teams=teams,
+    )
+
+
+@app.route("/admin/capsa/pasangan/save", methods=["POST"])
+@login_required
+def admin_save_capsa_pair():
+    player1 = request.form.get("player1", "").strip()
+    entity1 = request.form.get("entity1", "").strip()
+    player2 = request.form.get("player2", "").strip()
+    entity2 = request.form.get("entity2", "").strip()
+    if not player1 or not player2:
+        flash("Nama kedua pemain wajib diisi.", "error")
+        return redirect(url_for("admin_capsa_pairs"))
+
+    label1 = f"{player1} ({entity1})" if entity1 else player1
+    label2 = f"{player2} ({entity2})" if entity2 else player2
+
+    teams = utils.load_teams()
+    existing_nums = [
+        int(code.split("-")[1]) for code in teams
+        if code.startswith("CAPSA-") and code.split("-")[1].isdigit()
+    ]
+    next_num = max(existing_nums, default=0) + 1
+    code = f"CAPSA-{next_num:02d}"
+    color, text = CAPSA_TEAM_COLORS[(next_num - 1) % len(CAPSA_TEAM_COLORS)]
+
+    teams[code] = {
+        "category": CAPSA_CATEGORY_KEY,
+        "sport_key": CAPSA_SPORT_KEY,
+        "group": "EXHIBITION",
+        "color": color,
+        "text": text,
+        "player1": label1,
+        "player2": label2,
+    }
+    utils.save_teams(teams)
+    flash(f"Pasangan '{code}' ({label1} / {label2}) berhasil didaftarkan.", "success")
+    return redirect(url_for("admin_capsa_pairs"))
+
+
+@app.route("/admin/capsa/pasangan/delete/<code>", methods=["POST"])
+@login_required
+def admin_delete_capsa_pair(code):
+    teams = utils.load_teams()
+    matches = utils.load_matches()
+    if any(
+        m.get("category") == CAPSA_CATEGORY_KEY and code in (m.get("team_a"), m.get("team_b"))
+        for m in matches
+    ):
+        flash(f"Pasangan '{code}' sudah ditempatkan di bagan, tidak bisa dihapus.", "error")
+        return redirect(url_for("admin_capsa_pairs"))
+    if code in teams:
+        del teams[code]
+        utils.save_teams(teams)
+        flash(f"Pasangan '{code}' berhasil dihapus.", "success")
+    else:
+        flash(f"Pasangan '{code}' tidak ditemukan.", "error")
+    return redirect(url_for("admin_capsa_pairs"))
+
+
 @app.route("/admin/generator/group-to-knockout", methods=["POST"])
 @login_required
 def admin_generate_group_to_knockout():
@@ -2624,6 +2814,52 @@ def admin_edit_match(match_id):
                 _update_match_or_flash(
                     match_id, expected_version, update_score,
                     "Skor pertandingan tersimpan.",
+                )
+
+        elif action == "save_capsa_score":
+            segments, breakdown, parse_errors = _parse_capsa_score_form()
+            validation = utils.validate_match_segments(m, segments)
+            requested_status = request.form.get("status", m["status"])
+            errors = parse_errors + list(validation.errors)
+            if requested_status not in ("live", "scheduled", "postponed"):
+                errors.append("Status pertandingan tidak valid.")
+            correction_reason = request.form.get("correction_reason", "").strip()
+            if m.get("status") == "completed" and segments != (m.get("sets") or []) and not correction_reason:
+                errors.append("Alasan koreksi wajib diisi saat mengubah hasil pertandingan selesai.")
+
+            if errors:
+                for message in errors:
+                    flash(message, "error")
+            else:
+                notes = request.form.get("notes", "").strip()
+
+                def update_capsa_score(current):
+                    if not current.get("team_a") or not current.get("team_b"):
+                        raise ValueError("Kedua pasangan harus ditentukan sebelum skor disimpan.")
+                    before_sets = current.get("sets") or []
+                    if current.get("status") == "completed" and before_sets != segments:
+                        current.setdefault("score_corrections", []).append({
+                            "before": before_sets,
+                            "after": segments,
+                            "reason": correction_reason,
+                            "actor": "admin",
+                            "at": utils.now_wib().isoformat(timespec="seconds"),
+                        })
+                    current["sets"] = segments
+                    current["capsa_rounds"] = breakdown
+                    current["notes"] = notes
+                    current["walkover"] = False
+                    if validation.winner_side == "a":
+                        current["winner"] = current["team_a"]
+                    elif validation.winner_side == "b":
+                        current["winner"] = current["team_b"]
+                    else:
+                        current["winner"] = None
+                    current["status"] = "completed" if current["winner"] else requested_status
+
+                _update_match_or_flash(
+                    match_id, expected_version, update_capsa_score,
+                    "Skor Capsa Susun tersimpan.",
                 )
 
         elif action == "walkover":

@@ -276,6 +276,71 @@
   </fieldset>
   {% endif %}
 
+  {% if m.sport_key == 'capsa-susun' %}
+  <fieldset>
+    <legend>Input Skor per Ronde (Capsa Susun) <span
+        style="font-size:.7rem; font-weight:700; color:#a0677a; text-transform:none;">({{ m.best_of_label }})</span>
+    </legend>
+    {% if m.score_errors %}
+    <div class="flash flash-error" role="alert">
+      Hasil tersimpan perlu dikoreksi: {{ m.score_errors|join(' ') }}
+    </div>
+    {% endif %}
+    <form method="post" action="{{ url_for('admin_edit_match', match_id=m.id) }}"
+      class="{{ 'js-ajax-form' if is_modal else '' }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="version" value="{{ raw.version|default(0) }}">
+      <input type="hidden" name="action" value="save_capsa_score">
+      {% if is_modal %}<input type="hidden" name="modal" value="1">{% endif %}
+      <p style="font-size:.78rem; color:#a0677a;">
+        Isi <strong>sisa kartu</strong> tiap pemain saat ronde berakhir (0 untuk pemain yang habis duluan).
+        Kolom "×2" opsional — isi berapa kartu "2" yang masih tersisa di tangan pemain itu.
+      </p>
+      {% for i in range(1, 6) %}
+      {% set rd = raw.capsa_rounds[i-1] if raw.capsa_rounds|length >= i else {} %}
+      <div class="score-input-row" style="flex-wrap:wrap; gap:.4rem; margin-bottom:.6rem;">
+        <span class="set-label" style="width:100%;">Ronde {{ i }}</span>
+        <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+        <input type="number" min="0" max="13" name="round{{ i }}_a1" value="{{ rd.a1 if rd else '' }}" placeholder="P1" style="width:4.5em;">
+        <input type="number" min="0" name="round{{ i }}_a1_twos" value="{{ rd.a1_twos if rd and rd.a1_twos }}" placeholder="×2" style="width:3.5em;">
+        <input type="number" min="0" max="13" name="round{{ i }}_a2" value="{{ rd.a2 if rd else '' }}" placeholder="P2" style="width:4.5em;">
+        <input type="number" min="0" name="round{{ i }}_a2_twos" value="{{ rd.a2_twos if rd and rd.a2_twos }}" placeholder="×2" style="width:3.5em;">
+        <span class="score-input-sep">vs</span>
+        <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+        <input type="number" min="0" max="13" name="round{{ i }}_b1" value="{{ rd.b1 if rd else '' }}" placeholder="P1" style="width:4.5em;">
+        <input type="number" min="0" name="round{{ i }}_b1_twos" value="{{ rd.b1_twos if rd and rd.b1_twos }}" placeholder="×2" style="width:3.5em;">
+        <input type="number" min="0" max="13" name="round{{ i }}_b2" value="{{ rd.b2 if rd else '' }}" placeholder="P2" style="width:4.5em;">
+        <input type="number" min="0" name="round{{ i }}_b2_twos" value="{{ rd.b2_twos if rd and rd.b2_twos }}" placeholder="×2" style="width:3.5em;">
+      </div>
+      {% endfor %}
+
+      <div class="form-grid" style="margin-top:1rem;">
+        <label>Status pertandingan
+          <select name="status">
+            <option value="scheduled" {{ 'selected' if raw.status=='scheduled' }}>Terjadwal</option>
+            <option value="live" {{ 'selected' if raw.status=='live' }}>🔴 Live sekarang</option>
+            <option value="completed" {{ 'selected' if raw.status=='completed' }} disabled>✅ Selesai (otomatis dari
+              skor)</option>
+            <option value="postponed" {{ 'selected' if raw.status=='postponed' }}>Ditunda</option>
+          </select>
+        </label>
+      </div>
+      {% if raw.status == 'completed' %}
+      <label>Alasan koreksi hasil
+        <input type="text" name="correction_reason" required maxlength="200"
+          placeholder="Jelaskan alasan perubahan skor pertandingan selesai">
+      </label>
+      {% endif %}
+      <label>Catatan (opsional)
+        <textarea name="notes" rows="2" style="width:100%;">{{ raw.notes }}</textarea>
+      </label>
+      <button class="btn btn-primary btn-block" type="submit" style="margin-top:.8rem;">💾 Simpan Skor</button>
+      <p style="font-size:.78rem; color:#a0677a; margin-top:.6rem;">
+        5 ronde wajib diisi semua untuk pertandingan selesai — pasangan dengan <strong>total poin terendah</strong> menang.
+      </p>
+    </form>
+  </fieldset>
+  {% else %}
   {% set max_sets = m.sets_needed * 2 - 1 %}
   <fieldset>
     <legend>Live Score / Input Skor per {{ m.segment_label }} <span
@@ -340,6 +405,7 @@
         {{ m.sets_needed }} kemenangan {{ m.segment_label|lower }}. {{ m.segment_label }} kosong akan diabaikan.
       </p>
     </form>
+  {% endif %}
   </fieldset>
 
   <fieldset>
