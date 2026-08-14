@@ -4,8 +4,13 @@
 
 {% include "_subnav_jadwal.html" %}
 
-<div class="section-head"><h2>🗓️ Kalender Pertandingan — {{ month_label }}</h2></div>
-<p style="color:#a0677a;">Setiap sesi berlangsung pukul {{ config.time_window }}. Klik tanggal untuk lihat jadwal hari itu di daftar, atau klik satu laga untuk lihat detailnya langsung. Hari berwarna ungu adalah hari cadangan (reschedule buffer), hari oranye adalah akhir pekan/libur, hari merah adalah Final.</p>
+<div class="section-head" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.75rem;">
+  <h2>🗓️ Kalender Pertandingan — {{ month_label }}</h2>
+  <a class="btn btn-outline" href="{{ sport_url('kalender_export') }}" title="Export rundown jadwal {{ 'cabor terpilih' if selected_sport != 'all' else 'semua cabor' }} ke Excel">
+    📥 Export Rundown ke Excel
+  </a>
+</div>
+<p style="color:#a0677a;">Setiap sesi berlangsung pukul {{ config.time_window }}. Klik tanggal untuk lihat jadwal hari itu di daftar, atau klik satu laga untuk lihat detailnya langsung. Hari berwarna ungu adalah hari cadangan (reschedule buffer), hari oranye adalah akhir pekan/libur, hari merah adalah Final. Gunakan pemilih cabor di atas untuk memfilter data sebelum export ke Excel.</p>
 
 {% set today_str = now.strftime('%Y-%m-%d') %}
 <div class="calendar-grid">

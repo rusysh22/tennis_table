@@ -16,6 +16,9 @@ from flask import (
 import io
 import uuid
 from PIL import Image, ImageOps
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
 from werkzeug.security import check_password_hash
 from dotenv import load_dotenv
 
@@ -1001,6 +1004,79 @@ def kalender():
         cur += timedelta(days=1)
 
     return render_template("kalender.html", days=days, month_label=f"{utils.MONTH_NAMES[start.month]} {start.year}")
+
+
+@app.route("/kalender/export")
+def kalender_export():
+    teams, matches, config = data_context()
+    matches = _filter_matches_by_selected_sport(matches)
+    enriched = [enrich_match(m, teams) for m in matches]
+    enriched.sort(key=utils.match_sort_key)
+
+    sports_by_key = {sport["key"]: sport for sport in utils.list_sports()}
+    categories_by_key = {cat["key"]: cat.get("label", cat["key"]) for cat in config.get("categories", [])}
+    selected_sport = _selected_sport()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Rundown Jadwal"
+
+    headers = [
+        "No", "Tanggal", "Waktu", "Cabor", "Kategori", "Grup",
+        "Tim A", "Tim B", "Skor", "Status", "Lokasi",
+    ]
+    ws.append(headers)
+    header_fill = PatternFill(start_color="1F2937", end_color="1F2937", fill_type="solid")
+    header_font = Font(color="FFFFFF", bold=True)
+    for col_idx, _ in enumerate(headers, start=1):
+        cell = ws.cell(row=1, column=col_idx)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+    ws.freeze_panes = "A2"
+
+    for idx, m in enumerate(enriched, start=1):
+        sport_name = sports_by_key.get(m.get("sport_key", "table-tennis"), {}).get("name", m.get("sport_key", ""))
+        kategori_label = categories_by_key.get(m.get("category"), m.get("category", ""))
+        if m["status"] in ("completed", "live"):
+            skor = f"{m['sets_a']} - {m['sets_b']}"
+        else:
+            skor = "-"
+        ws.append([
+            idx,
+            m.get("date_label") or m.get("date", ""),
+            m.get("time", ""),
+            sport_name,
+            kategori_label,
+            "Final" if m.get("group") == "FINAL" else m.get("group", ""),
+            m.get("team_a_code", ""),
+            m.get("team_b_code", ""),
+            skor,
+            m.get("status_label", ""),
+            m.get("court", ""),
+        ])
+
+    widths = [5, 16, 8, 14, 26, 8, 14, 14, 8, 12, 16]
+    for col_idx, width in enumerate(widths, start=1):
+        ws.column_dimensions[get_column_letter(col_idx)].width = width
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+        for cell in row:
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    sport_label = sports_by_key.get(selected_sport, {}).get("name", "Semua Cabor") if selected_sport != "all" else "Semua Cabor"
+    filename = f"Rundown Jadwal {sport_label} - {config.get('tournament_short_name', 'Turnamen')}.xlsx"
+    filename = filename.replace("/", "-")
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 
 @app.route("/aturan")

@@ -110,6 +110,9 @@
     <h2>Jadwal kompetisi</h2>
   </div>
   <p><span class="result-count">{{ matches|length }} pertandingan ditemukan.</span></p>
+  <a class="btn btn-outline" href="{{ sport_url('kalender_export') }}" title="Export rundown jadwal {{ 'cabor terpilih' if selected_sport != 'all' else 'semua cabor' }} ke Excel">
+    📥 Export Rundown ke Excel
+  </a>
 </div>
 
 {% if schedule_days %}
