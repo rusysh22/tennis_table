@@ -3,7 +3,14 @@
 {% block content %}
 
 <div class="roster-intro">
-  <div class="section-head" style="margin:0;"><h2>👥 Tim Peserta</h2></div>
+  <div class="section-head" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.75rem; margin:0;">
+    <h2>👥 Tim Peserta</h2>
+    {% if site_cards %}
+    <a class="btn btn-outline" href="{{ sport_url('tim_peserta_export') }}" title="Export data tim peserta {{ 'cabor terpilih' if selected_sport != 'all' else 'semua cabor' }} ke Excel">
+      📥 Export ke Excel
+    </a>
+    {% endif %}
+  </div>
   <p class="roster-page-lead">Daftar tim peserta per site, dikelompokkan menurut cabang olahraga dan kategori pertandingan.</p>
 
   {% if site_cards %}

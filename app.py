@@ -1162,14 +1162,12 @@ def aturan():
     )
 
 
-@app.route("/tim-peserta")
-def tim_peserta():
+def _tim_peserta_site_cards(selected):
     teams = utils.load_teams()
     config = utils.load_config()
     sites = config.get("sites", [])
     categories = config.get("categories", [])
     sports = [sport for sport in utils.list_sports() if sport.get("enabled")]
-    selected = _selected_sport()
 
     teams_by_site = {}
     for team_id, team in teams.items():
@@ -1231,8 +1229,91 @@ def tim_peserta():
         "team_count": sum(site["team_count"] for site in site_cards),
         "participant_count": len(participant_ids),
     }
+    return site_cards, stats
 
+
+@app.route("/tim-peserta")
+def tim_peserta():
+    site_cards, stats = _tim_peserta_site_cards(_selected_sport())
     return render_template("tim_peserta.html", site_cards=site_cards, stats=stats)
+
+
+@app.route("/tim-peserta/export")
+def tim_peserta_export():
+    selected = _selected_sport()
+    site_cards, _stats = _tim_peserta_site_cards(selected)
+    sports_by_key = {sport["key"]: sport for sport in utils.list_sports()}
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Tim Peserta"
+
+    headers = [
+        "No", "Site", "Cabor", "Kategori", "Grup", "Kode Tim",
+        "Pemain 1 / Anggota", "No. Identitas 1", "Email 1",
+        "Pemain 2", "No. Identitas 2", "Email 2",
+        "Cadangan", "No. Identitas Cadangan",
+    ]
+    ws.append(headers)
+    header_fill = PatternFill(start_color="1F2937", end_color="1F2937", fill_type="solid")
+    header_font = Font(color="FFFFFF", bold=True)
+    for col_idx, _ in enumerate(headers, start=1):
+        cell = ws.cell(row=1, column=col_idx)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+    ws.freeze_panes = "A2"
+
+    row_idx = 1
+    for site in site_cards:
+        for section in site["sport_sections"]:
+            for group in section["category_groups"]:
+                for t in group["teams"]:
+                    if group["entrant_type"] == "roster":
+                        members = ", ".join(
+                            r.get("name") or "TBD" for r in (t.get("reserves") or [])
+                        )
+                        id_numbers = ", ".join(
+                            r.get("id_number") or "-" for r in (t.get("reserves") or [])
+                        )
+                        row_idx += 1
+                        ws.append([
+                            row_idx - 1, site["name"], section["name"], group["label"],
+                            t.get("group") or "", t.get("id") or "",
+                            members, id_numbers, "", "", "", "", "", "",
+                        ])
+                        continue
+                    row_idx += 1
+                    ws.append([
+                        row_idx - 1, site["name"], section["name"], group["label"],
+                        t.get("group") or "", t.get("id") or "",
+                        t.get("player1") or "TBD", t.get("id_number1") or "", t.get("email1") or "",
+                        t.get("player2") or "", t.get("id_number2") or "", t.get("email2") or "",
+                        t.get("reserve_name") or "", t.get("reserve_id_number") or "",
+                    ])
+
+    widths = [5, 18, 14, 26, 8, 12, 22, 16, 24, 22, 16, 24, 22, 16]
+    for col_idx, width in enumerate(widths, start=1):
+        ws.column_dimensions[get_column_letter(col_idx)].width = width
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+        for cell in row:
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    config = utils.load_config()
+    sport_label = sports_by_key.get(selected, {}).get("name", "Semua Cabor") if selected != "all" else "Semua Cabor"
+    filename = f"Tim Peserta {sport_label} - {config.get('tournament_short_name', 'Turnamen')}.xlsx"
+    filename = filename.replace("/", "-")
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 
 @app.route("/klasemen")
