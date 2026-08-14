@@ -2859,7 +2859,7 @@ def admin_edit_match(match_id):
 
                 _update_match_or_flash(
                     match_id, expected_version, update_capsa_score,
-                    "Skor Capsa Susun tersimpan.",
+                    "Skor Capsa Banting tersimpan.",
                 )
 
         elif action == "walkover":

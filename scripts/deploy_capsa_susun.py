@@ -32,7 +32,7 @@ import utils  # noqa: E402
 
 CAPSA_CATEGORY = {
     "key": "capsa_susun",
-    "label": "Capsa Susun — Eksibisi Berpasangan",
+    "label": "Capsa Banting — Eksibisi Berpasangan",
     "sport_key": "capsa-susun",
     "entrant_type": "pair",
     "groups": [],

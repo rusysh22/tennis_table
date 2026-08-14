@@ -581,7 +581,7 @@ def list_sports():
     return [
         {
             "key": "capsa-susun",
-            "name": "Capsa Susun",
+            "name": "Capsa Banting",
             "icon": "🃏",
             "enabled": "capsa-susun" in enabled_sports or counts.get("capsa-susun", 0) > 0,
             "display_order": 0,

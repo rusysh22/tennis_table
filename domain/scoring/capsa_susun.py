@@ -80,7 +80,7 @@ def validate_match_score(segments: Sequence[Sequence[int]]):
     The pair with the lower 5-round total wins."""
     errors = []
     if len(segments) > ROUNDS_PER_MATCH:
-        errors.append(f"Capsa Susun maksimal {ROUNDS_PER_MATCH} ronde per match.")
+        errors.append(f"Capsa Banting maksimal {ROUNDS_PER_MATCH} ronde per match.")
 
     for index, seg in enumerate(segments, start=1):
         if len(seg) != 2:
