@@ -643,5 +643,149 @@
     "text": "#ffffff",
     "player1": "Leonardus (Indika Nature)",
     "player2": "Candra (Indika Nature)"
+  },
+  "CAPSA-01": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Jannata (IMN)",
+    "player2": "Hendra Gunawan (IMU)"
+  },
+  "CAPSA-02": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#7c3aed",
+    "text": "#ffffff",
+    "player1": "Pawestri (IMU)",
+    "player2": "Casal (ISB)"
+  },
+  "CAPSA-03": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#0e7490",
+    "text": "#ffffff",
+    "player1": "Dody Indra (IMU)",
+    "player2": "YIN (ISB)"
+  },
+  "CAPSA-04": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#b45309",
+    "text": "#ffffff",
+    "player1": "Linda (ISB)",
+    "player2": "Indah H (IMU)"
+  },
+  "CAPSA-05": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#be123c",
+    "text": "#ffffff",
+    "player1": "Mitarani (IMU)",
+    "player2": "Rizki Fore (Indis)"
+  },
+  "CAPSA-06": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#166534",
+    "text": "#ffffff",
+    "player1": "Steven (ISB)",
+    "player2": "Daffa (ISB)"
+  },
+  "CAPSA-07": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Pak Joko (Indis)",
+    "player2": "Faisal (Indis)"
+  },
+  "CAPSA-08": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#7c3aed",
+    "text": "#ffffff",
+    "player1": "Sades W (ILSS Babelan)",
+    "player2": "Januar A (ILSS Babelan)"
+  },
+  "CAPSA-09": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#0e7490",
+    "text": "#ffffff",
+    "player1": "Rendy R Z (ILSS Babelan)",
+    "player2": "Rona Kartiko (ILSS Babelan)"
+  },
+  "CAPSA-10": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#b45309",
+    "text": "#ffffff",
+    "player1": "Tito (IMU)",
+    "player2": "Dayat (EMITS)"
+  },
+  "CAPSA-11": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#be123c",
+    "text": "#ffffff",
+    "player1": "Mughira (EMITS)",
+    "player2": "Andre (EMITS)"
+  },
+  "CAPSA-12": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#166534",
+    "text": "#ffffff",
+    "player1": "Fajar (Kalista)",
+    "player2": "Dino (INVI)"
+  },
+  "CAPSA-13": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Aldi (INVI)",
+    "player2": "Raihan (INVI)"
+  },
+  "CAPSA-14": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#7c3aed",
+    "text": "#ffffff",
+    "player1": "Galang (INVI)",
+    "player2": "Alif (INVI)"
+  },
+  "CAPSA-15": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#0e7490",
+    "text": "#ffffff",
+    "player1": "Kana (INVI)",
+    "player2": "Henry (INVI)"
+  },
+  "CAPSA-16": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#b45309",
+    "text": "#ffffff",
+    "player1": "Billy (INVI)",
+    "player2": "Pak Adi Shima (IMU)"
   }
 }
