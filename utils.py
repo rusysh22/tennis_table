@@ -1026,7 +1026,7 @@ def dynamic_circle_rounds(codes):
     return rounds
 
 
-def _scoring_profile_for(sport_key, stage_type):
+def _scoring_profile_for(sport_key, stage_type, category_key=None):
     """Return the per-match scoring profile fields (merged into the match dict)
     for a given sport + stage. Padel group stage splits a single 21-point pool
     between the two sides (whoever scores more of the 21 wins -- e.g. 11-10 or
@@ -1037,10 +1037,15 @@ def _scoring_profile_for(sport_key, stage_type):
     games even after the match is already decided. Badminton is 21 points/best
     of 3 with a 30-point cap at every stage, except the rubber (3rd) game,
     which is shortened to a sudden-victory race to 11 -- first to 11 wins
-    outright, no deuce. Table tennis is Best of 3 games in the group stage,
-    and Best of 5 games in the knockout stage (semifinal, 3rd-place playoff,
-    and final)."""
-    if sport_key == "table-tennis" and stage_type in ("semifinal", "third_place", "final"):
+    outright, no deuce. Table tennis is Best of 3 games in the group stage;
+    knockout stage (semifinal, 3rd-place playoff, final) is Best of 5 except
+    for tenis_meja_ganda_putra, which stays Best of 3 at every stage per
+    admin request."""
+    if (
+        sport_key == "table-tennis"
+        and stage_type in ("semifinal", "third_place", "final")
+        and category_key != "tenis_meja_ganda_putra"
+    ):
         return {
             "_profile_key": "table-tennis-bo5",
             "_profile_version": 1,
@@ -1169,8 +1174,8 @@ def generate_group_to_knockout_schedule(category_key, start_date=None, time_slot
     knockout_count = 0
     if knockout_format != "no_knockout":
         final_date_str = config.get("final_date", curr_date.strftime("%Y-%m-%d"))
-        semifinal_profile = _scoring_profile_for(sport_key, "semifinal")
-        final_profile = _scoring_profile_for(sport_key, "final")
+        semifinal_profile = _scoring_profile_for(sport_key, "semifinal", category_key)
+        final_profile = _scoring_profile_for(sport_key, "final", category_key)
         if knockout_format == "semi_and_final":
             sf1_a, sf1_b = _qual_slot_pair(
                 groups, ("Juara Group A", "Runner-up Group B"), ("Peringkat 1 Group", "Peringkat 4 Group")
