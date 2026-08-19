@@ -1,5 +1,5 @@
 {
-  "status": "active",
+  "status": "expired",
   "license_key": "XB09-235K-8FW5",
   "token": "XB09-235K-8FW5:eeae2492a2fd537a5ffd314f460cc08c8f5186a64d7ba5d1d9137941443129ff:1wrYNj:ACPNwjwlFM2n8OZdRsnNwQIZWfaBoz_HRU9VeJNz6Ww",
   "fingerprint": "eeae2492a2fd537a5ffd314f460cc08c8f5186a64d7ba5d1d9137941443129ff",
@@ -22,6 +22,6 @@
     "SLA_REPORTS": "true",
     "WHATSAPP": "true"
   },
-  "last_validated_timestamp": 1785923844,
-  "last_message": "Pengecekan offline / server gangguan: HTTP Error 400: BAD REQUEST. Mempertahankan status sementara."
+  "last_validated_timestamp": 1786788077,
+  "last_message": "Status berlangganan terkini dari server: EXPIRED."
 }
