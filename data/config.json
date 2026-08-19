@@ -1,37 +1,181 @@
 {
-  "tournament_name": "Mini-Round Table Tennis InterSport 2026",
-  "tournament_short_name": "InterSport 2026",
-  "start_date": "2026-07-20",
-  "end_date": "2026-07-29",
-  "buffer_dates": [
-    "2026-07-24"
-  ],
-  "final_date": "2026-07-29",
-  "closing_date": "2026-07-29",
-  "time_window": "18.00 - 20.00 WIB",
+  "tournament_name": "Interport Synergy Cup 2026",
+  "tournament_short_name": "Synergy Cup 2026",
+  "status": "active",
+  "timezone": "Asia/Jakarta",
+  "locale": "id-ID",
+  "start_date": "2026-08-12",
+  "end_date": "2026-08-14",
+  "buffer_dates": [],
+  "final_date": "2026-08-14",
+  "closing_date": "2026-08-14",
+  "time_window": "16.00 - 21.00 WIB",
   "time_window_note": "After Office Hours",
-  "venue": "Synergy Room",
-  "final_note": "Final Ganda Putra mempertemukan Juara Group A vs Juara Group B",
+  "venue": "Padeloom, Saintuary Sport & Synergy Room Lt. 7",
+  "final_note": "Babak Final dan Penutupan Turnamen",
+  "announcement_title": "Selamat Datang di Interport Synergy Cup 2026!",
+  "announcement_text": "Turnamen multi-cabang olahraga antar Site Interport 2026 resmi dimulai! 6 Site berlaga: Babelan, Jakarta, Paser, Balikpapan, Surabaya, dan Morowali. Junjung tinggi sportivitas dan semangat kebersamaan!",
+  "youtube_embed_title": "Siaran Langsung Pertandingan Synergy Cup 2026",
+  "youtube_embed_url": "https://www.youtube.com/embed/OSX7i0zYsn8",
+  "ga_measurement_id": "G-SJ2JG9BVGS",
+  "enabled_sports": [
+    "table-tennis",
+    "padel",
+    "badminton",
+    "capsa-susun"
+  ],
+  "sites": [
+    {
+      "code": "BBL",
+      "name": "Babelan Patriot"
+    },
+    {
+      "code": "JKT",
+      "name": "Jakarta Jawara"
+    },
+    {
+      "code": "BPP",
+      "name": "Balikpapan Marwah Warriors"
+    },
+    {
+      "code": "PSR",
+      "name": "Paser Buen Kesong"
+    },
+    {
+      "code": "SBY",
+      "name": "Surabaya Joang"
+    },
+    {
+      "code": "MRW",
+      "name": "Morowali Titans"
+    }
+  ],
   "categories": [
     {
-      "key": "ganda_putra",
-      "label": "Ganda Putra",
+      "key": "padel_ganda_putra",
+      "label": "Padel — Ganda Putra",
+      "sport_key": "padel",
+      "entrant_type": "pair",
+      "groups": [
+        "A"
+      ],
+      "has_final": true,
+      "knockout_format": "semi_and_final"
+    },
+    {
+      "key": "padel_ganda_campuran",
+      "label": "Padel — Ganda Campuran",
+      "sport_key": "padel",
+      "entrant_type": "pair",
+      "groups": [
+        "A"
+      ],
+      "has_final": true,
+      "knockout_format": "semi_and_final"
+    },
+    {
+      "key": "tenis_meja_ganda_putra",
+      "label": "Tenis Meja — Ganda Putra",
+      "sport_key": "table-tennis",
+      "entrant_type": "pair",
+      "groups": [
+        "A"
+      ],
+      "has_final": true,
+      "knockout_format": "semi_and_final"
+    },
+    {
+      "key": "tenis_meja_ganda_campuran",
+      "label": "Tenis Meja — Ganda Campuran",
+      "sport_key": "table-tennis",
+      "entrant_type": "pair",
+      "groups": [
+        "A"
+      ],
+      "has_final": true,
+      "knockout_format": "semi_and_final"
+    },
+    {
+      "key": "badminton_ganda_putra",
+      "label": "Badminton — Ganda Putra",
+      "sport_key": "badminton",
+      "entrant_type": "pair",
       "groups": [
         "A",
         "B"
       ],
-      "has_final": true
+      "has_final": true,
+      "knockout_format": "semi_and_final"
     },
     {
-      "key": "ganda_campuran",
-      "label": "Ganda Campuran",
+      "key": "badminton_ganda_campuran",
+      "label": "Badminton — Ganda Campuran",
+      "sport_key": "badminton",
+      "entrant_type": "pair",
       "groups": [
         "A"
       ],
-      "has_final": false
+      "has_final": true,
+      "knockout_format": "semi_and_final"
+    },
+    {
+      "key": "capsa_susun",
+      "label": "Capsa Banting — Eksibisi Berpasangan",
+      "sport_key": "capsa-susun",
+      "entrant_type": "pair",
+      "groups": [],
+      "has_final": true,
+      "bracket_format": "single_elimination"
     }
   ],
-  "announcement_title": "Pengumuman Pergantian Anggota Pemain",
-  "announcement_text": "Dikarenakan Mas Awan sedang mengalami cidera bahu, maka pemain penggantinya adalah Mas Novandi",
-  "ga_measurement_id": "G-SJ2JG9BVGS"
+  "live_chat_messages": [
+    {
+      "id": "67b7b5ff0e3540aabed02a8913fb5797",
+      "name": "Dani",
+      "message": "Semangat",
+      "at": "2026-08-12T14:30:54+07:00"
+    },
+    {
+      "id": "2f47e9cacc144328873724527594192b",
+      "name": "Dani",
+      "message": "Semangat",
+      "at": "2026-08-12T14:31:00+07:00"
+    },
+    {
+      "id": "5afa5421df644d578f3235466e58463e",
+      "name": "Ucy",
+      "message": "Dani Semangatttt!!!!!",
+      "at": "2026-08-12T14:31:11+07:00"
+    },
+    {
+      "id": "ab3a147abde14e57a796b5b1f1c9283e",
+      "name": "Ucy",
+      "message": "Test",
+      "at": "2026-08-12T14:36:02+07:00"
+    },
+    {
+      "id": "de0edadf7de74f7c93e31414a3fba326",
+      "name": "Ucy",
+      "message": "Ayo semangat",
+      "at": "2026-08-12T14:36:07+07:00"
+    },
+    {
+      "id": "d028b209651b4a05aa83c6ca31874182",
+      "name": "Ucy",
+      "message": "Jangan goyah",
+      "at": "2026-08-12T14:36:11+07:00"
+    },
+    {
+      "id": "f32b418c5471429499153ce01b50c363",
+      "name": "Ucy",
+      "message": "jangan gegabah",
+      "at": "2026-08-12T14:36:17+07:00"
+    },
+    {
+      "id": "a1d8f95460124ca98b0dcb2fcb216901",
+      "name": "Ucy",
+      "message": "berikan dukunganmu",
+      "at": "2026-08-12T14:36:23+07:00"
+    }
+  ]
 }

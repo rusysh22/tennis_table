@@ -4,32 +4,31 @@
 {% block content %}
 
 <section class="hero">
+  <div class="hero-slideshow" aria-hidden="true">
+    <div class="hero-slide" style="background-image:url('{{ url_for('static', filename='img/interport-hero-image-1.JPG') }}')"></div>
+    <div class="hero-slide" style="background-image:url('{{ url_for('static', filename='img/interport-hero-image-2.JPG') }}')"></div>
+    <div class="hero-slide" style="background-image:url('{{ url_for('static', filename='img/interport-hero-image-3.JPG') }}')"></div>
+  </div>
+  <div class="hero-scrim" aria-hidden="true"></div>
+  <div class="hero-kicker"><span></span> Tournament command center</div>
   <h1>{{ config.tournament_name }}</h1>
+  <p class="hero-lead">Pantau pertandingan, skor langsung, klasemen, dan perjalanan menuju juara dalam satu arena digital.</p>
 
   <div class="hero-meta">
     <div class="hero-chip">
       <div class="k">Tanggal</div>
-      <div class="v">{{ config.start_date[8:10] }}&ndash;{{ config.end_date[8:10] }} Juli {{ config.start_date[:4] }}
-      </div>
+      <div class="v">{{ tournament_date_range }}</div>
     </div>
     <div class="hero-chip">
       <div class="k">Waktu</div>
       <div class="v">{{ config.time_window }}</div>
     </div>
-    <div class="hero-chip">
-      <div class="k">Sesi</div>
-      <div class="v">{{ config.time_window_note }}</div>
-    </div>
-    <div class="hero-chip">
-      <div class="k">Lokasi</div>
-      <div class="v">{{ config.venue }}</div>
-    </div>
   </div>
 
   {% if is_live %}
-  <div style="font-size: 1rem; font-weight: bold; color: #fff; text-align: center; margin-top: .5rem; margin-bottom: 1rem; background: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.5); padding: 0.6rem 1rem; border-radius: 8px; display: inline-block;">
-    <span class="pulse-dot" style="display:inline-block; width:10px; height:10px; background:var(--brand-red); border-radius:50%; margin-right:6px; box-shadow: 0 0 8px var(--brand-red);"></span>
-    Sedang Ada Pertandingan Berlangsung!
+  <div class="hero-status is-live">
+    <span class="pulse-dot" aria-hidden="true"></span>
+    Pertandingan sedang berlangsung
   </div>
   {% elif next_match %}
   <div class="countdown" id="countdown" data-target="{{ next_match.date }}T{{ next_match.time }}:00+07:00">
@@ -53,11 +52,11 @@
       <div class="lbl">Detik</div>
     </div>
   </div>
-  {% else %}
+  {% elif tournament_ended %}
   <div class="hero-firework-wrap" aria-hidden="true"><canvas id="heroFireworkCanvas"></canvas></div>
 
-  <div style="font-size: 1rem; font-weight: bold; color: #fff; text-align: center; margin-top: .5rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.1); padding: 0.6rem 1rem; border-radius: 8px; display: inline-block; position:relative; z-index:1;">
-    🎉 Seluruh jadwal turnamen telah selesai.
+  <div class="hero-status is-complete">
+    Seluruh jadwal turnamen telah selesai
   </div>
 
   <p class="hero-congrats" style="position:relative; z-index:1;">
@@ -67,34 +66,21 @@
     ["Selamat kepada seluruh juara Mini-Round Table Tennis InterSport 2026! 🏆", "Terima kasih atas sportivitas dan semangat juang seluruh peserta! 👏", "Sampai jumpa di turnamen berikutnya! 🏓🎉"]
   </script>
 
-  {% if gc_champion_team or putra_champion_team %}
+  {% if champion_divisions %}
   <div class="hero-champions">
-    {% if putra_champion_team %}
+    {% for division in champion_divisions %}
     <div class="hero-champion-card">
-      {% if putra_champion_photo %}
-      <img src="{{ putra_champion_photo }}" alt="Foto juara Ganda Putra" class="hero-champion-photo public-doc-img" data-full-src="{{ putra_champion_photo }}">
+      {% if division.champion_photo %}
+      <img src="{{ division.champion_photo }}" alt="Foto juara {{ division.name }}" class="hero-champion-photo public-doc-img" data-full-src="{{ division.champion_photo }}">
       {% else %}
       <div class="hero-champion-photo hero-champion-photo-empty">🏆</div>
       {% endif %}
       <div class="hero-champion-info">
-        <span class="hero-champion-label">🏆 Juara Ganda Putra</span>
-        {{ champion_name(putra_champion_team, 'hero-champion-name') }}
+        <span class="hero-champion-label">{{ division.sport_icon }} Juara {{ division.name }}</span>
+        {{ champion_name(division.champion_team, 'hero-champion-name') }}
       </div>
     </div>
-    {% endif %}
-    {% if gc_champion_team %}
-    <div class="hero-champion-card">
-      {% if gc_champion_photo %}
-      <img src="{{ gc_champion_photo }}" alt="Foto juara Ganda Campuran" class="hero-champion-photo public-doc-img" data-full-src="{{ gc_champion_photo }}">
-      {% else %}
-      <div class="hero-champion-photo hero-champion-photo-empty">🏆</div>
-      {% endif %}
-      <div class="hero-champion-info">
-        <span class="hero-champion-label">🏆 Juara Ganda Campuran</span>
-        {{ champion_name(gc_champion_team, 'hero-champion-name') }}
-      </div>
-    </div>
-    {% endif %}
+    {% endfor %}
   </div>
   {% endif %}
 
@@ -112,46 +98,95 @@
     </div>
   </div>
   {% endif %}
+  {% else %}
+  <div class="hero-status is-pending">
+    {{ incomplete_count }} pertandingan masih menunggu pembaruan
+  </div>
   {% endif %}
 
   <div class="hero-actions">
-    <a class="btn btn-primary" href="{{ url_for('jadwal') }}">📅 Lihat Jadwal</a>
-    <a class="btn btn-outline hero-btn-outline" href="{{ url_for('live') }}">🔴 Live Score</a>
-    <a class="btn btn-outline hero-btn-outline" href="{{ url_for('bracket') }}">🏆 Bracket Final</a>
+    <a class="btn btn-primary" href="{{ sport_url('jadwal') }}">📅 Lihat Jadwal</a>
+    <a class="btn btn-outline hero-btn-outline" href="{{ sport_url('live') }}">🔴 Live Score</a>
+    <a class="btn btn-outline hero-btn-outline" href="{{ sport_url('bracket') }}">🏆 Bracket Final</a>
   </div>
 
   <div class="hero-quicknav">
-    <a href="{{ url_for('jadwal') }}"><span class="qn-ic">📅</span><span class="qn-lbl">Jadwal</span></a>
-    <a href="{{ url_for('live') }}"><span class="qn-ic">🔴</span><span class="qn-lbl">Live</span></a>
-    <a href="{{ url_for('klasemen') }}"><span class="qn-ic">🏅</span><span class="qn-lbl">Klasemen</span></a>
-    <a href="{{ url_for('bracket') }}"><span class="qn-ic">🏆</span><span class="qn-lbl">Bracket</span></a>
-    <a href="{{ url_for('rekap') }}"><span class="qn-ic">📋</span><span class="qn-lbl">Rekap</span></a>
-    <a href="{{ url_for('kalender') }}"><span class="qn-ic">🗓️</span><span class="qn-lbl">Kalender</span></a>
+    <a href="{{ sport_url('jadwal') }}"><span class="qn-ic">📅</span><span class="qn-lbl">Jadwal</span></a>
+    <a href="{{ sport_url('live') }}"><span class="qn-ic">🔴</span><span class="qn-lbl">Live</span></a>
+    <a href="{{ sport_url('klasemen') }}"><span class="qn-ic">🏅</span><span class="qn-lbl">Klasemen</span></a>
+    <a href="{{ sport_url('bracket') }}"><span class="qn-ic">🏆</span><span class="qn-lbl">Bracket</span></a>
+    <a href="{{ sport_url('rekap') }}"><span class="qn-ic">📋</span><span class="qn-lbl">Rekap</span></a>
+    <a href="{{ sport_url('kalender') }}"><span class="qn-ic">🗓️</span><span class="qn-lbl">Kalender</span></a>
   </div>
 </section>
 
-<div class="stats-row">
-  <div class="stat-card">
-    <div class="num">{{ team_count }}</div>
-    <div class="lbl">Tim Terdaftar</div>
-  </div>
-  <div class="stat-card">
-    <div class="num">{{ total_matches }}</div>
-    <div class="lbl">Total Pertandingan</div>
-  </div>
-  <div class="stat-card">
-    <div class="num">{{ completed_count }}</div>
-    <div class="lbl">Sudah Selesai</div>
-  </div>
-  <div class="stat-card">
-    <div class="num">2</div>
-    <div class="lbl">Kategori (Putra &amp; Campuran)</div>
-  </div>
+<div class="section-head" style="margin-top: 2rem;"><h2>🏟️ Arena &amp; Cabang Olahraga</h2></div>
+<div class="sport-hub-grid">
+  {% for sport in sport_cards %}
+    {% if sport.enabled %}
+    <a class="sport-hub-card sport-theme-{{ sport.key }}" href="{{ switch_sport_url(sport.key) }}#match-section">
+    {% else %}
+    <div class="sport-hub-card sport-theme-{{ sport.key }} disabled" aria-disabled="true">
+    {% endif %}
+      <div class="sport-card-top">
+        <div class="sport-card-icon-wrap">
+          <span class="sport-card-icon" aria-hidden="true">{{ sport.icon }}</span>
+        </div>
+        <div class="sport-card-title-area">
+          <h3>{{ sport.name }}</h3>
+          <span class="sport-card-div-tag">🏆 {{ sport.division_count }} Divisi Pertandingan</span>
+        </div>
+        {% if not sport.enabled %}
+        <span class="sport-coming-soon">Segera</span>
+        {% else %}
+        <span class="sport-arrow" aria-hidden="true">&rarr;</span>
+        {% endif %}
+      </div>
+      <div class="sport-card-stats-bar">
+        {% if sport.live_count > 0 %}
+        <span class="sport-stat-badge stat-live"><span class="live-pulse-dot" aria-hidden="true"></span><strong>{{ sport.live_count }}</strong> Sedang Live</span>
+        {% else %}
+        <span class="sport-stat-badge stat-offline">⚪ Offline / 0 Live</span>
+        {% endif %}
+        <span class="sport-stat-badge stat-completed">🏁 <strong>{{ sport.completed_count }}</strong> / {{ sport.match_count }} Laga Selesai</span>
+      </div>
+      {% if sport.match_count > 0 %}
+      {% set pct = (sport.completed_count / sport.match_count * 100) | round | int %}
+      <div class="sport-card-progress" title="Progress pertandingan: {{ pct }}%">
+        <div class="sport-card-progress-bar" style="width: {{ pct }}%;"></div>
+      </div>
+      {% endif %}
+      <div class="sport-card-next-match">
+        {% if sport.next_match %}
+        <div class="next-match-header">
+          <span class="next-tag">⚡ Laga Berikutnya</span>
+          <span class="next-time">📅 {{ sport.next_match.date_label }} · {{ sport.next_match.time }} WIB</span>
+        </div>
+        <div class="next-match-teams">
+          <strong>{{ sport.next_match.team_a_code }}</strong>
+          <span class="vs-badge">vs</span>
+          <strong>{{ sport.next_match.team_b_code }}</strong>
+        </div>
+        {% elif sport.enabled %}
+        <div class="next-match-empty">
+          <span class="empty-icon">☕</span>
+          <span>Belum ada jadwal pertandingan mendatang.</span>
+        </div>
+        {% else %}
+        <div class="next-match-empty">
+          <span class="empty-icon">🔒</span>
+          <span>Menunggu konfigurasi divisi dan jadwal turnamen.</span>
+        </div>
+        {% endif %}
+      </div>
+    {% if sport.enabled %}</a>{% else %}</div>{% endif %}
+  {% endfor %}
 </div>
 
+<div id="match-section" style="scroll-margin-top: 75px;"></div>
 {% if live_now %}
 <div class="section-head">
-  <h2>🔴 Sedang Berlangsung</h2><a class="link-more" href="{{ url_for('live') }}">Lihat semua &rarr;</a>
+  <h2>🔴 Sedang Berlangsung</h2><a class="link-more" href="{{ sport_url('live') }}">Lihat semua &rarr;</a>
 </div>
 <div class="match-grid" data-live-poll>
   {% for m in live_now %}
@@ -161,7 +196,7 @@
 {% endif %}
 
 <div class="section-head">
-  <h2>📅 Pertandingan Mendatang</h2><a class="link-more" href="{{ url_for('jadwal') }}">Jadwal lengkap &rarr;</a>
+  <h2>📅 Pertandingan Mendatang</h2><a class="link-more" href="{{ sport_url('jadwal') }}">Jadwal lengkap &rarr;</a>
 </div>
 {% if upcoming %}
 <div class="match-grid">
@@ -177,7 +212,7 @@
 
 {% if recent %}
 <div class="section-head">
-  <h2>📋 Hasil Terbaru</h2><a class="link-more" href="{{ url_for('rekap') }}">Rekap lengkap &rarr;</a>
+  <h2>📋 Hasil Terbaru</h2><a class="link-more" href="{{ sport_url('rekap') }}">Rekap lengkap &rarr;</a>
 </div>
 <div class="match-grid">
   {% for m in recent %}
@@ -376,5 +411,19 @@
 })();
 </script>
 {% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  var urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('sport') && urlParams.get('sport') !== 'all') {
+    var elem = document.getElementById('match-section');
+    if (elem && !window.location.hash) {
+      setTimeout(function() {
+        elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+    }
+  }
+});
+</script>
 
 {% endblock %}

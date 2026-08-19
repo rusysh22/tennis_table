@@ -1,15 +1,51 @@
 {% extends "base.html" %}
-{% block title %}Admin Login — {{ config.tournament_short_name }}{% endblock %}
+{% block title %}Login Admin — {{ config.tournament_short_name }}{% endblock %}
+{% block bodyclass %}admin-login-body{% endblock %}
 {% block content %}
 
-<div class="login-card">
-  <div style="font-size:2rem;">🏓🔒</div>
-  <h2 style="color:var(--maroon-700);">Admin Login</h2>
-  <p style="color:#a0677a; font-size:.88rem;">Masuk untuk mengelola skor, status, dan jadwal pertandingan.</p>
-  <form method="post">
-    <input type="password" name="password" placeholder="Password admin" required autofocus>
-    <button class="btn btn-primary btn-block" type="submit">Masuk</button>
-  </form>
+<div class="admin-gateway">
+  <section class="admin-gateway-intro" aria-labelledby="adminGatewayTitle">
+    <span class="admin-gateway-kicker"><i aria-hidden="true"></i>Restricted Competition Access</span>
+    <h1 id="adminGatewayTitle">Kendalikan turnamen dari satu arena.</h1>
+    <p>Ruang kerja panitia untuk menjaga jadwal, skor, status pertandingan, dan komunikasi event tetap sinkron.</p>
+    <div class="admin-capability-list" aria-label="Fitur administrasi">
+      <span><i aria-hidden="true">01</i>Kontrol jadwal dan lapangan</span>
+      <span><i aria-hidden="true">02</i>Live score dan scorekeeper</span>
+      <span><i aria-hidden="true">03</i>Pengumuman dan dokumentasi</span>
+    </div>
+    <div class="admin-gateway-state"><i aria-hidden="true"></i><span><small>System status</small><strong>Command center siap</strong></span></div>
+  </section>
+
+  <section class="login-card" aria-labelledby="adminLoginTitle">
+    <div class="login-card-head">
+      <span class="login-emblem" aria-hidden="true">AD</span>
+      <div>
+        <span>Panitia turnamen</span>
+        <h2 id="adminLoginTitle">Login Admin</h2>
+      </div>
+    </div>
+    <p class="login-card-copy">Masukkan password operasional untuk membuka dashboard turnamen.</p>
+    <form method="post" class="admin-login-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label for="adminAccount">Akun</label>
+      <select id="adminAccount" name="account_key" required {{ 'disabled' if not accounts }}>
+        {% if not accounts %}
+        <option value="">Belum ada akun dikonfigurasi</option>
+        {% endif %}
+        {% for account in accounts %}
+        <option value="{{ account.key }}" {{ 'selected' if account.key == selected_account_key }}>{{ account.label }}</option>
+        {% endfor %}
+      </select>
+      <label for="adminPassword" style="margin-top:.9rem;">Password admin</label>
+      <div class="password-control">
+        <input id="adminPassword" type="password" name="password" placeholder="Masukkan password" autocomplete="current-password" required autofocus>
+        <button type="button" class="password-toggle" data-password-toggle aria-controls="adminPassword" aria-label="Tampilkan password">Lihat</button>
+      </div>
+      <button class="btn btn-primary btn-block admin-login-submit" type="submit"><span>Masuk ke command center</span><i aria-hidden="true">→</i></button>
+    </form>
+    <div class="login-security"><i aria-hidden="true"></i><span><strong>Akses terlindungi</strong><small>Percobaan berulang akan dikunci sementara.</small></span></div>
+    <a class="login-back-link" href="{{ sport_url('index') }}">← Kembali ke halaman turnamen</a>
+  </section>
 </div>
 
 {% endblock %}

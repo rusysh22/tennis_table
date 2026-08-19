@@ -1,0 +1,98 @@
+{
+  "GS": {
+    "category": "ganda_putra",
+    "group": "A",
+    "player1": "Gede Surya Atmaja",
+    "player2": "Satwika Indramantanu",
+    "color": "#2a78d6",
+    "text": "#ffffff"
+  },
+  "RR": {
+    "category": "ganda_putra",
+    "group": "A",
+    "player1": "Rafli Ananta Zikri",
+    "player2": "Rizki Amrizal",
+    "color": "#008300",
+    "text": "#ffffff"
+  },
+  "NH": {
+    "category": "ganda_putra",
+    "group": "A",
+    "player1": "Novandi Nasty Sandya",
+    "player2": "Hendra Gunawan",
+    "color": "#e87ba4",
+    "text": "#000000"
+  },
+  "AD": {
+    "category": "ganda_putra",
+    "group": "A",
+    "player1": "Adhitya Syafta",
+    "player2": "Dea Aditya Trimukti",
+    "color": "#eda100",
+    "text": "#000000"
+  },
+  "AJ": {
+    "category": "ganda_putra",
+    "group": "B",
+    "player1": "Aji Darmadi",
+    "player2": "Julyzar Iskandar",
+    "color": "#1baf7a",
+    "text": "#000000"
+  },
+  "TP": {
+    "category": "ganda_putra",
+    "group": "B",
+    "player1": "Tito Alfani",
+    "player2": "Prayogi Akbar Putra",
+    "color": "#eb6834",
+    "text": "#000000"
+  },
+  "MW": {
+    "category": "ganda_putra",
+    "group": "B",
+    "player1": "Mohammad Saifur Rahman",
+    "player2": "Wahyu Harja Saputra",
+    "color": "#4a3aa7",
+    "text": "#ffffff"
+  },
+  "DJ": {
+    "category": "ganda_putra",
+    "group": "B",
+    "player1": "Daffa Indrasta R",
+    "player2": "Joko Santoso",
+    "color": "#e34948",
+    "text": "#000000"
+  },
+  "MM": {
+    "category": "ganda_campuran",
+    "group": "A",
+    "player1": "Muhammad Rusydani Shubkhi",
+    "player2": "Mia R Mancani P",
+    "color": "#7ca329",
+    "text": "#000000"
+  },
+  "TL": {
+    "category": "ganda_campuran",
+    "group": "A",
+    "player1": "Tegar Perkasa Darmawan",
+    "player2": "Linda Astriyani",
+    "color": "#aa3bb0",
+    "text": "#ffffff"
+  },
+  "PA": {
+    "category": "ganda_campuran",
+    "group": "A",
+    "player1": "Pawestri Wulan Ramadani",
+    "player2": "Abraham Kaawoan",
+    "color": "#169882",
+    "text": "#000000"
+  },
+  "NG": {
+    "category": "ganda_campuran",
+    "group": "A",
+    "player1": "Nevi Setyasih",
+    "player2": "Gomfie Sidabutar",
+    "color": "#b15425",
+    "text": "#ffffff"
+  }
+}

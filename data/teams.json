@@ -1,98 +1,791 @@
 {
-  "GS": {
-    "category": "ganda_putra",
+  "BBL-PDL1": {
+    "site_code": "BBL",
+    "category": "padel_ganda_putra",
     "group": "A",
-    "player1": "Gede Surya Atmaja",
-    "player2": "Satwika Indramantanu",
-    "color": "#2a78d6",
-    "text": "#ffffff"
+    "color": "#166534",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-02",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "BBL-13",
+        "role": "cadangan"
+      }
+    ]
   },
-  "RR": {
-    "category": "ganda_putra",
+  "BPP-PDL1": {
+    "site_code": "BPP",
+    "category": "padel_ganda_putra",
     "group": "A",
-    "player1": "Rafli Ananta Zikri",
-    "player2": "Rizki Amrizal",
-    "color": "#008300",
-    "text": "#ffffff"
+    "color": "#e8720c",
+    "text": "#000000",
+    "members": [
+      {
+        "participant_id": "BPP-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-02",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-13",
+        "role": "cadangan"
+      }
+    ]
   },
-  "NH": {
-    "category": "ganda_putra",
+  "JKT-PDL1": {
+    "site_code": "JKT",
+    "category": "padel_ganda_putra",
     "group": "A",
-    "player1": "Novandi Nasty Sandya",
-    "player2": "Hendra Gunawan",
-    "color": "#e87ba4",
-    "text": "#000000"
+    "color": "#be185d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-02",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "JKT-13",
+        "role": "cadangan"
+      }
+    ]
   },
-  "AD": {
-    "category": "ganda_putra",
+  "PSR-PDL1": {
+    "site_code": "PSR",
+    "category": "padel_ganda_putra",
     "group": "A",
-    "player1": "Adhitya Syafta",
-    "player2": "Dea Aditya Trimukti",
-    "color": "#eda100",
-    "text": "#000000"
+    "color": "#7f1d1d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-02",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "PSR-05",
+        "role": "cadangan"
+      }
+    ]
   },
-  "AJ": {
-    "category": "ganda_putra",
+  "SBY-PDL1": {
+    "site_code": "SBY",
+    "category": "padel_ganda_putra",
+    "group": "A",
+    "color": "#2563eb",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "SBY-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "SBY-02",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BBL-PDL2": {
+    "site_code": "BBL",
+    "category": "padel_ganda_campuran",
+    "group": "A",
+    "color": "#166534",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-03",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-04",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BPP-PDL2": {
+    "site_code": "BPP",
+    "category": "padel_ganda_campuran",
+    "group": "A",
+    "color": "#e8720c",
+    "text": "#000000",
+    "members": [
+      {
+        "participant_id": "BPP-13",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-04",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-08",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "JKT-PDL2": {
+    "site_code": "JKT",
+    "category": "padel_ganda_campuran",
+    "group": "A",
+    "color": "#be185d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-03",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-04",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "JKT-14",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "PSR-PDL2": {
+    "site_code": "PSR",
+    "category": "padel_ganda_campuran",
+    "group": "A",
+    "color": "#7f1d1d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-03",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-04",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "PSR-12",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "BBL-BM1": {
+    "site_code": "BBL",
+    "category": "badminton_ganda_putra",
     "group": "B",
-    "player1": "Aji Darmadi",
-    "player2": "Julyzar Iskandar",
-    "color": "#1baf7a",
-    "text": "#000000"
+    "color": "#166534",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-05",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-06",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "BBL-14",
+        "role": "cadangan"
+      }
+    ]
   },
-  "TP": {
-    "category": "ganda_putra",
+  "BPP-BM1": {
+    "site_code": "BPP",
+    "category": "badminton_ganda_putra",
+    "group": "A",
+    "color": "#e8720c",
+    "text": "#000000",
+    "members": [
+      {
+        "participant_id": "BPP-05",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-06",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-03",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "JKT-BM1": {
+    "site_code": "JKT",
+    "category": "badminton_ganda_putra",
+    "group": "A",
+    "color": "#be185d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-05",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-06",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "JKT-15",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "MRW-BM1": {
+    "site_code": "MRW",
+    "category": "badminton_ganda_putra",
     "group": "B",
-    "player1": "Tito Alfani",
-    "player2": "Prayogi Akbar Putra",
-    "color": "#eb6834",
-    "text": "#000000"
+    "color": "#eab308",
+    "text": "#000000",
+    "members": [
+      {
+        "participant_id": "MRW-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "MRW-02",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "MRW-03",
+        "role": "cadangan"
+      }
+    ]
   },
-  "MW": {
-    "category": "ganda_putra",
+  "PSR-BM1": {
+    "site_code": "PSR",
+    "category": "badminton_ganda_putra",
+    "group": "A",
+    "color": "#7f1d1d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-05",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-06",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "PSR-10",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "SBY-BM1": {
+    "site_code": "SBY",
+    "category": "badminton_ganda_putra",
     "group": "B",
-    "player1": "Mohammad Saifur Rahman",
-    "player2": "Wahyu Harja Saputra",
-    "color": "#4a3aa7",
-    "text": "#ffffff"
+    "color": "#2563eb",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "SBY-03",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "SBY-04",
+        "role": "pemain2"
+      }
+    ]
   },
-  "DJ": {
-    "category": "ganda_putra",
-    "group": "B",
-    "player1": "Daffa Indrasta R",
-    "player2": "Joko Santoso",
-    "color": "#e34948",
-    "text": "#000000"
-  },
-  "MM": {
-    "category": "ganda_campuran",
+  "BBL-BM2": {
+    "site_code": "BBL",
+    "category": "badminton_ganda_campuran",
     "group": "A",
-    "player1": "Muhammad Rusydani Shubkhi",
-    "player2": "Mia R Mancani P",
-    "color": "#7ca329",
-    "text": "#000000"
+    "color": "#166534",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-07",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-08",
+        "role": "pemain2"
+      }
+    ]
   },
-  "TL": {
-    "category": "ganda_campuran",
+  "BPP-BM2": {
+    "site_code": "BPP",
+    "category": "badminton_ganda_campuran",
     "group": "A",
-    "player1": "Tegar Perkasa Darmawan",
-    "player2": "Linda Astriyani",
-    "color": "#aa3bb0",
-    "text": "#ffffff"
+    "color": "#e8720c",
+    "text": "#000000",
+    "members": [
+      {
+        "participant_id": "BPP-07",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-08",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-04",
+        "role": "cadangan"
+      }
+    ]
   },
-  "PA": {
-    "category": "ganda_campuran",
+  "JKT-BM2": {
+    "site_code": "JKT",
+    "category": "badminton_ganda_campuran",
     "group": "A",
-    "player1": "Pawestri Wulan Ramadani",
-    "player2": "Abraham Kaawoan",
-    "color": "#169882",
-    "text": "#000000"
+    "color": "#be185d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-07",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-08",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "JKT-12",
+        "role": "cadangan"
+      }
+    ]
   },
-  "NG": {
-    "category": "ganda_campuran",
+  "PSR-BM2": {
+    "site_code": "PSR",
+    "category": "badminton_ganda_campuran",
     "group": "A",
-    "player1": "Nevi Setyasih",
-    "player2": "Gomfie Sidabutar",
-    "color": "#b15425",
-    "text": "#ffffff"
+    "color": "#7f1d1d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-07",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-08",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "PSR-04",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "SBY-BM2": {
+    "site_code": "SBY",
+    "category": "badminton_ganda_campuran",
+    "group": "A",
+    "color": "#2563eb",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "SBY-01",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "SBY-05",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BBL-TM1": {
+    "site_code": "BBL",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "color": "#166534",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-09",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-10",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "BBL-15",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "BPP-TM1": {
+    "site_code": "BPP",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "color": "#e8720c",
+    "text": "#000000",
+    "members": [
+      {
+        "participant_id": "BPP-09",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-10",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-14",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "JKT-TM1": {
+    "site_code": "JKT",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "color": "#be185d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-09",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-10",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "PSR-TM1": {
+    "site_code": "PSR",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "color": "#7f1d1d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-09",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-10",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "PSR-06",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "SBY-TM1": {
+    "site_code": "SBY",
+    "category": "tenis_meja_ganda_putra",
+    "group": "A",
+    "color": "#2563eb",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "SBY-06",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "SBY-07",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BBL-TM2": {
+    "site_code": "BBL",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "A",
+    "color": "#166534",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "BBL-11",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BBL-12",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "BPP-TM2": {
+    "site_code": "BPP",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "A",
+    "color": "#e8720c",
+    "text": "#000000",
+    "members": [
+      {
+        "participant_id": "BPP-11",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "BPP-12",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "BPP-08",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "JKT-TM2": {
+    "site_code": "JKT",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "A",
+    "color": "#be185d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "JKT-11",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "JKT-12",
+        "role": "pemain2"
+      }
+    ]
+  },
+  "PSR-TM2": {
+    "site_code": "PSR",
+    "category": "tenis_meja_ganda_campuran",
+    "group": "A",
+    "color": "#7f1d1d",
+    "text": "#ffffff",
+    "members": [
+      {
+        "participant_id": "PSR-11",
+        "role": "pemain1"
+      },
+      {
+        "participant_id": "PSR-12",
+        "role": "pemain2"
+      },
+      {
+        "participant_id": "PSR-08",
+        "role": "cadangan"
+      }
+    ]
+  },
+  "EXH-BM1": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Roki (Kideco)",
+    "player2": "Herry (Kideco)"
+  },
+  "EXH-BM2": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Pak Ari (IMU)",
+    "player2": "Mba Mita (IMU)"
+  },
+  "EXH-BM3": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Rochman (IMU)",
+    "player2": "Novandi (IMU)"
+  },
+  "EXH-BM4": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Yusa (INVI)",
+    "player2": "Yahya (INVI)"
+  },
+  "EXH-BM5": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Pak Omon",
+    "player2": "Gede Surya"
+  },
+  "EXH-BM6": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Fadil (EMITS)",
+    "player2": "Faath (EMITS)"
+  },
+  "EXH-BM7": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Sari (Kalista)",
+    "player2": "Auliya (Kalista)"
+  },
+  "EXH-BM8": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Mba Mita (IMU)",
+    "player2": "Paw (IMU)"
+  },
+  "EXH-BM9": {
+    "category": "badminton_ganda_putra",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Leonardus (Indika Nature)",
+    "player2": "Candra (Indika Nature)"
+  },
+  "CAPSA-01": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Jannata (IMN)",
+    "player2": "Hendra Gunawan (IMU)"
+  },
+  "CAPSA-02": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#7c3aed",
+    "text": "#ffffff",
+    "player1": "Pawestri (IMU)",
+    "player2": "Casal (ISB)"
+  },
+  "CAPSA-03": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#0e7490",
+    "text": "#ffffff",
+    "player1": "Dody Indra (IMU)",
+    "player2": "YIN (ISB)"
+  },
+  "CAPSA-04": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#b45309",
+    "text": "#ffffff",
+    "player1": "Linda (ISB)",
+    "player2": "Indah H (IMU)"
+  },
+  "CAPSA-05": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#be123c",
+    "text": "#ffffff",
+    "player1": "Mitarani (IMU)",
+    "player2": "Rizki Fore (Indis)"
+  },
+  "CAPSA-06": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#166534",
+    "text": "#ffffff",
+    "player1": "Steven (ISB)",
+    "player2": "Daffa (ISB)"
+  },
+  "CAPSA-07": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Pak Joko (Indis)",
+    "player2": "Faisal (Indis)"
+  },
+  "CAPSA-08": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#7c3aed",
+    "text": "#ffffff",
+    "player1": "Sades W (ILSS Babelan)",
+    "player2": "Januar A (ILSS Babelan)"
+  },
+  "CAPSA-09": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#0e7490",
+    "text": "#ffffff",
+    "player1": "Rendy R Z (ILSS Babelan)",
+    "player2": "Rona Kartiko (ILSS Babelan)"
+  },
+  "CAPSA-10": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#b45309",
+    "text": "#ffffff",
+    "player1": "Tito (IMU)",
+    "player2": "Dayat (EMITS)"
+  },
+  "CAPSA-11": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#be123c",
+    "text": "#ffffff",
+    "player1": "Mughira (EMITS)",
+    "player2": "Andre (EMITS)"
+  },
+  "CAPSA-12": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#166534",
+    "text": "#ffffff",
+    "player1": "Fajar (Kalista)",
+    "player2": "Dino (INVI)"
+  },
+  "CAPSA-13": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#475569",
+    "text": "#ffffff",
+    "player1": "Aldi (INVI)",
+    "player2": "Raihan (INVI)"
+  },
+  "CAPSA-14": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#7c3aed",
+    "text": "#ffffff",
+    "player1": "Galang (INVI)",
+    "player2": "Alif (INVI)"
+  },
+  "CAPSA-15": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#0e7490",
+    "text": "#ffffff",
+    "player1": "Kana (INVI)",
+    "player2": "Henry (INVI)"
+  },
+  "CAPSA-16": {
+    "category": "capsa_susun",
+    "sport_key": "capsa-susun",
+    "group": "EXHIBITION",
+    "color": "#b45309",
+    "text": "#ffffff",
+    "player1": "Billy (INVI)",
+    "player2": "Pak Adi Shima (IMU)"
   }
 }

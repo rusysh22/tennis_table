@@ -7,3 +7,46 @@
 </span>
 {% endif %}
 {% endmacro %}
+
+{% macro champion_panel(team, photo, label, category, target, redirect_to, is_admin, csrf_token) %}
+{% if team %}
+<div class="champion-showcase">
+  {% if photo %}
+  <img src="{{ photo }}" alt="Foto {{ label }}" class="champion-photo public-doc-img" data-full-src="{{ photo }}">
+  {% else %}
+  <div class="champion-photo champion-photo-empty">🏆</div>
+  {% endif %}
+  <div class="champion-info">
+    <span class="champion-info-label">{{ label }}</span>
+    {{ champion_name(team) }}
+  </div>
+</div>
+{% if is_admin %}
+<div class="admin-shell champion-admin">
+  <form method="post" action="{{ url_for('admin_upload_champion_photo', category=category, group=target) }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="action" value="upload_champion_photo">
+    <input type="hidden" name="redirect_to" value="{{ redirect_to }}">
+    <div class="champion-upload-actions">
+      <label class="btn btn-outline champion-upload-button">
+        📷 Kamera
+        <input type="file" name="champion_photo_cam" accept="image/*" capture="environment" hidden onchange="this.form.submit()">
+      </label>
+      <label class="btn btn-outline champion-upload-button">
+        📁 Galeri
+        <input type="file" name="champion_photo" accept="image/jpeg, image/png, image/webp" hidden onchange="this.form.submit()">
+      </label>
+    </div>
+  </form>
+  {% if photo %}
+  <form method="post" action="{{ url_for('admin_upload_champion_photo', category=category, group=target) }}" onsubmit="return confirm('Hapus foto juara ini?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="action" value="delete_champion_photo">
+    <input type="hidden" name="redirect_to" value="{{ redirect_to }}">
+    <button type="submit" class="btn btn-outline champion-delete-button">🗑️ Hapus Foto</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+{% endif %}
+{% endmacro %}

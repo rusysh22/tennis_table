@@ -1,0 +1,27 @@
+{
+  "status": "expired",
+  "license_key": "XB09-235K-8FW5",
+  "token": "XB09-235K-8FW5:eeae2492a2fd537a5ffd314f460cc08c8f5186a64d7ba5d1d9137941443129ff:1wrYNj:ACPNwjwlFM2n8OZdRsnNwQIZWfaBoz_HRU9VeJNz6Ww",
+  "fingerprint": "eeae2492a2fd537a5ffd314f460cc08c8f5186a64d7ba5d1d9137941443129ff",
+  "expires_at": "2026-08-12T09:57:51.748879+00:00",
+  "grace_days": 3,
+  "entitlements": {
+    "ANALYTICS": "true",
+    "API_ACCESS": "true",
+    "AUDIT_EXPORT": "true",
+    "COMPANY_UNITS": "true",
+    "EMAIL_SETTINGS": "true",
+    "ESIGN": "true",
+    "FORM_BUILDER": "true",
+    "KB_MANAGE": "true",
+    "MAX_AGENTS": "25",
+    "PLAN_TIER": "business",
+    "PROJECT_MANAGEMENT": "true",
+    "SHARED_DOCS": "true",
+    "SHORT_LINKS": "true",
+    "SLA_REPORTS": "true",
+    "WHATSAPP": "true"
+  },
+  "last_validated_timestamp": 1786788077,
+  "last_message": "Status berlangganan terkini dari server: EXPIRED."
+}

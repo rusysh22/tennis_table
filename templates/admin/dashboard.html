@@ -1,155 +1,135 @@
-{% extends "base.html" %}
-{% block title %}Admin Dashboard — {{ config.tournament_short_name }}{% endblock %}
-{% block content %}
+{% extends "admin/_layout.html" %}
+{% set page_title = "Dashboard & Jadwal" %}
+{% set page_subtitle = "Pantau semua pertandingan dan akses cepat ke manajemen turnamen" %}
 
-<div class="section-head"><h2>⚙️ Admin Dashboard</h2></div>
+{% block topbar_actions %}
+{% if admin_role != 'sport' %}
+<a href="{{ url_for('admin_participants') }}" class="ac-btn ac-btn-secondary ac-btn-sm">👥 Peserta</a>
+<a href="{{ url_for('admin_schedule_generator') }}" class="ac-btn ac-btn-primary ac-btn-sm">⚡ Generate Jadwal</a>
+{% endif %}
+{% endblock %}
 
-<div class="admin-counts">
-  <span>Terjadwal: {{ counts.scheduled }}</span>
-  <span>Live: {{ counts.live }}</span>
-  <span>Selesai: {{ counts.completed }}</span>
-  <span>Ditunda: {{ counts.postponed }}</span>
+{% block admin_content %}
+
+{# ── Quick Stats ── #}
+<div class="ac-stats-row">
+  <div class="ac-stat-card">
+    <div class="num">{{ counts.scheduled }}</div>
+    <div class="lbl">Terjadwal</div>
+  </div>
+  <div class="ac-stat-card">
+    <div class="num" style="color:var(--green-600);">{{ counts.live }}</div>
+    <div class="lbl">🔴 Live</div>
+  </div>
+  <div class="ac-stat-card">
+    <div class="num">{{ counts.completed }}</div>
+    <div class="lbl">Selesai</div>
+  </div>
+  <div class="ac-stat-card">
+    <div class="num" style="color:#d97706;">{{ counts.postponed }}</div>
+    <div class="lbl">Ditunda</div>
+  </div>
 </div>
 
-<div class="search-bar">
-  <span class="search-icon">🔍</span>
-  <input type="search" id="adminSearch" placeholder="Cari ID, tim, kategori, grup, tanggal, status...">
-</div>
+{# ── Matches Table ── #}
+<div class="ac-card">
+  <div class="ac-card-header">
+    <h2>📋 Semua Pertandingan</h2>
+    <div class="ac-toolbar-right">
+      <div class="ac-search" style="min-width:220px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="search" id="matchSearch" placeholder="Cari tim, tanggal, status…">
+      </div>
+    </div>
+  </div>
 
-<div class="admin-shell">
-  <div class="table-wrap" style="box-shadow:none;">
-    <table class="admin-table" id="adminTable">
+  {% if matches %}
+  <div class="ac-table-wrap">
+    <table class="ac-table" id="matchTable">
       <thead>
         <tr>
-          <th>ID</th><th>Kategori</th><th>Grup</th><th>Babak</th><th>Tim A</th><th>Tim B</th>
-          <th>Tanggal</th><th>Jam</th><th>Meja</th><th>Skor</th><th>Status</th><th></th>
+          <th>ID</th>
+          <th>Divisi</th>
+          <th>Grup / Babak</th>
+          <th>Tim A</th>
+          <th>Tim B</th>
+          <th>Tanggal</th>
+          <th>Jam</th>
+          <th>Meja</th>
+          <th>Skor</th>
+          <th>Status</th>
+          <th>Aksi</th>
         </tr>
       </thead>
       <tbody>
         {% set ns = namespace(last_date=None) %}
         {% for m in matches %}
-        {% if m.date != ns.last_date %}
-        <tr class="date-group-row"><td colspan="12">📅 {{ m.date_label }}</td></tr>
-        {% set ns.last_date = m.date %}
-        {% endif %}
-        <tr class="row-status row-{{ m.status }}">
-          <td>{{ m.id }}</td>
-          <td>{{ m.category_label }}</td>
-          <td>{{ m.group }}</td>
-          <td>{{ m.round_label }}</td>
-          <td>
-            <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
-            {% if m.team_a %}
-            <small class="player-names admin-player-names">
-              <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1|truncate_words }}</span>
-              <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2|truncate_words }}</span>
-            </small>
-            {% endif %}
-          </td>
-          <td>
-            <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
-            {% if m.team_b %}
-            <small class="player-names admin-player-names">
-              <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1|truncate_words }}</span>
-              <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2|truncate_words }}</span>
-            </small>
-            {% endif %}
-          </td>
-          <td>{{ m.date }}</td>
-          <td>{{ m.time }}</td>
-          <td>{{ m.court }}</td>
-          <td>{{ m.sets_a }} - {{ m.sets_b }}</td>
-          <td><span class="badge badge-status badge-{{ m.status }}">{{ m.status_label }}</span></td>
-          <td><a class="btn btn-sm btn-outline" href="{{ url_for('admin_edit_match', match_id=m.id) }}">Kelola</a></td>
-        </tr>
+          {% if m.date != ns.last_date %}
+          <tr style="background:var(--surface-soft);">
+            <td colspan="11" style="font-size:.75rem; font-weight:800; color:var(--muted); padding:.5rem 1rem;">
+              📅 {{ m.date_label }}
+            </td>
+          </tr>
+          {% set ns.last_date = m.date %}
+          {% endif %}
+          <tr>
+            <td><strong>{{ m.id }}</strong></td>
+            <td>
+              <span class="badge badge-sport sport-{{ m.sport_key }}" style="font-size:.72rem;">{{ m.category_label }}</span>
+            </td>
+            <td style="font-size:.82rem; color:var(--muted);">{{ m.group }} · {{ m.round_label }}</td>
+            <td>
+              <span class="ac-chip" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
+              <small style="display:block; color:var(--muted); font-size:.72rem; margin-top:.15rem;">{{ m.team_a_player1|truncate_words }}</small>
+            </td>
+            <td>
+              <span class="ac-chip" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
+              <small style="display:block; color:var(--muted); font-size:.72rem; margin-top:.15rem;">{{ m.team_b_player1|truncate_words }}</small>
+            </td>
+            <td style="font-size:.85rem;">{{ m.date }}</td>
+            <td style="font-size:.85rem;">{{ m.time }}</td>
+            <td style="font-size:.85rem;">{{ m.court }}</td>
+            <td><strong>{{ m.sets_a }} – {{ m.sets_b }}</strong></td>
+            <td><span class="badge badge-status badge-{{ m.status }}">{{ m.status_label }}</span></td>
+            <td class="ac-td-actions">
+              <a href="{{ url_for('admin_edit_match', match_id=m.id) }}" class="ac-btn ac-btn-secondary ac-btn-sm">
+                ✏️ Kelola
+              </a>
+            </td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+  {% else %}
+  <div class="ac-empty">
+    <span class="ac-empty-icon">📅</span>
+    <h3>Belum ada jadwal pertandingan</h3>
+    {% if admin_role != 'sport' %}
+    <p>Mulai dengan menambahkan divisi dan peserta, lalu generate jadwal otomatis.</p>
+    <a href="{{ url_for('admin_categories') }}" class="ac-btn ac-btn-primary">
+      🏆 Mulai dari Divisi &amp; Cabor
+    </a>
+    {% else %}
+    <p>Belum ada pertandingan terjadwal untuk cabor Anda.</p>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 
-<fieldset class="notice-zone" style="margin-bottom: 2rem;">
-  <legend>📣 Pengumuman</legend>
-  <p style="font-size:.85rem; color:#a0677a; margin-bottom:.8rem;">
-    Pengumuman akan muncul otomatis sebagai pop-up selama 10 detik saat pengguna membuka aplikasi. Kosongkan isinya jika tidak ingin menampilkan pengumuman.
-  </p>
-  <form method="post" action="{{ url_for('admin_announcement') }}">
-    <label>Judul Pengumuman:
-      <input type="text" name="announcement_title" value="{{ config.announcement_title|default('Pengumuman Penting', true) }}">
-    </label>
-    <label style="margin-top: .8rem;">Isi Pengumuman:
-      <textarea name="announcement_text" rows="3">{{ config.announcement_text|default('Selamat datang di Mini-Round Table Tennis InterSport 2026! Mari junjung tinggi sportivitas dan cek jadwal pertandingan Anda secara berkala.', true) }}</textarea>
-    </label>
-    <button class="btn btn-primary" style="margin-top: 1rem;" type="submit">💾 Simpan Pengumuman</button>
-  </form>
-</fieldset>
-
-<fieldset class="notice-zone">
-  <legend>🔀 Acak Ulang Grup Ganda Putra</legend>
-  <p style="font-size:.85rem; color:#a0677a; margin-bottom:.8rem;">
-    Mengundi ulang keanggotaan 8 tim Ganda Putra ke Grup A dan Grup B dari awal, jadi lawan tanding tiap
-    tim benar-benar berubah (bukan cuma urutan babak). Tanggal, jam, dan meja tiap slot tidak berubah.
-    Hanya memengaruhi laga Ganda Putra fase grup — laga Ganda Campuran dan Final tidak disentuh. Skor/status
-    laga Ganda Putra yang sudah diinput akan ikut ter-reset karena pasangannya berubah. Data saat ini
-    dicadangkan otomatis sebelum diacak.
-  </p>
-  <form method="post" action="{{ url_for('admin_shuffle_putra') }}"
-        onsubmit="return confirm('Undi ulang Grup A dan Grup B Ganda Putra dari awal? Lawan tanding tiap tim akan berubah, dan skor/status laga Ganda Putra yang sudah diinput akan ter-reset. Data saat ini dicadangkan otomatis.');">
-    <button class="btn btn-primary" type="submit">🔀 Undi Ulang Grup A &amp; B</button>
-  </form>
-</fieldset>
-
-<fieldset class="notice-zone">
-  <legend>🔀 Acak Ulang Jadwal Ganda Campuran</legend>
-  <p style="font-size:.85rem; color:#a0677a; margin-bottom:.8rem;">
-    Mengundi ulang urutan pertemuan 4 tim Ganda Campuran (Grup A) — siapa ketemu siapa di tanggal mana
-    berubah, meski tetap setiap tim ketemu semua tim lain persis sekali (namanya juga round robin 1 grup).
-    Tanggal, jam, dan meja tiap slot tidak berubah. Hanya memengaruhi laga Ganda Campuran — laga Ganda Putra
-    dan Final tidak disentuh. Skor/status laga Ganda Campuran yang sudah diinput akan ikut ter-reset karena
-    pasangannya berubah. Data saat ini dicadangkan otomatis sebelum diacak.
-  </p>
-  <form method="post" action="{{ url_for('admin_shuffle_campuran') }}"
-        onsubmit="return confirm('Undi ulang jadwal Ganda Campuran dari awal? Urutan lawan tiap tim per tanggal akan berubah, dan skor/status laga Ganda Campuran yang sudah diinput akan ter-reset. Data saat ini dicadangkan otomatis.');">
-    <button class="btn btn-primary" type="submit">🔀 Undi Ulang Jadwal Campuran</button>
-  </form>
-</fieldset>
-
-<fieldset class="danger-zone">
-  <legend>⚠️ Reset Data</legend>
-  <p style="font-size:.85rem; color:#a0677a; margin-bottom:.8rem;">
-    Mengembalikan seluruh jadwal, skor, status, dan riwayat reschedule ke kondisi awal (sama seperti saat
-    turnamen belum dimulai). Data saat ini akan otomatis dicadangkan sebelum ditimpa, tapi tindakan ini tetap
-    <strong>tidak bisa dibatalkan lewat aplikasi</strong> — pastikan yakin.
-  </p>
-  <form method="post" action="{{ url_for('admin_reset') }}"
-        onsubmit="return confirm('Reset SEMUA data pertandingan (skor, status, jadwal) ke kondisi awal? Data saat ini akan dicadangkan otomatis, tapi tindakan ini tidak bisa dibatalkan lewat aplikasi.');">
-    <button class="btn btn-dark" type="submit">♻️ Reset Semua Data ke Kondisi Awal</button>
-  </form>
-</fieldset>
-
-{% endblock %}
-{% block scripts %}
 <script>
-(function(){
-  const input = document.getElementById('adminSearch');
-  const rows = Array.from(document.querySelectorAll('#adminTable tbody tr'));
-  if(!input || !rows.length) return;
-  input.addEventListener('input', function(){
-    const q = input.value.trim().toLowerCase();
-    let lastGroup = null;
-    let groupHasVisible = false;
-    rows.forEach(function(row){
-      if(row.classList.contains('date-group-row')){
-        if(lastGroup) lastGroup.style.display = groupHasVisible ? '' : 'none';
-        lastGroup = row;
-        groupHasVisible = false;
-        return;
-      }
-      const match = !q || row.textContent.toLowerCase().includes(q);
-      row.style.display = match ? '' : 'none';
-      if(match) groupHasVisible = true;
+(function () {
+  const input = document.getElementById('matchSearch');
+  const tbody = document.querySelector('#matchTable tbody');
+  if (!input || !tbody) return;
+  input.addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+    Array.from(tbody.querySelectorAll('tr')).forEach(function (row) {
+      if (row.querySelector('td[colspan]')) return; // date group rows always shown
+      row.style.display = (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
     });
-    if(lastGroup) lastGroup.style.display = groupHasVisible ? '' : 'none';
   });
 })();
 </script>

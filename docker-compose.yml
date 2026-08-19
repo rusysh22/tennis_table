@@ -1,0 +1,19 @@
+services:
+  web:
+    build: .
+    container_name: tennis-table-web
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./static/img:/app/static/img
+      - ./static/uploads:/app/static/uploads
+    expose:
+      - "8000"
+    restart: unless-stopped
+    networks:
+      - default
+      - berlanggan_default
+
+networks:
+  berlanggan_default:
+    external: true

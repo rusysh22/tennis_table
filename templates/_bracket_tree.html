@@ -1,0 +1,65 @@
+{#
+  Visual single-elimination bracket tree for straight-knockout divisions
+  (bracket_format == "single_elimination", e.g. Capsa Susun).
+  Expects: division, rounds (stages_view minus the third_place stage),
+  third_place stage (or none).
+#}
+<div class="bracket-tree-wrap">
+  <div class="bracket-tree">
+    {% for stage in rounds %}
+    <div class="bracket-round">
+      <div class="bracket-round-head">{{ stage.name }}</div>
+      {% for match in stage.matches_enriched %}
+      <div class="bracket-slot">
+        <a class="bracket-match {{ 'completed' if match.status == 'completed' }}"
+           href="{{ sport_url('match_detail', match_id=match.id) }}"
+           data-modal-match="{{ sport_url('match_fragment', match_id=match.id) }}">
+          <div class="bracket-team {{ 'team-winner' if match.winner == 'a' }} {{ 'team-loser' if match.winner == 'b' }}">
+            <span class="team-chip sm" style="background:{{ match.team_a_color }};color:{{ match.team_a_text }}">{{ match.team_a_code }}</span>
+            <span class="bracket-team-name">{{ match.team_a_label }}</span>
+            <span class="bracket-team-score">{% if match.status in ('completed', 'live') %}{{ match.sets_a }}{% endif %}</span>
+          </div>
+          <div class="bracket-team {{ 'team-winner' if match.winner == 'b' }} {{ 'team-loser' if match.winner == 'a' }}">
+            <span class="team-chip sm" style="background:{{ match.team_b_color }};color:{{ match.team_b_text }}">{{ match.team_b_code }}</span>
+            <span class="bracket-team-name">{{ match.team_b_label }}</span>
+            <span class="bracket-team-score">{% if match.status in ('completed', 'live') %}{{ match.sets_b }}{% endif %}</span>
+          </div>
+          <div class="bracket-match-meta">
+            <span class="badge badge-status badge-{{ match.status }}">{{ match.status_label }}</span>
+            <span>{{ match.date_label }} · {{ match.time }} · {{ match.court }}</span>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if third_place %}
+  <div class="bracket-third-place">
+    <div class="bracket-round-head">🥉 {{ third_place.name }}</div>
+    {% for match in third_place.matches_enriched %}
+    <div class="bracket-slot">
+      <a class="bracket-match {{ 'completed' if match.status == 'completed' }}"
+         href="{{ sport_url('match_detail', match_id=match.id) }}"
+         data-modal-match="{{ sport_url('match_fragment', match_id=match.id) }}">
+        <div class="bracket-team {{ 'team-winner' if match.winner == 'a' }} {{ 'team-loser' if match.winner == 'b' }}">
+          <span class="team-chip sm" style="background:{{ match.team_a_color }};color:{{ match.team_a_text }}">{{ match.team_a_code }}</span>
+          <span class="bracket-team-name">{{ match.team_a_label }}</span>
+          <span class="bracket-team-score">{% if match.status in ('completed', 'live') %}{{ match.sets_a }}{% endif %}</span>
+        </div>
+        <div class="bracket-team {{ 'team-winner' if match.winner == 'b' }} {{ 'team-loser' if match.winner == 'a' }}">
+          <span class="team-chip sm" style="background:{{ match.team_b_color }};color:{{ match.team_b_text }}">{{ match.team_b_code }}</span>
+          <span class="bracket-team-name">{{ match.team_b_label }}</span>
+          <span class="bracket-team-score">{% if match.status in ('completed', 'live') %}{{ match.sets_b }}{% endif %}</span>
+        </div>
+        <div class="bracket-match-meta">
+          <span class="badge badge-status badge-{{ match.status }}">{{ match.status_label }}</span>
+          <span>{{ match.date_label }} · {{ match.time }} · {{ match.court }}</span>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>

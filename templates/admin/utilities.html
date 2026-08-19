@@ -1,0 +1,54 @@
+{% extends "admin/_layout.html" %}
+{% set page_title = "Utilitas & Reset" %}
+{% set page_subtitle = "Pengacakan undian dan reset data turnamen ke kondisi awal" %}
+
+{% block admin_content %}
+
+<div style="display:flex; flex-direction:column; gap:1.4rem; max-width:760px;">
+
+  <div class="ac-card">
+    <div class="ac-card-header"><h2>🔀 Acak Ulang Grup Ganda Putra</h2></div>
+    <div class="ac-card-body">
+      <p style="font-size:.9rem; color:var(--muted); margin:0 0 1.2rem; line-height:1.6;">
+        Mengundi ulang keanggotaan tim Ganda Putra ke Grup A dan Grup B dari awal.
+        Lawan tanding akan berubah. Tanggal, jam, dan meja tiap slot tidak berubah.
+        Skor laga yang sudah diinput akan ter-reset karena pasangan berubah.
+      </p>
+      <form method="post" action="{{ url_for('admin_shuffle_putra') }}"
+            onsubmit="return confirm('Acak ulang grup Ganda Putra? Skor yang sudah ada akan di-reset.');" style="margin:0;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="ac-btn ac-btn-secondary" type="submit">🔀 Acak Ulang Sekarang</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="ac-card">
+    <div class="ac-card-header"><h2>🔀 Acak Ulang Ganda Campuran</h2></div>
+    <div class="ac-card-body">
+      <p style="font-size:.9rem; color:var(--muted); margin:0 0 1.2rem; line-height:1.6;">
+        Mengundi ulang urutan pertemuan tim Ganda Campuran. Setiap tim tetap bertemu semua tim lain persis sekali.
+        Tanggal, jam, dan meja tidak berubah. Skor laga yang sudah diinput akan ter-reset.
+      </p>
+      <form method="post" action="{{ url_for('admin_shuffle_campuran') }}"
+            onsubmit="return confirm('Acak ulang jadwal Ganda Campuran? Skor yang sudah ada akan di-reset.');" style="margin:0;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="ac-btn ac-btn-secondary" type="submit">🔀 Acak Ulang Sekarang</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="ac-danger-zone">
+    <h3>⚠️ Reset Semua Data ke Kondisi Awal</h3>
+    <p>
+      Mengembalikan seluruh jadwal, skor, status, dan riwayat ke kondisi awal seperti sebelum turnamen dimulai.
+      Data saat ini akan dicadangkan otomatis, tetapi tindakan ini <strong>tidak bisa dibatalkan</strong> melalui aplikasi.
+    </p>
+    <form method="post" action="{{ url_for('admin_reset') }}"
+          onsubmit="return confirm('YAKIN?\n\nSemua skor dan jadwal akan direset ke kondisi awal.\nData saat ini akan dicadangkan otomatis, tapi tidak bisa dibatalkan dari aplikasi.');" style="margin:0;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="ac-btn ac-btn-danger" type="submit">♻️ Reset Semua Data Sekarang</button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

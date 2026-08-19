@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akses Sistem Dibatasi — {{ config.tournament_short_name }}</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon-32.png') }}">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-sub: #64748b;
+      --primary: #2563eb;
+      --danger-bg: #fef2f2;
+      --danger-text: #991b1b;
+      --danger-border: #f87171;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .lock-card {
+      background: var(--card-bg);
+      max-width: 480px;
+      width: 100%;
+      border-radius: 16px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .lock-icon {
+      font-size: 3.8rem;
+      margin-bottom: 1rem;
+      animation: pulse 2s infinite ease-in-out;
+    }
+    h1 {
+      font-size: 1.45rem;
+      color: var(--text-main);
+      margin: 0 0 0.8rem;
+      font-weight: 800;
+    }
+    p {
+      color: var(--text-sub);
+      font-size: 0.96rem;
+      line-height: 1.55;
+      margin: 0 0 1.5rem;
+    }
+    .status-box {
+      background: var(--danger-bg);
+      border: 1px dashed var(--danger-border);
+      color: var(--danger-text);
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 1.8rem;
+      text-align: left;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .status-box span {
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+    .btn-admin {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #2563eb;
+      color: white;
+      font-weight: 700;
+      text-decoration: none;
+      padding: 0.8rem 1.6rem;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: background 0.2s;
+      font-size: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25);
+    }
+    .btn-admin:hover {
+      background: #1d4ed8;
+    }
+    .footer-text {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+    .footer-text a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+  </style>
+</head>
+<body>
+  <div class="lock-card">
+    <div class="lock-icon">🔒</div>
+    <h1>Akses Fitur Website Dibatasi</h1>
+    <p>
+      Sistem Turnamen <strong>{{ config.tournament_name | default('Tenis Meja & Padel') }}</strong> untuk sementara tidak dapat dikaitkan atau diakses oleh publik karena status lisensi belum aktif.
+    </p>
+    
+    <div class="status-box">
+      <span>⚠️</span>
+      <div>
+        <strong>Keterangan Otorisasi:</strong><br>
+        {{ reason | default("Lisensi website belum terdaftar atau masa berlaku token dari Berlanggan.web.id telah kedaluwarsa/habis.") }}
+      </div>
+    </div>
+
+    <a href="{{ url_for('admin_login', next=url_for('admin_license')) }}" class="btn-admin">
+      🔐 Login Admin &amp; Aktifkan Lisensi
+    </a>
+
+    <div class="footer-text">
+      Ditenagai oleh sistem otorisasi &amp; langganan resmi <br>
+      <strong><a href="https://berlanggan.web.id" target="_blank">Berlanggan.web.id</a></strong>
+    </div>
+  </div>
+</body>
+</html>

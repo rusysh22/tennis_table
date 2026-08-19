@@ -1,0 +1,224 @@
+{% extends "admin/_layout.html" %}
+{% set page_title = "Generate Jadwal" %}
+{% set page_subtitle = "Buat jadwal pertandingan Round Robin & Knockout secara otomatis" %}
+
+{% block admin_content %}
+
+{% if not categories %}
+<div class="ac-card">
+  <div class="ac-empty">
+    <span class="ac-empty-icon">⚡</span>
+    <h3>Belum ada divisi terdaftar</h3>
+    <p>Anda harus membuat minimal satu divisi dan mendaftarkan peserta sebelum bisa generate jadwal.</p>
+    <div style="display:flex; gap:.75rem; justify-content:center; flex-wrap:wrap;">
+      <a href="{{ url_for('admin_categories') }}" class="ac-btn ac-btn-primary">🏆 Buat Divisi Dulu</a>
+      <a href="{{ url_for('admin_participants') }}" class="ac-btn ac-btn-secondary">👥 Daftar Peserta</a>
+    </div>
+  </div>
+</div>
+{% else %}
+
+{# ── HOW IT WORKS ── #}
+<div class="ac-card" style="margin-bottom:1.4rem; border-left:4px solid var(--green-500);">
+  <div class="ac-card-body" style="display:flex; gap:1rem; align-items:flex-start;">
+    <span style="font-size:2rem; flex-shrink:0;">💡</span>
+    <div>
+      <strong style="color:var(--navy-900); display:block; margin-bottom:.3rem;">Cara kerja Generator Jadwal:</strong>
+      <ol style="font-size:.9rem; color:var(--muted); margin:0; padding-left:1.2rem; line-height:1.7;">
+        <li>Setiap tim dalam satu grup akan bertarung melawan semua tim lain di grup yang sama (<strong>Round Robin</strong>).</li>
+        <li>Pemenang dari masing-masing grup otomatis melaju ke <strong>Babak Semifinal &amp; Final</strong> (jika diaktifkan).</li>
+        <li>Membuat jadwal untuk satu divisi <strong>tidak akan mengganggu</strong> jadwal divisi lainnya.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+{# ── GENERATOR FORM ── #}
+<div class="ac-card">
+  <div class="ac-card-header">
+    <h2>⚡ Buat Jadwal Otomatis</h2>
+  </div>
+  <div class="ac-card-body">
+    <form method="post" action="{{ url_for('admin_generate_group_to_knockout') }}"
+          onsubmit="return confirm('Generate ulang jadwal untuk divisi yang dipilih?\n\nJadwal lama untuk divisi ini akan digantikan berdasarkan data peserta saat ini.');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+      <div class="ac-form-row">
+        <div class="ac-form-field">
+          <label>1. Pilih Divisi *</label>
+          <select name="category_key" required id="gen_cat" onchange="updateGroupInfo()">
+            {% for cat in categories if cat.entrant_type != 'roster' %}
+            <option value="{{ cat.key }}"
+                    data-groups="{{ cat.groups|join(',') }}"
+                    data-teams="{{ teams.values()|selectattr('category','eq',cat.key)|list|length }}">
+              {% if cat.sport_key == 'padel' %}🎾{% elif cat.sport_key == 'badminton' %}🏸{% else %}🏓{% endif %}
+              {{ cat.label }} ({{ cat.groups|length }} grup)
+            </option>
+            {% endfor %}
+          </select>
+          <small>Kategori Roster/Cadangan tidak muncul di sini — tidak dijadwalkan.</small>
+          <div id="groupInfo" style="margin-top:.4rem; font-size:.8rem; color:var(--blue-700);"></div>
+        </div>
+        <div class="ac-form-field">
+          <label>2. Tanggal Mulai Pertandingan *</label>
+          <input type="date" name="start_date"
+                 value="{{ config.start_date }}"
+                 min="{{ config.start_date }}" max="{{ config.end_date }}" required>
+        </div>
+        <div class="ac-form-field">
+          <label>3. Nama Lapangan / Meja *</label>
+          <input type="text" name="court" value="Court 1" required placeholder="mis. Court 1, Meja 1, Lapangan A">
+        </div>
+        <div class="ac-form-field" style="grid-column: 1 / -1; margin-top: 0.8rem;">
+          <label style="display:flex; align-items:center; gap:8px; font-weight:700;">4. Format Babak Lanjutan (Knockout / Eliminasi) * <span class="badge" style="background:#dbeafe; color:#1e40af; font-size:0.75rem;">Otomatis</span></label>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:0.8rem; margin-top:0.5rem;">
+            <label class="ko-option" style="border:2px solid #3b82f6; background:#eff6ff; padding:0.8rem; border-radius:0.6rem; cursor:pointer; display:flex; gap:0.6rem; align-items:flex-start;">
+              <input type="radio" name="knockout_format" value="final_only" checked style="margin-top:4px;" onchange="selectKoOption(this)">
+              <div>
+                <div style="font-weight:700; color:#1e3a8a;">🥇 Langsung Final (2 Tim Lolos)</div>
+                <div style="font-size:0.8rem; color:#475569; margin-top:2px;">Hanya Juara Grup A vs Juara Grup B yang melaju. Cocok untuk jadwal padat.</div>
+              </div>
+            </label>
+            <label class="ko-option" style="border:1px solid #cbd5e1; background:#f8fafc; padding:0.8rem; border-radius:0.6rem; cursor:pointer; display:flex; gap:0.6rem; align-items:flex-start;">
+              <input type="radio" name="knockout_format" value="semi_and_final" style="margin-top:4px;" onchange="selectKoOption(this)">
+              <div>
+                <div style="font-weight:700; color:#1e3a8a;">⚔️ Semifinal ➔ Final (4 Tim Lolos)</div>
+                <div style="font-size:0.8rem; color:#475569; margin-top:2px;">Juara & Runner-up tiap grup dipertandingkan menyilang menuju Final.</div>
+              </div>
+            </label>
+            <label class="ko-option" style="border:1px solid #cbd5e1; background:#f8fafc; padding:0.8rem; border-radius:0.6rem; cursor:pointer; display:flex; gap:0.6rem; align-items:flex-start;">
+              <input type="radio" name="knockout_format" value="no_knockout" style="margin-top:4px;" onchange="selectKoOption(this)">
+              <div>
+                <div style="font-weight:700; color:#1e3a8a;">📊 Tanpa Knockout (Murni Klasemen)</div>
+                <div style="font-size:0.8rem; color:#475569; margin-top:2px;">Tanpa babak eliminasi. Juara ditentukan murni dari peringkat klasemen.</div>
+              </div>
+            </label>
+          </div>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.8rem; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:0.5rem; font-size:0.82rem; color:#065f46; display:flex; align-items:center; gap:6px;">
+            <span>✨ <strong>Otomasi Kualifikasi Aktif:</strong> Sistem akan otomatis mengisi nama tim ke bagan Semifinal/Final begitu pertandingan grup selesai dikelola!</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ac-form-actions">
+        <button type="submit" class="ac-btn ac-btn-primary" style="font-size:1rem; padding:.65rem 1.8rem;">
+          🚀 Generate Jadwal Sekarang
+        </button>
+        <a href="{{ url_for('admin_dashboard') }}" class="ac-btn ac-btn-secondary">Kembali ke Dashboard</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ── STATUS PER DIVISI ── #}
+<div class="ac-card" style="margin-top:1.4rem;">
+  <div class="ac-card-header">
+    <h2>📊 Status Peserta per Divisi</h2>
+  </div>
+  <div class="ac-table-wrap">
+    <table class="ac-table">
+      <thead>
+        <tr>
+          <th>Divisi</th>
+          <th>Grup</th>
+          <th>Jumlah Tim Terdaftar</th>
+          <th>Siap Generate?</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        {% set cat_teams = teams.values()|selectattr('category','eq',cat.key)|list %}
+        <tr>
+          <td>
+            <strong>{{ cat.label }}</strong>
+            {% if cat.entrant_type == 'roster' %}
+            <br><small style="color:var(--muted);">Roster cadangan — tidak dijadwalkan</small>
+            {% endif %}
+          </td>
+          <td>
+            {% if cat.entrant_type == 'roster' %}
+            <span style="color:var(--muted);">—</span>
+            {% else %}
+            {% for g in cat.groups %}
+            <span class="badge" style="background:var(--blue-100); color:var(--blue-800); font-size:.73rem; margin-right:.2rem;">
+              Grup {{ g }}: {{ cat_teams|selectattr('group','eq',g)|list|length }} tim
+            </span>
+            {% endfor %}
+            {% endif %}
+          </td>
+          <td><strong>{{ cat_teams|length }}</strong> tim total</td>
+          <td>
+            {% if cat.entrant_type == 'roster' %}
+            <span style="color:var(--muted);">—</span>
+            {% elif cat_teams|length >= 2 %}
+            <span class="badge badge-completed">✅ Siap</span>
+            {% else %}
+            <span class="badge" style="background:#fee2e2; color:#dc2626; font-size:.78rem;">
+              ⚠️ Minimal 2 tim
+            </span>
+            {% endif %}
+          </td>
+          <td style="display:flex; gap:.4rem; flex-wrap:wrap;">
+            {% if cat.entrant_type != 'roster' %}
+            <form method="post" action="{{ url_for('admin_shuffle_groups', category_key=cat.key) }}" style="display:inline;"
+                  onsubmit="return confirm('Acak & bagi ulang semua tim di divisi {{ cat.label }} ke {{ cat.groups|length }} grup? Grup tim saat ini akan ditimpa.');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="ac-btn ac-btn-sm ac-btn-secondary"
+                      {{ 'disabled' if cat_teams|length < 2 else '' }}
+                      title="Acak & bagi rata semua tim di divisi ini ke {{ cat.groups|length }} grup">
+                🎲 Acak &amp; Bagi Grup
+              </button>
+            </form>
+            {% if cat.has_final is not defined or cat.has_final %}
+            <form method="post" action="{{ url_for('admin_sync_knockout', category_key=cat.key) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="ac-btn ac-btn-sm" style="background:#10b981; color:#fff; font-size:0.75rem; padding:0.35rem 0.6rem; border:none; border-radius:4px; font-weight:600; cursor:pointer;" title="Sahkan dan Isi otomatis kontestan di bagan knockout berdasarkan klasemen grup">
+                ⚡ Sahkan Tim Lolos
+              </button>
+            </form>
+            {% else %}
+            <span style="font-size:0.75rem; color:#64748b; font-style:italic;">Tanpa Knockout</span>
+            {% endif %}
+            {% else %}
+            <span style="font-size:0.75rem; color:#64748b; font-style:italic;">{{ cat_teams|length }} entri roster</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<script>
+function updateGroupInfo() {
+  var sel = document.getElementById('gen_cat');
+  if (!sel) return;
+  var opt = sel.options[sel.selectedIndex];
+  var groups = opt.getAttribute('data-groups') || '';
+  var count  = opt.getAttribute('data-teams') || '0';
+  var info   = document.getElementById('groupInfo');
+  if (info) {
+    info.textContent = count + ' tim terdaftar di divisi ini · Grup: ' + groups;
+  }
+}
+
+function selectKoOption(input) {
+  document.querySelectorAll('.ko-option').forEach(function(lbl) {
+    lbl.style.borderColor = '#cbd5e1';
+    lbl.style.background = '#f8fafc';
+    lbl.style.borderWidth = '1px';
+  });
+  var parent = input.closest('.ko-option');
+  if (parent) {
+    parent.style.borderColor = '#3b82f6';
+    parent.style.background = '#eff6ff';
+    parent.style.borderWidth = '2px';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', updateGroupInfo);
+</script>
+{% endblock %}

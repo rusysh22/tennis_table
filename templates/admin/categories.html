@@ -1,0 +1,208 @@
+{% extends "admin/_layout.html" %}
+{% set page_title = "Divisi & Cabor" %}
+{% set page_subtitle = "Kelola kategori dan cabang olahraga yang aktif dalam turnamen ini" %}
+
+{% block topbar_actions %}
+<button class="ac-btn ac-btn-primary" onclick="openForm()">➕ Tambah Divisi Baru</button>
+{% endblock %}
+
+{% block admin_content %}
+
+{# ── ADD / EDIT FORM ── #}
+<div class="ac-card" id="catFormCard" style="margin-bottom:1.4rem; display:none;">
+  <div class="ac-card-header">
+    <h2 id="catFormTitle">➕ Tambah Divisi Baru</h2>
+    <button class="ac-btn ac-btn-ghost" onclick="closeForm()">✕ Batal</button>
+  </div>
+  <div class="ac-card-body">
+
+    {# Quick Presets #}
+    <div style="margin-bottom:1.2rem;">
+      <p style="font-size:.78rem; font-weight:750; color:var(--navy-900); margin:0 0 .5rem;">⚡ Pilih cepat preset divisi umum:</p>
+      <div style="display:flex; flex-wrap:wrap; gap:.4rem;">
+        <button type="button" class="ac-btn ac-btn-secondary ac-btn-sm"
+                onclick="quickPreset('padel','padel_ganda_putra','Padel — Ganda Putra')">🎾 Padel Ganda Putra</button>
+        <button type="button" class="ac-btn ac-btn-secondary ac-btn-sm"
+                onclick="quickPreset('padel','padel_ganda_campuran','Padel — Ganda Campuran')">🎾 Padel Ganda Campuran</button>
+        <button type="button" class="ac-btn ac-btn-secondary ac-btn-sm"
+                onclick="quickPreset('table-tennis','pp_ganda_putra','Pingpong — Ganda Putra')">🏓 Pingpong Ganda Putra</button>
+        <button type="button" class="ac-btn ac-btn-secondary ac-btn-sm"
+                onclick="quickPreset('table-tennis','pp_ganda_campuran','Pingpong — Ganda Campuran')">🏓 Pingpong Ganda Campuran</button>
+        <button type="button" class="ac-btn ac-btn-secondary ac-btn-sm"
+                onclick="quickPreset('badminton','bad_ganda_putra','Badminton — Ganda Putra')">🏸 Badminton Ganda Putra</button>
+        <button type="button" class="ac-btn ac-btn-secondary ac-btn-sm"
+                onclick="quickPreset('badminton','bad_ganda_campuran','Badminton — Ganda Campuran')">🏸 Badminton Ganda Campuran</button>
+        <button type="button" class="ac-btn ac-btn-secondary ac-btn-sm"
+                onclick="quickPreset('padel','padel_cadangan','Padel — Cadangan', 'roster')">🎾 Padel Cadangan</button>
+        <button type="button" class="ac-btn ac-btn-secondary ac-btn-sm"
+                onclick="quickPreset('badminton','badminton_cadangan','Badminton — Cadangan', 'roster')">🏸 Badminton Cadangan</button>
+        <button type="button" class="ac-btn ac-btn-secondary ac-btn-sm"
+                onclick="quickPreset('table-tennis','tenis_meja_cadangan','Tenis Meja — Cadangan', 'roster')">🏓 Tenis Meja Cadangan</button>
+      </div>
+    </div>
+
+    <form method="post" action="{{ url_for('admin_save_category') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="ac-form-row">
+        <div class="ac-form-field">
+          <label>Cabang Olahraga *</label>
+          <select name="sport_key" id="c_sport">
+            {% for sp in sports %}
+            <option value="{{ sp.key }}">{{ sp.icon }} {{ sp.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="ac-form-field">
+          <label>Nama Divisi (tampil di web) *</label>
+          <input type="text" name="cat_label" id="c_label" required
+                 placeholder="mis. Padel — Ganda Putra" oninput="autoSlug()">
+        </div>
+        <div class="ac-form-field">
+          <label>Kode Sistem <small>(otomatis dari nama)</small></label>
+          <input type="text" name="cat_key" id="c_key" required placeholder="padel_ganda_putra">
+          <small>Kode teknis tanpa spasi. Tidak perlu diubah jika sudah terisi otomatis.</small>
+        </div>
+      </div>
+      <div class="ac-form-row">
+        <div class="ac-form-field">
+          <label>Tipe Entrant *</label>
+          <select name="entrant_type" id="c_entrant_type" onchange="onEntrantTypeChange()">
+            <option value="pair">Pasangan — kategori bertanding (grup, jadwal, knockout)</option>
+            <option value="roster">Roster Cadangan — daftar pemain cadangan, tidak bertanding</option>
+          </select>
+        </div>
+      </div>
+      <div class="ac-form-row" id="pairOnlyFields">
+        <div class="ac-form-field">
+          <label>Jumlah Grup</label>
+          <input type="number" name="group_count" id="c_group_count" value="2" min="1" max="8">
+          <small>Tim otomatis dibagi ke grup A, B, C, ... sesuai jumlah ini lewat tombol "Acak &amp; Bagi Grup" di halaman Generator.</small>
+        </div>
+        <div class="ac-form-field">
+          <label>Babak Final / Knockout?</label>
+          <select name="has_final">
+            <option value="on">✅ Ya — ada semifinal &amp; final</option>
+            <option value="off">❌ Tidak — cukup fase grup</option>
+          </select>
+        </div>
+      </div>
+      <div class="ac-form-actions">
+        <button type="submit" class="ac-btn ac-btn-primary">💾 Simpan Divisi</button>
+        <button type="button" class="ac-btn ac-btn-secondary" onclick="closeForm()">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ── CATEGORIES LIST ── #}
+<div class="ac-card">
+  <div class="ac-card-header">
+    <h2>🏆 Divisi Aktif</h2>
+    <span class="badge" style="background:var(--blue-100); color:var(--blue-800); font-weight:800;">
+      {{ categories|length }} divisi
+    </span>
+  </div>
+
+  {% if categories %}
+  <div class="ac-table-wrap">
+    <table class="ac-table">
+      <thead>
+        <tr>
+          <th>Cabor</th>
+          <th>Nama Divisi</th>
+          <th>Kode Sistem</th>
+          <th>Tipe</th>
+          <th>Grup</th>
+          <th>Final?</th>
+          <th>Peserta</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr>
+          <td>
+            <span style="font-size:1.3rem;">
+              {% if cat.sport_key == 'padel' %}🎾{% elif cat.sport_key == 'badminton' %}🏸{% else %}🏓{% endif %}
+            </span>
+            <small style="display:block; color:var(--muted); font-size:.7rem;">{{ cat.sport_key|upper }}</small>
+          </td>
+          <td><strong>{{ cat.label }}</strong></td>
+          <td>
+            <code style="background:var(--surface-soft); padding:.15rem .45rem; border-radius:5px; font-size:.78rem;">
+              {{ cat.key }}
+            </code>
+          </td>
+          <td>
+            {% if cat.entrant_type == 'roster' %}
+            <span class="badge" style="background:var(--surface-soft); color:var(--muted); font-size:.73rem;">Roster</span>
+            {% else %}
+            <span class="badge" style="background:var(--blue-100); color:var(--blue-800); font-size:.73rem;">Pasangan</span>
+            {% endif %}
+          </td>
+          <td>
+            {% for g in cat.groups %}
+            <span class="badge" style="background:var(--blue-100); color:var(--blue-800); font-size:.73rem; margin-right:.2rem;">
+              Grup {{ g }}
+            </span>
+            {% else %}
+            <span style="color:var(--muted);">—</span>
+            {% endfor %}
+          </td>
+          <td>
+            {% if cat.has_final %}
+            <span class="badge badge-completed" style="font-size:.73rem;">Ya</span>
+            {% else %}
+            <span style="color:var(--muted); font-size:.82rem;">Tidak</span>
+            {% endif %}
+          </td>
+          <td>
+            {% set cnt = teams.values()|selectattr('category','eq',cat.key)|list|length %}
+            <strong>{{ cnt }}</strong>
+            <small style="color:var(--muted);"> tim</small>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="ac-empty">
+    <span class="ac-empty-icon">🏆</span>
+    <h3>Belum ada divisi</h3>
+    <p>Tambahkan divisi pertama Anda menggunakan tombol di atas, atau pilih salah satu preset cepat.</p>
+    <button class="ac-btn ac-btn-primary" onclick="openForm()">➕ Tambah Divisi Pertama</button>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function openForm() {
+  document.getElementById('catFormCard').style.display = '';
+  document.getElementById('catFormCard').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function closeForm() {
+  document.getElementById('catFormCard').style.display = 'none';
+}
+function quickPreset(sport, key, label, entrantType) {
+  document.getElementById('c_sport').value = sport;
+  document.getElementById('c_key').value   = key;
+  document.getElementById('c_label').value = label;
+  document.getElementById('c_entrant_type').value = entrantType || 'pair';
+  onEntrantTypeChange();
+  openForm();
+}
+function autoSlug() {
+  var label = document.getElementById('c_label').value;
+  document.getElementById('c_key').value = label.toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+function onEntrantTypeChange() {
+  var isRoster = document.getElementById('c_entrant_type').value === 'roster';
+  document.getElementById('pairOnlyFields').style.display = isRoster ? 'none' : '';
+}
+onEntrantTypeChange();
+</script>
+
+{% endblock %}

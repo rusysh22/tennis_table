@@ -1,157 +1,140 @@
 {% extends "base.html" %}
-{% from "_champion_macros.html" import champion_name %}
+{% from "_champion_macros.html" import champion_panel %}
 {% block title %}Klasemen — {{ config.tournament_short_name }}{% endblock %}
 {% block og_title %}📊 Klasemen — {{ config.tournament_short_name }}{% endblock %}
-{% block og_image %}{{ url_for('og_default_image', title='Klasemen', subtitle='Papan peringkat Ganda Putra & Ganda Campuran', tag='KLASEMEN', _external=True) }}{% endblock %}
+{% block og_image %}{{ url_for('og_default_image', title='Klasemen', subtitle='Papan peringkat seluruh cabang dan divisi', tag='KLASEMEN', _external=True) }}{% endblock %}
 {% block content %}
 
 {% include "_subnav_klasemen.html" %}
 
-<div class="section-head"><h2>📊 Klasemen per Grup</h2></div>
-
-{% if putra_champion_team %}
-<div class="group-block">
-  <h3>
-    <span class="badge badge-putra">Ganda Putra</span>
-    <span class="champion-tag tag-putra">🏆 Juara Turnamen</span>
-  </h3>
-  <div class="champion-showcase">
-    {% if putra_champion_photo %}
-    <img src="{{ putra_champion_photo }}" alt="Foto juara Ganda Putra" class="champion-photo public-doc-img" data-full-src="{{ putra_champion_photo }}">
-    {% else %}
-    <div class="champion-photo champion-photo-empty">🏆</div>
-    {% endif %}
-    <div class="champion-info">
-      <span class="champion-info-label">Juara Ganda Putra (Final)</span>
-      {{ champion_name(putra_champion_team) }}
-    </div>
-  </div>
-  {% if is_admin %}
-  <div class="admin-shell champion-admin">
-    <form method="post" action="{{ url_for('admin_upload_champion_photo', category='ganda_putra', group='FINAL') }}" enctype="multipart/form-data">
-      <input type="hidden" name="action" value="upload_champion_photo">
-      <div style="display:flex; gap:.6rem; flex-wrap:wrap;">
-        <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.7rem;">
-          📷 Kamera Langsung
-          <input type="file" name="champion_photo_cam" accept="image/*" capture="environment" style="display:none;"
-            onchange="this.form.submit()">
-        </label>
-        <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.7rem;">
-          📁 File Galeri
-          <input type="file" name="champion_photo" accept="image/jpeg, image/png, image/webp" style="display:none;"
-            onchange="this.form.submit()">
-        </label>
-      </div>
-      <p style="font-size:.75rem; color:#a0677a; margin-top:.6rem; text-align:center;">
-        Upload/ganti foto juara Ganda Putra (pemenang laga Final). File otomatis terupload begitu dipilih/dijepret.
-      </p>
-    </form>
-    {% if putra_champion_photo %}
-    <form method="post" action="{{ url_for('admin_upload_champion_photo', category='ganda_putra', group='FINAL') }}" onsubmit="return confirm('Hapus foto juara ini?');" style="margin-top:.6rem;">
-      <input type="hidden" name="action" value="delete_champion_photo">
-      <button type="submit" class="btn btn-outline" style="width:100%;">🗑️ Hapus Foto</button>
-    </form>
-    {% endif %}
-  </div>
-  {% endif %}
+{% if medal_tally is not none %}
+<div class="section-head"><h2>🏅 Juara Umum — Perolehan Poin Antar Site</h2></div>
+{% if medal_tally %}
+<div class="table-wrap medal-tally-wrap">
+  <table class="standings medal-tally-table">
+    <thead>
+      <tr>
+        <th>Peringkat</th>
+        <th>Site</th>
+        <th>🥇 Juara 1 (10 poin)</th>
+        <th>🥈 Juara 2 (7 poin)</th>
+        <th>🥉 Juara 3 (5 poin)</th>
+        <th>Juara 4 (3 poin)</th>
+        <th>Total Poin</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in medal_tally %}
+      <tr class="{{ 'rank-1' if entry.rank == 1 }}">
+        <td><span class="rank-pill {{ 'gold' if entry.rank == 1 }}">{{ entry.rank }}</span></td>
+        <td class="medal-site-cell"><span class="team-chip sm medal-site-code" style="background:{{ entry.color or '#9c9c9c' }};color:{{ entry.text or '#fff' }};">{{ entry.code }}</span>{{ entry.name }}</td>
+        <td class="medal-count-cell">{{ entry.gold }}</td>
+        <td class="medal-count-cell">{{ entry.silver }}</td>
+        <td class="medal-count-cell">{{ entry.bronze }}</td>
+        <td class="medal-count-cell">{{ entry.fourth }}</td>
+        <td class="medal-count-cell medal-total-cell">{{ entry.points }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
+{% else %}
+<p class="medal-tally-empty">Klasemen juara umum akan tampil begitu partai final dan perebutan juara 3 di setiap divisi selesai dimainkan.</p>
+{% endif %}
 {% endif %}
 
-{% for g in groups %}
-{% set cat_class = 'standings-putra' if g.category == 'ganda_putra' else 'standings-campuran' %}
-{% set tag_class = 'tag-putra' if g.category == 'ganda_putra' else 'tag-campuran' %}
-<div class="group-block">
-  <h3>
-    <span class="badge {{ 'badge-putra' if g.category == 'ganda_putra' else 'badge-campuran' }}">{{ g.category_label }}</span>
-    Group {{ g.group }}
-    {% if g.champion %}<span class="champion-tag {{ tag_class }}">🏆 Juara Grup</span>{% endif %}
-  </h3>
+<div class="section-head"><h2>📊 Klasemen per Divisi dan Grup</h2></div>
 
-  {% if g.champion %}
-  <div class="champion-showcase">
-    {% if g.champion_photo %}
-    <img src="{{ g.champion_photo }}" alt="Foto juara Group {{ g.group }}" class="champion-photo public-doc-img" data-full-src="{{ g.champion_photo }}">
-    {% else %}
-    <div class="champion-photo champion-photo-empty">🏆</div>
-    {% endif %}
-    <div class="champion-info">
-      <span class="champion-info-label">Juara {{ g.category_label }} Group {{ g.group }}</span>
-      {{ champion_name(g.champion_team) }}
-    </div>
-  </div>
-
-  {% if is_admin %}
-  <div class="admin-shell champion-admin">
-    <form method="post" action="{{ url_for('admin_upload_champion_photo', category=g.category, group=g.group) }}" enctype="multipart/form-data">
-      <input type="hidden" name="action" value="upload_champion_photo">
-      <div style="display:flex; gap:.6rem; flex-wrap:wrap;">
-        <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.7rem;">
-          📷 Kamera Langsung
-          <input type="file" name="champion_photo_cam" accept="image/*" capture="environment" style="display:none;"
-            onchange="this.form.submit()">
-        </label>
-        <label class="btn btn-outline" style="flex:1; cursor:pointer; margin:0; text-align:center; padding:.7rem;">
-          📁 File Galeri
-          <input type="file" name="champion_photo" accept="image/jpeg, image/png, image/webp" style="display:none;"
-            onchange="this.form.submit()">
-        </label>
+{% if competition.divisions %}
+  {% for division in competition.divisions %}
+  <section class="competition-division" id="division-{{ division.key }}">
+    <div class="competition-division-head">
+      <div>
+        <span class="sport-kicker">{{ division.sport_icon }} {{ division.sport_name }}</span>
+        <h2>{{ division.name }}</h2>
       </div>
-      <p style="font-size:.75rem; color:#a0677a; margin-top:.6rem; text-align:center;">
-        Upload/ganti foto juara {{ g.category_label }} Group {{ g.group }}. File otomatis terupload begitu dipilih/dijepret.
-      </p>
-    </form>
-    {% if g.champion_photo %}
-    <form method="post" action="{{ url_for('admin_upload_champion_photo', category=g.category, group=g.group) }}" onsubmit="return confirm('Hapus foto juara ini?');" style="margin-top:.6rem;">
-      <input type="hidden" name="action" value="delete_champion_photo">
-      <button type="submit" class="btn btn-outline" style="width:100%;">🗑️ Hapus Foto</button>
-    </form>
+      {% if division.standing_policy %}
+      <span class="policy-version" title="Kebijakan klasemen immutable">
+        {{ division.standing_policy.name }} · v{{ division.standing_policy.version }}
+      </span>
+      {% endif %}
+    </div>
+
+    {% if division.champion_team and division.has_elimination_stage %}
+    <div class="group-block division-champion-block">
+      <h3><span class="champion-tag">🏆 Juara {{ division.name }}</span></h3>
+      {{ champion_panel(
+        division.champion_team, division.champion_photo,
+        'Juara ' ~ division.name, division.key,
+        division.champion_target, 'klasemen', is_admin, csrf_token
+      ) }}
+    </div>
     {% endif %}
-  </div>
-  {% endif %}
-  {% endif %}
 
-  <div class="table-wrap">
-    <table class="standings {{ cat_class }}">
-      <thead>
-        <tr>
-          <th>Tim</th>
-          <th>Main</th>
-          <th>Menang</th>
-          <th>Kalah</th>
-          <th>Set (M-K)</th>
-          <th>Selisih Set</th>
-          <th>Poin</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in g.rows %}
-        <tr class="{{ 'rank-1' if r.rank == 1 }}">
-          <td>
-            <div class="team-cell">
-              <div class="team-cell-head">
-                <span class="rank-pill {{ 'gold' if r.rank == 1 }}">{{ r.rank }}</span>
-                <span class="team-chip sm" style="background:{{ r.color }}; color:{{ r.text }};">{{ r.code }}</span>
-              </div>
-              <small class="player-names">
-                <span class="player-line" title="{{ r.player1 }}">{{ r.player1 }}</span>
-                <span class="player-line" title="{{ r.player2 }}">{{ r.player2 }}</span>
-              </small>
-            </div>
-          </td>
-          <td>{{ r.played }}</td>
-          <td>{{ r.win }}</td>
-          <td>{{ r.loss }}</td>
-          <td>{{ r.set_win }}-{{ r.set_loss }}</td>
-          <td>{{ '+' if r.set_diff > 0 }}{{ r.set_diff }}</td>
-          <td><strong>{{ r.points }}</strong></td>
-        </tr>
+    {% for stage in division.stages_view %}
+      {% if stage.type in ('group', 'round_robin') %}
+        {% for group in stage.groups_view %}
+        <div class="group-block">
+          <h3>
+            <span class="badge badge-sport">{{ division.sport_icon }} {{ division.name }}</span>
+            {{ stage.name }} · {{ group.name }}
+            {% if group.champion %}<span class="champion-tag">🏆 Peringkat Pertama</span>{% endif %}
+          </h3>
+
+          {% if group.champion_team %}
+          {{ champion_panel(
+            group.champion_team, group.champion_photo,
+            'Peringkat pertama ' ~ division.name ~ ' · ' ~ group.name,
+            division.key, group.champion_target, 'klasemen',
+            is_admin, csrf_token
+          ) }}
+          {% endif %}
+
+          {% if group.rows %}
+          <div class="table-wrap">
+            <table class="standings">
+              <thead>
+                <tr>
+                  <th>Tim/Peserta</th><th>Main</th><th>Menang</th><th>Kalah</th>
+                  <th>Segmen (M-K)</th><th>Selisih</th><th>Poin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in group.rows %}
+                <tr class="{{ 'rank-1' if row.rank == 1 }}">
+                  <td>
+                    <div class="team-cell">
+                      <div class="team-cell-head">
+                        <span class="rank-pill {{ 'gold' if row.rank == 1 }}">{{ row.rank }}</span>
+                        <span class="team-chip sm" style="background:{{ row.color }}; color:{{ row.text }};">{{ row.display_code }}</span>
+                      </div>
+                      <small class="player-names">
+                        <strong class="team-name" style="display:block;">{{ row.team }}</strong>
+                        <span class="player-line">{{ row.player1 }}</span>
+                        {% if row.player2 %}<span class="player-line">{{ row.player2 }}</span>{% endif %}
+                      </small>
+                    </div>
+                  </td>
+                  <td>{{ row.played }}</td><td>{{ row.win }}</td><td>{{ row.loss }}</td>
+                  <td>{{ row.set_win }}-{{ row.set_loss }}</td>
+                  <td>{{ '+' if row.set_diff > 0 }}{{ row.set_diff }}</td>
+                  <td><strong>{{ row.points }}</strong></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-state compact">Belum ada peserta atau pertandingan pada grup ini.</div>
+          {% endif %}
+        </div>
         {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
-{% endfor %}
-
-<p style="color:#a0677a; font-size:.85rem;">Sistem poin: Menang = 2 poin, Kalah setelah bertanding = 1 poin, Kalah W.O. = 0 poin. Urutan klasemen: Poin &rarr; Selisih Set &rarr; Selisih Angka.</p>
+      {% endif %}
+    {% endfor %}
+  </section>
+  {% endfor %}
+{% else %}
+<div class="empty-state"><div class="emoji">📊</div>Belum ada divisi aktif untuk cabang ini.</div>
+{% endif %}
 
 {% endblock %}

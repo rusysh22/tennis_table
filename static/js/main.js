@@ -5,18 +5,64 @@
   var toggle = document.getElementById("navToggle");
   var nav = document.getElementById("mainNav");
   if (toggle && nav) {
-    toggle.addEventListener("click", function () {
-      var open = nav.classList.toggle("open");
+    var mobileNav = window.matchMedia("(max-width: 860px)");
+    var navItems = nav.querySelectorAll("a, button");
+    function setNavState(open) {
+      open = Boolean(open && mobileNav.matches);
+      nav.classList.toggle("open", open);
       toggle.classList.toggle("open", open);
+      document.body.classList.toggle("nav-open", open);
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      toggle.setAttribute("aria-label", open ? "Tutup menu" : "Buka menu");
+      if (mobileNav.matches) {
+        nav.setAttribute("aria-hidden", open ? "false" : "true");
+        navItems.forEach(function (item) { item.tabIndex = open ? 0 : -1; });
+      } else {
+        nav.removeAttribute("aria-hidden");
+        navItems.forEach(function (item) { item.removeAttribute("tabindex"); });
+      }
+    }
+    toggle.addEventListener("click", function () {
+      setNavState(!nav.classList.contains("open"));
     });
     nav.querySelectorAll("a").forEach(function (a) {
       a.addEventListener("click", function () {
-        nav.classList.remove("open");
-        toggle.classList.remove("open");
+        setNavState(false);
       });
     });
+    document.addEventListener("click", function (event) {
+      if (
+        mobileNav.matches &&
+        nav.classList.contains("open") &&
+        !nav.contains(event.target) &&
+        !toggle.contains(event.target)
+      ) {
+        setNavState(false);
+      }
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && nav.classList.contains("open")) {
+        setNavState(false);
+        toggle.focus();
+      }
+    });
+    if (mobileNav.addEventListener) mobileNav.addEventListener("change", function () { setNavState(false); });
+    setNavState(false);
   }
+
+  // ---------- password visibility ----------
+  document.querySelectorAll("[data-password-toggle]").forEach(function (button) {
+    var inputId = button.getAttribute("aria-controls");
+    var input = inputId ? document.getElementById(inputId) : null;
+    if (!input) return;
+    button.addEventListener("click", function () {
+      var reveal = input.type === "password";
+      input.type = reveal ? "text" : "password";
+      button.textContent = reveal ? "Sembunyikan" : "Lihat";
+      button.setAttribute("aria-label", reveal ? "Sembunyikan password" : "Tampilkan password");
+      input.focus();
+    });
+  });
 
   // ---------- countdown ----------
   var cd = document.getElementById("countdown");
@@ -53,6 +99,7 @@
   var liveRoot = document.querySelector("[data-live-poll]");
   if (liveRoot) {
     var indicator = document.getElementById("liveUpdated");
+    var liveApiUrl = liveRoot.getAttribute("data-live-api") || "/api/v1/matches?limit=100";
 
     function paintTime() {
       if (indicator) {
@@ -62,9 +109,10 @@
     }
 
     function refresh() {
-      fetch("/api/matches", { cache: "no-store" })
+      fetch(liveApiUrl, { cache: "no-store" })
         .then(function (r) { return r.json(); })
-        .then(function (data) {
+        .then(function (payload) {
+          var data = payload.data || [];
           var byId = {};
           data.forEach(function (m) { byId[m.id] = m; });
           document.querySelectorAll("[data-match-id]").forEach(function (card) {
@@ -79,12 +127,14 @@
             var sa = card.querySelector("[data-field='sets_a']");
             var sb = card.querySelector("[data-field='sets_b']");
             if (sa && sb) {
-              if (sa.textContent != m.sets_a || sb.textContent != m.sets_b) {
+              var setsA = m.score.segments_won.a;
+              var setsB = m.score.segments_won.b;
+              if (sa.textContent != setsA || sb.textContent != setsB) {
                 card.classList.add("score-flash");
                 setTimeout(function () { card.classList.remove("score-flash"); }, 900);
               }
-              sa.textContent = m.sets_a;
-              sb.textContent = m.sets_b;
+              sa.textContent = setsA;
+              sb.textContent = setsB;
             }
           });
           paintTime();
@@ -202,32 +252,52 @@
     var modal = document.getElementById("matchModal");
     var modalBody = document.getElementById("matchModalBody");
     var modalClose = document.getElementById("matchModalClose");
+    var modalBox = modal ? modal.querySelector(".modal-box") : null;
     if (!modal || !modalBody || !modalClose) return;
 
     var modalDirty = false; // true kalau ada form yang berhasil disubmit di dalam modal
+    var previousFocus = null;
 
-    function openModal() {
+    function loadingMarkup() {
+      return '<div class="modal-loading"><i aria-hidden="true"></i><strong>Menyiapkan match center</strong><span>Memuat skor dan detail pertandingan…</span></div>';
+    }
+
+    function openModal(trigger) {
+      previousFocus = trigger || document.activeElement;
       modal.hidden = false;
       document.body.classList.add("modal-open");
+      modalBody.setAttribute("aria-busy", "true");
+      window.requestAnimationFrame(function () { modalClose.focus(); });
     }
 
     function closeModal() {
       modal.hidden = true;
       document.body.classList.remove("modal-open");
+      modalBody.removeAttribute("aria-busy");
+      if (previousFocus && typeof previousFocus.focus === "function") {
+        previousFocus.focus();
+      }
       if (modalDirty) {
         modalDirty = false;
         window.location.reload();
       }
     }
 
-    function loadFragment(url) {
-      modalBody.innerHTML = '<div class="modal-loading">Memuat…</div>';
-      openModal();
+    function loadFragment(url, trigger) {
+      modalBody.innerHTML = loadingMarkup();
+      openModal(trigger);
       fetch(url, { cache: "no-store" })
-        .then(function (r) { return r.text(); })
-        .then(function (html) { modalBody.innerHTML = html; })
+        .then(function (r) {
+          if (!r.ok) throw new Error("Gagal memuat detail pertandingan");
+          return r.text();
+        })
+        .then(function (html) {
+          modalBody.innerHTML = html;
+          modalBody.removeAttribute("aria-busy");
+        })
         .catch(function () {
-          modalBody.innerHTML = '<div class="modal-loading">Gagal memuat detail pertandingan. Coba lagi.</div>';
+          modalBody.removeAttribute("aria-busy");
+          modalBody.innerHTML = '<div class="modal-loading is-error"><strong>Detail belum dapat dimuat</strong><span>Tutup panel ini, lalu coba buka kembali.</span></div>';
         });
     }
 
@@ -236,7 +306,7 @@
       var trigger = e.target.closest("[data-modal-match]");
       if (!trigger) return;
       e.preventDefault();
-      loadFragment(trigger.getAttribute("data-modal-match"));
+      loadFragment(trigger.getAttribute("data-modal-match"), trigger);
     });
 
     modalClose.addEventListener("click", closeModal);
@@ -244,7 +314,26 @@
       if (e.target === modal) closeModal();
     });
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && !modal.hidden) closeModal();
+      if (modal.hidden) return;
+      if (e.key === "Escape") {
+        closeModal();
+        return;
+      }
+      if (e.key !== "Tab" || !modalBox) return;
+      var focusable = Array.prototype.filter.call(
+        modalBox.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+        function (el) { return el.offsetWidth || el.offsetHeight || el.getClientRects().length; }
+      );
+      if (!focusable.length) return;
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     });
 
     // form komentar & kelola admin di dalam modal -> submit lewat AJAX,
@@ -356,6 +445,215 @@
     });
   })();
 
+  // ---------- youtube live embed fallback (jaringan diblokir) ----------
+  // Iframe cross-origin tidak selalu bisa dideteksi gagal-muat via onerror
+  // (kadang browser tetap fire "load" walau isinya halaman error dari
+  // jaringan yang memblokir youtube.com), jadi dipakai timeout: kalau
+  // "load" belum juga terjadi dalam beberapa detik, tampilkan pesan.
+  (function () {
+    var frame = document.getElementById("ytLiveEmbed");
+    var fallback = document.getElementById("ytLiveFallback");
+    if (!frame || !fallback) return;
+
+    var timer = setTimeout(function () {
+      fallback.classList.add("show");
+    }, 7000);
+
+    frame.addEventListener("load", function () {
+      clearTimeout(timer);
+    });
+  })();
+
+  // ---------- live chat (first-party, polling-based) ----------
+  (function () {
+    var box = document.getElementById("liveChatBox");
+    var list = document.getElementById("liveChatMessages");
+    var form = document.getElementById("liveChatForm");
+    var newBadge = document.getElementById("liveChatNewBadge");
+    var jumpNew = document.getElementById("liveChatJumpNew");
+    if (!box || !list || !form) return;
+
+    var apiUrl = box.getAttribute("data-chat-api");
+    var sendUrl = box.getAttribute("data-send-url");
+    var deleteUrl = box.getAttribute("data-delete-url");
+    var isAdmin = box.getAttribute("data-is-admin") === "1";
+    var isSending = false;
+    var lastId = null;
+    var existing = list.querySelectorAll("[data-msg-id]");
+    if (existing.length) lastId = existing[existing.length - 1].getAttribute("data-msg-id");
+    list.scrollTop = list.scrollHeight;
+
+    function clearNewBadge() {
+      if (newBadge) newBadge.hidden = true;
+    }
+    if (newBadge) {
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) clearNewBadge();
+      });
+      box.addEventListener("click", clearNewBadge);
+    }
+
+    function isNearBottom() {
+      return list.scrollHeight - list.scrollTop - list.clientHeight < 48;
+    }
+    function scrollToBottom() {
+      list.scrollTop = list.scrollHeight;
+      if (jumpNew) jumpNew.hidden = true;
+    }
+    if (jumpNew) {
+      jumpNew.addEventListener("click", scrollToBottom);
+      list.addEventListener("scroll", function () {
+        if (isNearBottom()) jumpNew.hidden = true;
+      });
+    }
+
+    var latestNewBadge = null;
+
+    function escapeAndAppend(msg, forceScroll) {
+      var wasNearBottom = isNearBottom();
+      var empty = list.querySelector(".live-chat-empty");
+      if (empty) empty.remove();
+
+      var row = document.createElement("div");
+      row.className = "live-chat-msg";
+      row.setAttribute("data-msg-id", msg.id);
+
+      var nameEl = document.createElement("strong");
+      nameEl.textContent = msg.name;
+      row.appendChild(nameEl);
+
+      if (latestNewBadge) latestNewBadge.remove();
+      var badge = document.createElement("span");
+      badge.className = "live-chat-msg-badge";
+      badge.textContent = "baru";
+      row.appendChild(badge);
+      latestNewBadge = badge;
+
+      var textEl = document.createElement("span");
+      textEl.textContent = msg.message;
+      row.appendChild(textEl);
+
+      if (isAdmin) {
+        var del = document.createElement("button");
+        del.type = "button";
+        del.className = "live-chat-delete";
+        del.title = "Hapus pesan";
+        del.setAttribute("data-msg-id", msg.id);
+        del.textContent = "✕";
+        row.appendChild(del);
+      }
+
+      list.appendChild(row);
+      lastId = msg.id;
+      if (forceScroll || wasNearBottom) {
+        scrollToBottom();
+      } else if (jumpNew) {
+        jumpNew.hidden = false;
+      }
+    }
+
+    function poll() {
+      var url = apiUrl + (lastId ? "?after=" + encodeURIComponent(lastId) : "");
+      fetch(url, { cache: "no-store" })
+        .then(function (r) { return r.json(); })
+        .then(function (payload) {
+          var incoming = payload.data || [];
+          incoming.forEach(function (m) { escapeAndAppend(m); });
+          if (incoming.length && newBadge && document.hidden) newBadge.hidden = false;
+        })
+        .catch(function () {});
+    }
+    setInterval(poll, 4000);
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (isSending) return; // hard guard against double-submit races
+      isSending = true;
+
+      var submitBtn = form.querySelector('button[type="submit"]');
+      var originalLabel = submitBtn ? submitBtn.textContent : "";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Mengirim...";
+      }
+
+      var formData = new FormData(form);
+      fetch(sendUrl, { method: "POST", body: formData })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.ok) {
+            escapeAndAppend(data.message, true);
+            form.querySelector('[name="message"]').value = "";
+            form.querySelector('[name="message"]').focus();
+          } else {
+            alert(data.error || "Gagal mengirim pesan.");
+          }
+        })
+        .catch(function () {
+          alert("Gagal mengirim pesan. Periksa koneksi Anda.");
+        })
+        .finally(function () {
+          isSending = false;
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalLabel;
+          }
+        });
+    });
+
+    var emojiToggle = document.getElementById("liveChatEmojiToggle");
+    var emojiPopup = document.getElementById("liveChatEmojiPopup");
+    if (emojiToggle && emojiPopup) {
+      function closeEmojiPopup() {
+        emojiPopup.hidden = true;
+        emojiToggle.setAttribute("aria-expanded", "false");
+      }
+      function openEmojiPopup() {
+        emojiPopup.hidden = false;
+        emojiToggle.setAttribute("aria-expanded", "true");
+      }
+      emojiToggle.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (emojiPopup.hidden) openEmojiPopup(); else closeEmojiPopup();
+      });
+      emojiPopup.addEventListener("click", function (e) {
+        var btn = e.target.closest(".live-chat-emoji");
+        if (!btn) return;
+        var input = form.querySelector('[name="message"]');
+        if (!input) return;
+        var emoji = btn.getAttribute("data-emoji") || "";
+        var next = (input.value ? input.value + " " : "") + emoji;
+        input.value = next.slice(0, input.maxLength > 0 ? input.maxLength : next.length);
+        closeEmojiPopup();
+        input.focus();
+      });
+      document.addEventListener("click", function (e) {
+        if (!emojiPopup.hidden && !emojiPopup.contains(e.target) && e.target !== emojiToggle) {
+          closeEmojiPopup();
+        }
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !emojiPopup.hidden) closeEmojiPopup();
+      });
+    }
+
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest(".live-chat-delete");
+      if (!btn || !deleteUrl) return;
+      if (!confirm("Hapus pesan ini?")) return;
+      var formData = new FormData();
+      formData.append("message_id", btn.getAttribute("data-msg-id"));
+      var csrfInput = form.querySelector('[name="csrf_token"]');
+      if (csrfInput) formData.append("csrf_token", csrfInput.value);
+      fetch(deleteUrl, { method: "POST", body: formData })
+        .then(function () {
+          var row = btn.closest(".live-chat-msg");
+          if (row) row.remove();
+        })
+        .catch(function () {});
+    });
+  })();
+
 })();
 
 // Global function for voting
@@ -387,6 +685,8 @@ window.submitVote = function(matchId, team, emoji) {
   var formData = new FormData();
   formData.append('team', team);
   formData.append('emoji', emoji);
+  var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  if (csrfMeta) formData.append('csrf_token', csrfMeta.content);
 
   fetch(`/pertandingan/${matchId}/vote`, {
     method: 'POST',

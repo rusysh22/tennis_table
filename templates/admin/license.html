@@ -1,0 +1,168 @@
+{% extends "admin/_layout.html" %}
+{% block title %}Lisensi &amp; Aktivasi Sistem — {{ config.tournament_short_name }}{% endblock %}
+{% block admin_content %}
+
+<div class="ac-header" style="margin-bottom: 1.5rem;">
+  <div>
+    <h1 style="display:flex; align-items:center; gap:8px;">
+      🔑 Aktivasi Lisensi &amp; Berlangganan
+    </h1>
+    <p style="color:var(--slate-500); margin:0.3rem 0 0; font-size:0.92rem;">
+      Terhubung langsung dengan sistem otorisasi resmi <strong><a href="https://berlanggan.web.id" target="_blank" style="color:#2563eb; text-decoration:underline;">Berlanggan.web.id</a></strong>
+    </p>
+  </div>
+</div>
+
+{# ── STATUS KARTU UTAMA ── #}
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.4rem; margin-bottom:1.6rem;">
+
+  {# Kartu Status Lisensi #}
+  <div class="ac-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+    <div class="ac-card-header" style="border-bottom:1px solid var(--slate-200); padding-bottom:1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin:0; font-size:1.15rem; display:flex; align-items:center; gap:6px;">
+          📊 Status Lisensi Saat Ini
+        </h2>
+        {% if license.status == 'active' %}
+          <span class="badge" style="background:#d1fae5; color:#065f46; font-weight:700; padding:0.4rem 0.8rem; font-size:0.85rem; border-radius:30px;">✅ ACTIVE</span>
+        {% elif license.status == 'grace' %}
+          <span class="badge" style="background:#fef3c7; color:#92400e; font-weight:700; padding:0.4rem 0.8rem; font-size:0.85rem; border-radius:30px;">⏳ GRACE PERIOD (TENGGANG)</span>
+        {% elif license.status == 'suspended' %}
+          <span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; padding:0.4rem 0.8rem; font-size:0.85rem; border-radius:30px;">🚫 SUSPENDED (KURANG SALDO)</span>
+        {% elif license.status == 'expired' %}
+          <span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; padding:0.4rem 0.8rem; font-size:0.85rem; border-radius:30px;">⏰ EXPIRED (KEDALUWARSA)</span>
+        {% else %}
+          <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:700; padding:0.4rem 0.8rem; font-size:0.85rem; border-radius:30px;">⚪ UNLICENSED (BELUM AKTIF)</span>
+        {% endif %}
+      </div>
+    </div>
+    
+    <div class="ac-card-body" style="padding-top:1.2rem;">
+      <div style="margin-bottom:1rem;">
+        <label style="font-size:0.8rem; text-transform:uppercase; font-weight:700; color:#64748b;">Kunci Lisensi Terdaftar:</label>
+        <div style="font-family: monospace; font-size:1.1rem; font-weight:700; color:#1e293b; margin-top:4px; padding:8px 12px; background:#f8fafc; border-radius:6px; border:1px dashed #cbd5e1; display:inline-block; letter-spacing:1px;">
+          {% if license.license_key %}
+            {{ license.license_key[:4] }}-XXXX-XXXX-{{ license.license_key[-4:] if license.license_key|length >= 12 else license.license_key }}
+          {% else %}
+            Belum ada kunci lisensi dimasukkan
+          {% endif %}
+        </div>
+      </div>
+
+      <div style="margin-bottom:1rem;">
+        <label style="font-size:0.8rem; text-transform:uppercase; font-weight:700; color:#64748b;">Fingerprint Perangkat Server (Hardware ID):</label>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+          <input type="text" id="fpInput" value="{{ license.fingerprint }}" readonly style="font-family:monospace; font-size:0.85rem; width:100%; padding:0.45rem 0.6rem; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; color:#334155;">
+          <button type="button" onclick="copyFp()" class="ac-btn ac-btn-sm ac-btn-secondary" style="white-space:nowrap; padding:0.45rem 0.8rem;" title="Salin Fingerprint">
+            📋 Salin ID
+          </button>
+        </div>
+      </div>
+
+      <div style="font-size:0.85rem; color:#475569; border-top:1px solid #e2e8f0; padding-top:0.8rem;">
+        <div><strong>Pesan Terakhir Sistem:</strong> {{ license.last_message }}</div>
+        {% if license.last_validated_timestamp %}
+        <div style="margin-top:4px;"><strong>Terakhir Validasi Ke Berlanggan.web.id:</strong> {{ now.fromtimestamp(license.last_validated_timestamp).strftime("%d-%m-%Y %H:%M WIB") if license.last_validated_timestamp > 0 else "-" }}</div>
+        {% endif %}
+        {% if license.expires_at %}
+        <div style="margin-top:4px;"><strong>Masa Berlaku Token / Siklus:</strong> {{ license.expires_at }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="ac-card-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:1rem; display:flex; gap:0.8rem; flex-wrap:wrap; justify-content:space-between; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+      <form method="post" action="{{ url_for('admin_validate_license') }}" style="margin:0;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="ac-btn ac-btn-secondary ac-btn-sm" style="background:#fff; border-color:#cbd5e1;">
+          🔄 Sync &amp; Validasi (Heartbeat)
+        </button>
+      </form>
+      {% if license.status != 'unlicensed' %}
+      <form method="post" action="{{ url_for('admin_deactivate_license') }}" style="margin:0;" onsubmit="return confirm('Yakin ingin melepas lisensi dari server ini? Seat perangkat akan dikosongkan di Berlanggan.web.id.');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="ac-btn ac-btn-sm" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;">
+          🔌 Lepas Lisensi (Deactivate)
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Kartu Form Aktivasi #}
+  <div class="ac-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+    <div>
+      <div class="ac-card-header" style="border-bottom:1px solid var(--slate-200); padding-bottom:1rem;">
+        <h2 style="margin:0; font-size:1.15rem; display:flex; align-items:center; gap:6px;">
+          🚀 Aktifkan / Perbarui Lisensi
+        </h2>
+      </div>
+      <div class="ac-card-body" style="padding-top:1.2rem;">
+        <form method="post" action="{{ url_for('admin_activate_license') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <div class="ac-form-field">
+            <label style="font-weight:600; font-size:0.92rem;">Masukkan Kunci Lisensi (*)</label>
+            <p style="font-size:0.8rem; color:#64748b; margin-top:2px;">Format kunci lisensi standar dari Berlanggan.web.id (cth: <code>ABCD-1234-EFGH</code> atau <code>XXXX-XXXX-XXXX</code>)</p>
+            <input type="text" name="license_key" placeholder="ABCD-1234-EFGH" required value="{{ license.license_key if license.license_key else '' }}" style="font-family:monospace; text-transform:uppercase; font-size:1.05rem; padding:0.6rem; letter-spacing:2px; text-align:center; font-weight:700; border:2px solid #3b82f6; border-radius:8px; width:100%; margin-top:0.5rem;">
+          </div>
+          <div class="ac-form-actions" style="margin-top:1.2rem;">
+            <button type="submit" class="ac-btn ac-btn-primary" style="width:100%; padding:0.75rem; font-size:1rem; justify-content:center;">
+              ⚡ Aktifkan ke Berlanggan.web.id Sekarang
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div style="margin: 1.2rem; padding:0.9rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px;">
+      <div style="font-weight:700; color:#1e3a8a; font-size:0.9rem; display:flex; align-items:center; gap:6px;">
+        💡 Belum Punya Lisensi?
+      </div>
+      <p style="font-size:0.83rem; color:#1e40af; margin:6px 0 0; line-height:1.4;">
+        Dapatkan hak akses eksklusif dan aman dengan berlangganan melalui platform resmi <strong>Berlanggan.web.id</strong>. Lisensi Anda didukung perpanjangan otomatis via saldo wallet dan perlindungan masa tenggang (grace period).
+      </p>
+    </div>
+  </div>
+
+</div>
+
+{# ── KARTU PANDUAN & ATURAN BERLANGGANAN ── #}
+<div class="ac-card">
+  <div class="ac-card-header" style="border-bottom:1px solid var(--slate-200); padding-bottom:1rem;">
+    <h2 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:6px;">
+      📖 Panduan Integrasi Lisensi &amp; Siklus Berlangganan
+    </h2>
+  </div>
+  <div class="ac-card-body" style="padding-top:1.2rem;">
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1.4rem; font-size:0.88rem; color:#334155; line-height:1.5;">
+      <div>
+        <h4 style="color:#0f172a; margin:0 0 0.4rem; font-size:0.95rem;">1️⃣ Sistem Heartbeat (Pemeriksaan Berkala)</h4>
+        <p style="margin:0;">
+          Setelah diaktifkan, server ini akan melakukan pemeriksaan otomatis (<em>heartbeat</em> / <code>validate</code>) secara berkala ke <strong>Berlanggan.web.id</strong>. Token lisensi diperbarui otomatis sehingga Anda tidak perlu menginput kunci lagi.
+        </p>
+      </div>
+      <div>
+        <h4 style="color:#0f172a; margin:0 0 0.4rem; font-size:0.95rem;">2️⃣ Masa Tenggang (Grace Period)</h4>
+        <p style="margin:0;">
+          Jika saldo wallet Anda di Berlanggan.web.id kurang saat tanggal jatuh tempo bulanan/tahunan, lisensi tidak langsung diputus! Sistem masuk masa <strong>Grace Period (3 hari)</strong> agar website Anda tetap berjalan murni tanpa gangguan selagi Anda melakukan top-up.
+        </p>
+      </div>
+      <div>
+        <h4 style="color:#0f172a; margin:0 0 0.4rem; font-size:0.95rem;">3️⃣ Pemeliharaan Seat Perangkat (Installations)</h4>
+        <p style="margin:0;">
+          Setiap aktivasi mendaftarkan 1 <em>seat</em> berbekal Fingerprint di atas. Jika Anda memindahkan server turnamen ini ke mesin atau domain lain, cukup klik tombol <strong>Lepas Lisensi (Deactivate)</strong> agar seat kosong dan siap digunakan di server baru Anda!
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyFp() {
+  var copyText = document.getElementById("fpInput");
+  copyText.select();
+  copyText.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(copyText.value);
+  alert("Fingerprint Server berhasil disalin:\n" + copyText.value);
+}
+</script>
+
+{% endblock %}

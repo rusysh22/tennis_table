@@ -2,77 +2,145 @@
 {% block title %}Jadwal Pertandingan — {{ config.tournament_short_name }}{% endblock %}
 {% block og_title %}Jadwal Pertandingan — {{ config.tournament_short_name }}{% endblock %}
 {% block og_image %}{{ url_for('og_default_image', title='Jadwal Pertandingan', subtitle=config.start_date ~ ' – ' ~ config.end_date ~ ' · ' ~ config.venue, _external=True) }}{% endblock %}
+{% block bodyclass %}schedule-body{% endblock %}
 {% block content %}
 
-{% include "_subnav_jadwal.html" %}
-
-<div class="section-head"><h2>📅 Jadwal Pertandingan</h2></div>
-
-<form class="search-bar" method="get" role="search">
-  <input type="hidden" name="kategori" value="{{ kategori }}">
-  <input type="hidden" name="grup" value="{{ grup }}">
-  <input type="hidden" name="tanggal" value="{{ tanggal }}">
-  <input type="hidden" name="status" value="{{ status }}">
-  <span class="search-icon">🔍</span>
-  <input type="search" name="q" value="{{ q }}" placeholder="Cari nama tim atau nama peserta (mis. GS, Rafli, Mia)...">
-  <button class="btn btn-primary btn-sm" type="submit">Cari</button>
-  {% if q %}<a class="btn btn-outline btn-sm" href="{{ url_for('jadwal', kategori=kategori, grup=grup, tanggal=tanggal, status=status) }}">Hapus</a>{% endif %}
-</form>
-
-<form class="filter-bar" method="get">
-  <input type="hidden" name="q" value="{{ q }}">
-  <div class="filter-field">
-    <label for="kategori">Kategori</label>
-    <select name="kategori" id="kategori" onchange="this.form.submit()">
-      <option value="">Semua Kategori</option>
-      <option value="ganda_putra" {{ 'selected' if kategori == 'ganda_putra' }}>Ganda Putra</option>
-      <option value="ganda_campuran" {{ 'selected' if kategori == 'ganda_campuran' }}>Ganda Campuran</option>
-    </select>
+<section class="schedule-masthead">
+  <div class="schedule-masthead-copy">
+    <span class="page-eyebrow"><i aria-hidden="true"></i> Competition schedule</span>
+    <h1>Semua laga.<br><span>Satu arena.</span></h1>
+    <p>Temukan waktu bermain, pantau status pertandingan, dan buka detail skor dalam satu tampilan kompetisi.</p>
   </div>
-  <div class="filter-field">
-    <label for="grup">Grup</label>
-    <select name="grup" id="grup" onchange="this.form.submit()">
-      <option value="">Semua Grup</option>
-      <option value="A" {{ 'selected' if grup == 'A' }}>Group A</option>
-      <option value="B" {{ 'selected' if grup == 'B' }}>Group B</option>
-      <option value="FINAL" {{ 'selected' if grup == 'FINAL' }}>Final</option>
-    </select>
+  <div class="schedule-progress" aria-label="Progres turnamen {{ schedule_stats.progress }} persen">
+    <div class="schedule-progress-ring" style="--progress:{{ schedule_stats.progress }}">
+      <strong>{{ schedule_stats.progress }}%</strong>
+      <small>selesai</small>
+    </div>
+    <div>
+      <span>Progress turnamen</span>
+      <strong>{{ schedule_stats.completed }} dari {{ schedule_stats.total }} laga</strong>
+      <small>Hasil tervalidasi dan masuk klasemen</small>
+    </div>
   </div>
-  <div class="filter-field">
-    <label for="tanggal">Tanggal</label>
-    <select name="tanggal" id="tanggal" onchange="this.form.submit()">
-      <option value="">Semua Tanggal</option>
-      {% for d in dates %}
-      <option value="{{ d }}" {{ 'selected' if tanggal == d }}>{{ d }}</option>
+</section>
+
+<div class="schedule-nav-row">
+  {% include "_subnav_jadwal.html" %}
+  <div class="schedule-pulse" aria-label="Ringkasan status pertandingan">
+    <span><i class="is-live" aria-hidden="true"></i><strong>{{ schedule_stats.live }}</strong> live</span>
+    <span><i class="is-upcoming" aria-hidden="true"></i><strong>{{ schedule_stats.scheduled }}</strong> terjadwal</span>
+    <span><i class="is-done" aria-hidden="true"></i><strong>{{ schedule_stats.completed }}</strong> selesai</span>
+  </div>
+</div>
+
+<section class="schedule-workbench" aria-labelledby="scheduleFilterTitle">
+  <div class="schedule-workbench-head">
+    <div>
+      <span class="page-eyebrow"><i aria-hidden="true"></i> Match finder</span>
+      <h2 id="scheduleFilterTitle">Cari pertandinganmu</h2>
+      <p>Gunakan nama peserta, kategori, grup, tanggal, atau status.</p>
+    </div>
+    {% if active_filter_count %}
+    <span class="active-filter-count">{{ active_filter_count }} filter aktif</span>
+    {% endif %}
+  </div>
+
+  <form class="schedule-search" method="get" role="search">
+    {% if selected_sport != 'all' %}<input type="hidden" name="sport" value="{{ selected_sport }}">{% endif %}
+    <input type="hidden" name="kategori" value="{{ kategori }}">
+    <input type="hidden" name="grup" value="{{ grup }}">
+    <input type="hidden" name="tanggal" value="{{ tanggal }}">
+    <input type="hidden" name="status" value="{{ status }}">
+    <span class="schedule-search-icon" aria-hidden="true">⌕</span>
+    <label class="sr-only" for="scheduleQuery">Cari tim atau peserta</label>
+    <input id="scheduleQuery" type="search" name="q" value="{{ q }}" placeholder="Cari kode tim atau nama peserta…">
+    <button class="btn btn-primary" type="submit">Cari laga</button>
+    {% if q %}<a class="btn btn-outline" href="{{ sport_url('jadwal', kategori=kategori, grup=grup, tanggal=tanggal, status=status) }}">Hapus pencarian</a>{% endif %}
+  </form>
+
+  <form class="schedule-filters" method="get" aria-label="Filter jadwal pertandingan">
+    {% if selected_sport != 'all' %}<input type="hidden" name="sport" value="{{ selected_sport }}">{% endif %}
+    <input type="hidden" name="q" value="{{ q }}">
+    <label class="schedule-filter-field" for="kategori">
+      <span>Kategori</span>
+      <select name="kategori" id="kategori" onchange="this.form.submit()">
+        <option value="">Semua kategori</option>
+        {% for category in categories %}
+        <option value="{{ category.key }}" {{ 'selected' if kategori == category.key }}>{{ category.label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="schedule-filter-field" for="grup">
+      <span>Grup</span>
+      <select name="grup" id="grup" onchange="this.form.submit()">
+        <option value="">Semua grup</option>
+        {% for group in groups %}
+        <option value="{{ group }}" {{ 'selected' if grup == group }}>{{ 'Final' if group == 'FINAL' else 'Group ' ~ group }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="schedule-filter-field" for="tanggal">
+      <span>Tanggal</span>
+      <select name="tanggal" id="tanggal" onchange="this.form.submit()">
+        <option value="">Semua tanggal</option>
+        {% for d in dates %}
+        <option value="{{ d }}" {{ 'selected' if tanggal == d }}>{{ d }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="schedule-filter-field" for="status">
+      <span>Status</span>
+      <select name="status" id="status" onchange="this.form.submit()">
+        <option value="">Semua status</option>
+        <option value="scheduled" {{ 'selected' if status == 'scheduled' }}>Terjadwal</option>
+        <option value="live" {{ 'selected' if status == 'live' }}>Live</option>
+        <option value="completed" {{ 'selected' if status == 'completed' }}>Selesai</option>
+        <option value="postponed" {{ 'selected' if status == 'postponed' }}>Ditunda</option>
+      </select>
+    </label>
+    {% if kategori or grup or tanggal or status %}
+    <a class="btn btn-outline schedule-reset" href="{{ sport_url('jadwal', q=q) }}">Reset filter</a>
+    {% endif %}
+  </form>
+</section>
+
+<div class="schedule-results-head">
+  <div>
+    <span class="page-eyebrow"><i aria-hidden="true"></i> Match timeline</span>
+    <h2>Jadwal kompetisi</h2>
+  </div>
+  <p><span class="result-count">{{ matches|length }} pertandingan ditemukan.</span></p>
+  <a class="btn btn-outline" href="{{ sport_url('kalender_export') }}" title="Export rundown jadwal {{ 'cabor terpilih' if selected_sport != 'all' else 'semua cabor' }} ke Excel">
+    📥 Export Rundown ke Excel
+  </a>
+</div>
+
+{% if schedule_days %}
+<div class="schedule-timeline">
+  {% for day in schedule_days %}
+  <section class="schedule-day" aria-labelledby="day-{{ loop.index }}">
+    <header class="schedule-day-head">
+      <div class="schedule-day-index" aria-hidden="true">{{ '%02d'|format(loop.index) }}</div>
+      <div>
+        <span>{{ day.date }}</span>
+        <h3 id="day-{{ loop.index }}">{{ day.date_label }}</h3>
+      </div>
+      <small>{{ day.matches|length }} laga</small>
+    </header>
+    <div class="match-grid schedule-match-grid">
+      {% for m in day.matches %}
+      {% include "_match_card.html" %}
       {% endfor %}
-    </select>
-  </div>
-  <div class="filter-field">
-    <label for="status">Status</label>
-    <select name="status" id="status" onchange="this.form.submit()">
-      <option value="">Semua Status</option>
-      <option value="scheduled" {{ 'selected' if status == 'scheduled' }}>Terjadwal</option>
-      <option value="live" {{ 'selected' if status == 'live' }}>Live</option>
-      <option value="completed" {{ 'selected' if status == 'completed' }}>Selesai</option>
-      <option value="postponed" {{ 'selected' if status == 'postponed' }}>Ditunda</option>
-    </select>
-  </div>
-  {% if kategori or grup or tanggal or status %}
-  <a class="btn btn-outline btn-sm" href="{{ url_for('jadwal', q=q) }}">Reset Filter</a>
-  {% endif %}
-</form>
-
-<p class="muted" style="color:#a0677a; margin-bottom:1rem;">{{ matches|length }} pertandingan ditemukan.</p>
-
-{% if matches %}
-<div class="match-grid">
-  {% for m in matches %}
-  {% include "_match_card.html" %}
+    </div>
+  </section>
   {% endfor %}
 </div>
 {% else %}
-<div class="empty-state"><div class="emoji">🔍</div>
-  {% if q %}Tidak ada tim atau peserta dengan kata kunci "{{ q }}".{% else %}Tidak ada pertandingan yang cocok dengan filter ini.{% endif %}
+<div class="empty-state schedule-empty">
+  <div class="emoji">⌕</div>
+  <h3>Tidak ada laga yang ditemukan</h3>
+  <p>{% if q %}Coba kata kunci lain untuk “{{ q }}”.{% else %}Ubah satu atau beberapa filter untuk melihat jadwal lain.{% endif %}</p>
+  <a class="btn btn-primary" href="{{ sport_url('jadwal') }}">Lihat semua pertandingan</a>
 </div>
 {% endif %}
 

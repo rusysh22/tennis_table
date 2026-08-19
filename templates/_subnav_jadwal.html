@@ -1,5 +1,5 @@
 <nav class="sub-nav" aria-label="Sub navigasi jadwal">
-  <a href="{{ url_for('jadwal') }}" class="{{ 'active' if request.endpoint == 'jadwal' }}">📋 Daftar Jadwal</a>
-  <a href="{{ url_for('kalender') }}" class="{{ 'active' if request.endpoint == 'kalender' }}">🗓️ Kalender</a>
-  <a href="{{ url_for('rekap') }}" class="{{ 'active' if request.endpoint == 'rekap' }}">📊 Rekap Hasil</a>
+  <a href="{{ sport_url('jadwal') }}" class="{{ 'active' if request.endpoint == 'jadwal' }}">📋 Daftar Jadwal</a>
+  <a href="{{ sport_url('kalender') }}" class="{{ 'active' if request.endpoint == 'kalender' }}">🗓️ Kalender</a>
+  <a href="{{ sport_url('rekap') }}" class="{{ 'active' if request.endpoint == 'rekap' }}">📊 Rekap Hasil</a>
 </nav>

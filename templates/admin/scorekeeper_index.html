@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Scorekeeper — {{ config.tournament_short_name }}{% endblock %}
+{% block bodyclass %}scorekeeper-body{% endblock %}
+{% block content %}
+
+<div class="scorekeeper-page-head">
+  <div>
+    <span class="scorekeeper-kicker">Mode operasional</span>
+    <h1>Scorekeeper</h1>
+    <p>Pilih pertandingan, lalu catat skor dari ponsel tanpa membuka tabel admin.</p>
+  </div>
+  <a class="btn btn-outline" href="{{ url_for('admin_dashboard') }}">Dashboard Admin</a>
+</div>
+
+<div class="scorekeeper-status-strip" aria-label="Ringkasan pertandingan">
+  <span><strong>{{ counts.live|default(0) }}</strong> Live</span>
+  <span><strong>{{ counts.scheduled|default(0) }}</strong> Terjadwal</span>
+  <span><strong>{{ counts.completed|default(0) }}</strong> Selesai</span>
+  <span><strong>{{ counts.postponed|default(0) }}</strong> Ditunda</span>
+</div>
+
+<form class="scorekeeper-filters" method="get" aria-label="Filter pertandingan scorekeeper">
+  <label>Cabang
+    <select name="sport" {{ 'disabled' if admin_role == 'sport' }}>
+      {% if admin_role != 'sport' %}
+      <option value="">Semua cabang</option>
+      {% endif %}
+      {% for sport in filter_sports %}
+      <option value="{{ sport.key }}" {{ 'selected' if sport_filter == sport.key }}>{{ sport.icon }} {{ sport.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Tanggal
+    <select name="date">
+      <option value="">Semua tanggal</option>
+      {% for date in dates %}<option value="{{ date }}" {{ 'selected' if date_filter == date }}>{{ date }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Lapangan
+    <select name="court">
+      <option value="">Semua lapangan</option>
+      {% for court in courts %}<option value="{{ court }}" {{ 'selected' if court_filter == court }}>{{ court }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Status
+    <select name="status">
+      <option value="">Semua status</option>
+      {% for value, label in [('live','Live'),('scheduled','Terjadwal'),('check_in','Check-in'),('completed','Selesai'),('postponed','Ditunda'),('suspended','Ditangguhkan')] %}
+      <option value="{{ value }}" {{ 'selected' if status_filter == value }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <button class="btn btn-primary" type="submit">Terapkan</button>
+</form>
+
+<div class="scorekeeper-match-list">
+  {% for card in cards %}
+  {% set m = card.match %}
+  <a class="scorekeeper-match-card status-{{ m.status }}" href="{{ url_for('scorekeeper_match', match_id=m.id) }}">
+    <div class="scorekeeper-card-top">
+      <div>
+        <span class="badge badge-sport sport-{{ m.sport_key }}">{{ m.category_label }}</span>
+        <strong>{{ m.id }} · {{ m.stage_label }}</strong>
+      </div>
+      <span class="badge badge-status badge-{{ m.status }}">{{ m.status_label }}</span>
+    </div>
+    <div class="scorekeeper-card-score">
+      <div><span class="team-chip sm" style="background:{{ m.team_a_color }};color:{{ m.team_a_text }}">{{ m.team_a_code }}</span><small>{{ m.team_a_player1 }}</small></div>
+      <strong>{{ card.state.segments_won.a }} : {{ card.state.segments_won.b }}</strong>
+      <div><span class="team-chip sm" style="background:{{ m.team_b_color }};color:{{ m.team_b_text }}">{{ m.team_b_code }}</span><small>{{ m.team_b_player1 }}</small></div>
+    </div>
+    <div class="scorekeeper-card-meta">
+      <span>{{ m.date }} · {{ m.time }}</span><span>{{ m.court }}</span>
+      {% if card.state.current != [0, 0] %}<span>{{ card.state.terms.unit_label }} berjalan {{ card.state.current[0] }}–{{ card.state.current[1] }}</span>{% endif %}
+    </div>
+  </a>
+  {% else %}
+  <div class="empty-state">Tidak ada pertandingan yang cocok dengan filter.</div>
+  {% endfor %}
+</div>
+
+{% endblock %}

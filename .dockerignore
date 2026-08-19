@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.git/
+.env
+.env.*
+!.env.example
+data/backups/
+tests/
+*.md

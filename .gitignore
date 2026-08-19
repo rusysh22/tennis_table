@@ -6,5 +6,8 @@ venv/
 *.log
 screenshot_*.png
 data/backups/
+static/uploads/*
+!static/uploads/.gitkeep
 .env
 .env.*
+!.env.example

@@ -1,81 +1,74 @@
-<a class="match-card {{ 'completed' if m.status == 'completed' else '' }}" href="{{ url_for('match_detail', match_id=m.id) }}" data-match-id="{{ m.id }}" data-modal-match="{{ url_for('match_fragment', match_id=m.id) }}">
-  <div class="cat-row">
-    <span class="badge {{ 'badge-putra' if m.category == 'ganda_putra' else 'badge-campuran' }}">{{ m.category_label }}</span>
-    <span style="display:flex; gap:.35rem;">
+<a class="match-card competition-match-card {{ 'completed' if m.status == 'completed' else '' }} {{ 'match-card-exhibition' if m.group == 'EXHIBITION' else '' }}"
+   href="{{ sport_url('match_detail', match_id=m.id) }}"
+   data-match-id="{{ m.id }}"
+   data-modal-match="{{ sport_url('match_fragment', match_id=m.id) }}">
+  <header class="competition-card-head">
+    <div class="competition-card-id">
+      <span>{{ m.id }}</span>
+      <div>
+        <strong>{{ m.category_label }}</strong>
+        <small>{% if m.stage_type in ('group', 'round_robin') and m.group %}{{ m.group }} · {% endif %}{{ m.round_label }}</small>
+      </div>
+    </div>
+    <div class="match-status-cluster">
+      {% if m.group == 'EXHIBITION' %}<span class="badge badge-exhibition">Eksibisi</span>{% endif %}
       <span class="badge badge-status badge-{{ m.status }}" data-field="status">{{ m.status_label }}</span>
       {% if m.is_walkover %}<span class="badge badge-wo">WO</span>{% endif %}
-    </span>
-  </div>
-  <div style="font-size:.72rem; color:#a0677a; font-weight:700; text-transform:uppercase; letter-spacing:.03em;">
-    {% if m.group != 'FINAL' %}Group {{ m.group }} · {% endif %}{{ m.round_label }}
+      {% if m.status == 'completed' and not m.score_is_valid %}<span class="badge badge-status badge-postponed">Perlu koreksi</span>{% endif %}
+    </div>
+  </header>
+
+  <div class="competition-duel">
+    <div class="competition-team competition-team-a">
+      <div class="competition-team-mark">
+        <span class="team-chip" style="background:{{ m.team_a_color }};color:{{ m.team_a_text }}">{{ m.team_a_code }}</span>
+        {% if m.vote_total_a > 0 or m.vote_total_b > 0 %}
+        <div class="mini-vote-bar" aria-label="Dukungan {{ m.team_a_code }} {{ m.vote_pct_a }} persen">
+          <div class="mini-vote-fill" style="width:{{ m.vote_pct_a }}%;background:{{ m.team_a_color }}"></div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="player-names">
+        <strong class="team-name">{{ m.team_a_label }}</strong>
+        <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
+        {% if m.team_a_player2 %}<span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>{% endif %}
+      </div>
+    </div>
+
+    <div class="competition-score" aria-label="{% if m.status in ('completed','live') %}Skor {{ m.sets_a }} lawan {{ m.sets_b }}{% else %}Versus{% endif %}">
+      {% if m.status in ('completed','live') %}
+      <div><strong data-field="sets_a">{{ m.sets_a }}</strong><span>:</span><strong data-field="sets_b">{{ m.sets_b }}</strong></div>
+      {% else %}
+      <div class="competition-vs">VS</div>
+      {% endif %}
+      <small>{{ m.best_of_label }}</small>
+    </div>
+
+    <div class="competition-team competition-team-b">
+      <div class="competition-team-mark">
+        <span class="team-chip" style="background:{{ m.team_b_color }};color:{{ m.team_b_text }}">{{ m.team_b_code }}</span>
+        {% if m.vote_total_a > 0 or m.vote_total_b > 0 %}
+        <div class="mini-vote-bar" aria-label="Dukungan {{ m.team_b_code }} {{ m.vote_pct_b }} persen">
+          <div class="mini-vote-fill" style="width:{{ m.vote_pct_b }}%;background:{{ m.team_b_color }}"></div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="player-names">
+        <strong class="team-name">{{ m.team_b_label }}</strong>
+        <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
+        {% if m.team_b_player2 %}<span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>{% endif %}
+      </div>
+    </div>
   </div>
 
-  {% if m.status == 'completed' or m.status == 'live' %}
-  <div class="vs-row" style="margin-top:.5rem;">
-    <div class="vs-team">
-      <div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 3px;">
-        <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
-        {% if m.vote_total_a > 0 or m.vote_total_b > 0 %}
-        <div class="mini-vote-bar"><div class="mini-vote-fill" style="width: {{ m.vote_pct_a }}%; background: {{ m.team_a_color }};"></div></div>
-        {% endif %}
-      </div>
-      <small class="player-names">
-        <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
-        <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>
-      </small>
+  <footer class="competition-card-foot">
+    <div class="competition-card-when">
+      <span class="match-time">{{ m.time }}</span>
+      <span><strong>{{ m.date_label }}</strong><small>{{ m.court }}</small></span>
     </div>
-    <div class="score-row" style="margin:0;">
-      <span class="score-num" data-field="sets_a">{{ m.sets_a }}</span>
-      <span class="score-sep">:</span>
-      <span class="score-num" data-field="sets_b">{{ m.sets_b }}</span>
+    <div class="competition-card-open">
+      {% if m.comments %}<span class="comment-count">{{ m.comments|length }} komentar</span>{% endif %}
+      <span>Detail laga <b aria-hidden="true">↗</b></span>
     </div>
-    <div class="vs-team vs-team-right">
-      <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 3px;">
-        <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
-        {% if m.vote_total_a > 0 or m.vote_total_b > 0 %}
-        <div class="mini-vote-bar"><div class="mini-vote-fill" style="width: {{ m.vote_pct_b }}%; background: {{ m.team_b_color }};"></div></div>
-        {% endif %}
-      </div>
-      <small class="player-names">
-        <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
-        <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>
-      </small>
-    </div>
-  </div>
-  {% else %}
-  <div class="vs-row">
-    <div class="vs-team">
-      <div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 3px;">
-        <span class="team-chip sm" style="background:{{ m.team_a_color }}; color:{{ m.team_a_text }};">{{ m.team_a_code }}</span>
-        {% if m.vote_total_a > 0 or m.vote_total_b > 0 %}
-        <div class="mini-vote-bar"><div class="mini-vote-fill" style="width: {{ m.vote_pct_a }}%; background: {{ m.team_a_color }};"></div></div>
-        {% endif %}
-      </div>
-      <small class="player-names">
-        <span class="player-line" title="{{ m.team_a_player1 }}">{{ m.team_a_player1 }}</span>
-        <span class="player-line" title="{{ m.team_a_player2 }}">{{ m.team_a_player2 }}</span>
-      </small>
-    </div>
-    <div class="vs-mid">VS</div>
-    <div class="vs-team vs-team-right">
-      <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 3px;">
-        <span class="team-chip sm" style="background:{{ m.team_b_color }}; color:{{ m.team_b_text }};">{{ m.team_b_code }}</span>
-        {% if m.vote_total_a > 0 or m.vote_total_b > 0 %}
-        <div class="mini-vote-bar"><div class="mini-vote-fill" style="width: {{ m.vote_pct_b }}%; background: {{ m.team_b_color }};"></div></div>
-        {% endif %}
-      </div>
-      <small class="player-names">
-        <span class="player-line" title="{{ m.team_b_player1 }}">{{ m.team_b_player1 }}</span>
-        <span class="player-line" title="{{ m.team_b_player2 }}">{{ m.team_b_player2 }}</span>
-      </small>
-    </div>
-  </div>
-  {% endif %}
-
-  <div class="match-meta">
-    <span>📅 {{ m.date }}</span>
-    <span>⏰ {{ m.time }} WIB</span>
-    <span>🏓 {{ m.court }}</span>
-    {% if m.comments %}<span class="comment-count">💬 {{ m.comments|length }}</span>{% endif %}
-  </div>
+  </footer>
 </a>

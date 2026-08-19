@@ -1,0 +1,464 @@
+{
+  "BBL-01": {
+    "name": "Agustian Gozali",
+    "id_number": "22070773",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BBL-02": {
+    "name": "Rifal Fauzi",
+    "id_number": "24040953",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BPP-01": {
+    "name": "Achmad Zaidan",
+    "id_number": "21070727",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "BPP-02": {
+    "name": "Abdul Zulkifli Perangin Angin",
+    "id_number": "21040667",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "JKT-01": {
+    "name": "Tito Alfani",
+    "id_number": "20050369",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "JKT-02": {
+    "name": "Prayogi Akbar Putra",
+    "id_number": "19100328",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "PSR-01": {
+    "name": "Ariyanto Sandi",
+    "id_number": "CTA-22-062",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "PSR-02": {
+    "name": "Gerhana Budi Wijaya",
+    "id_number": "CTA-26-096",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "SBY-01": {
+    "name": "Gusna Arfian",
+    "id_number": "25101222",
+    "email": "",
+    "photo": "",
+    "site_code": "SBY"
+  },
+  "SBY-02": {
+    "name": "Muhammad Reza Amirullah",
+    "id_number": "25091199",
+    "email": "",
+    "photo": "",
+    "site_code": "SBY"
+  },
+  "BBL-03": {
+    "name": "Akmaluddin",
+    "id_number": "25091219",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BBL-04": {
+    "name": "Adinda Fadiah",
+    "id_number": "",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BPP-03": {
+    "name": "Dayan Naibaho",
+    "id_number": "25011017",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "BPP-04": {
+    "name": "Nadia Chita Sandra",
+    "id_number": "25071157",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "JKT-03": {
+    "name": "Dimas C Wihatmoko",
+    "id_number": "25011090",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "JKT-04": {
+    "name": "Griska Devinta Debby",
+    "id_number": "20030365",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "PSR-03": {
+    "name": "Suharista Rio Ambowo",
+    "id_number": "CTA-25-089",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "PSR-04": {
+    "name": "Septy Wahyuningsih",
+    "id_number": "CTA-23-071",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "BBL-05": {
+    "name": "Khoirul Imam Aditya",
+    "id_number": "24081003",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BBL-06": {
+    "name": "Chandra Herdiansyah",
+    "id_number": "24040951",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BPP-05": {
+    "name": "Stenly Hendri",
+    "id_number": "25011087",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "BPP-06": {
+    "name": "Poniran",
+    "id_number": "25011058",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "JKT-05": {
+    "name": "Raka Awfa Ghithraf Safari",
+    "id_number": "2041383",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "JKT-06": {
+    "name": "Adhitya Syafta",
+    "id_number": "19100294",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "MRW-01": {
+    "name": "Rudy Indrayadi",
+    "id_number": "26011278",
+    "email": "",
+    "photo": "",
+    "site_code": "MRW"
+  },
+  "MRW-02": {
+    "name": "Zulfikar Ramadan",
+    "id_number": "26021338",
+    "email": "",
+    "photo": "",
+    "site_code": "MRW"
+  },
+  "PSR-05": {
+    "name": "M. Al Hafiz",
+    "id_number": "CTA-18-041",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "PSR-06": {
+    "name": "Hazlan",
+    "id_number": "25041117",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "SBY-03": {
+    "name": "Faizal Arief Pratama",
+    "id_number": "25091220",
+    "email": "",
+    "photo": "",
+    "site_code": "SBY"
+  },
+  "SBY-04": {
+    "name": "Aditya Widyo Nugroho",
+    "id_number": "25101229",
+    "email": "",
+    "photo": "",
+    "site_code": "SBY"
+  },
+  "BBL-07": {
+    "name": "Muh Yusli Bahtiar",
+    "id_number": "21030657",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BBL-08": {
+    "name": "Adinda Fadia",
+    "id_number": "",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BPP-07": {
+    "name": "Diky Ramannda",
+    "id_number": "20060465",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "BPP-08": {
+    "name": "Tirsa Awuy",
+    "id_number": "22110787",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "JKT-07": {
+    "name": "Rizkiakbar Foresandhi",
+    "id_number": "25091194",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "JKT-08": {
+    "name": "Linda Astriyani",
+    "id_number": "26061392",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "PSR-07": {
+    "name": "Abdul Rajak",
+    "id_number": "25041115",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "PSR-08": {
+    "name": "Nourmalisa",
+    "id_number": "CTA-22-060",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "SBY-05": {
+    "name": "Hilda Yustiniar",
+    "id_number": "19100315",
+    "email": "",
+    "photo": "",
+    "site_code": "SBY"
+  },
+  "BBL-09": {
+    "name": "Giyarto",
+    "id_number": "24121081",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BBL-10": {
+    "name": "Agus Seramto",
+    "id_number": "",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BPP-09": {
+    "name": "Firmansyah",
+    "id_number": "20060470",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "BPP-10": {
+    "name": "Endra Kurniawan",
+    "id_number": "25011032",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "JKT-09": {
+    "name": "Rafli Ananta Zikri",
+    "id_number": "26051387",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "JKT-10": {
+    "name": "Rizki Amrizal",
+    "id_number": "23120891",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "PSR-09": {
+    "name": "Mulyadi",
+    "id_number": "CTA-24-076",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "PSR-10": {
+    "name": "Natalias Padatu T.",
+    "id_number": "CTA-08-025",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "SBY-06": {
+    "name": "Jannata Prijandi",
+    "id_number": "25101231",
+    "email": "",
+    "photo": "",
+    "site_code": "SBY"
+  },
+  "SBY-07": {
+    "name": "Dwi Widodo",
+    "id_number": "25101228",
+    "email": "",
+    "photo": "",
+    "site_code": "SBY"
+  },
+  "BBL-11": {
+    "name": "Erwin Iswanto",
+    "id_number": "24091008",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BBL-12": {
+    "name": "Hilda Husni T",
+    "id_number": "",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BPP-11": {
+    "name": "Muttaqin",
+    "id_number": "25011039",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "BPP-12": {
+    "name": "Oktavia Lija Setyana Situmeang",
+    "id_number": "21040676",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "JKT-11": {
+    "name": "Abraham Kaawoan",
+    "id_number": "25051122",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "JKT-12": {
+    "name": "Pawestri Wulan Ramadani",
+    "id_number": "25071150",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "PSR-11": {
+    "name": "Bayu Pratama Salesi",
+    "id_number": "26071408",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "PSR-12": {
+    "name": "Linda Rafikasari",
+    "id_number": "CTA-25-091",
+    "email": "",
+    "photo": "",
+    "site_code": "PSR"
+  },
+  "BBL-13": {
+    "name": "Rendy Ramadhan Zein",
+    "id_number": "24101013",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BPP-13": {
+    "name": "Ricky Aprilyanto",
+    "id_number": "25081191",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  },
+  "JKT-13": {
+    "name": "Muhammad Kemal Hussein",
+    "id_number": "19100322",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "JKT-14": {
+    "name": "Anggun Citra Listiyani",
+    "id_number": "26041343",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "BBL-14": {
+    "name": "Sigit Komaroji",
+    "id_number": "24040947",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "JKT-15": {
+    "name": "Novandi Nasty Sandya",
+    "id_number": "26021332",
+    "email": "",
+    "photo": "",
+    "site_code": "JKT"
+  },
+  "MRW-03": {
+    "name": "Asnawi",
+    "id_number": "24010904",
+    "email": "",
+    "photo": "",
+    "site_code": "MRW"
+  },
+  "BBL-15": {
+    "name": "Subakir",
+    "id_number": "24040961",
+    "email": "",
+    "photo": "",
+    "site_code": "BBL"
+  },
+  "BPP-14": {
+    "name": "Hendrik",
+    "id_number": "23090873",
+    "email": "",
+    "photo": "",
+    "site_code": "BPP"
+  }
+}
